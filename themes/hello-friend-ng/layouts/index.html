@@ -9,7 +9,9 @@
                <img src="{{ .Site.Params.Portrait.Path }}" class="circle" alt="{{ .Site.Params.Portrait.Alt }}" style="max-width:{{ .Site.Params.Portrait.MaxWidth }}" />
             {{ end }}
 
-	    <img src="/img/logo.jpg">
+	    <div style="height:60vh;object-fit:none">
+	        <img src="/img/logo.svg" style="height:70vh">
+	    </div>
 
             <h1>{{ .Site.Title }}</h1>
             {{- with .Site.Params.homeSubtitle }}
