@@ -24,7 +24,7 @@
 
 {{ $options := (dict "targetPath" "/localhost/main.css" "outputStyle" "compressed" "enableSourceMap" false) }}
 {{ $style := resources.Get "scss/main.scss" | resources.ToCSS $options | resources.Fingerprint }}
-<link rel="stylesheet" href="{{ $style.RelPermalink }}">
+<link rel="stylesheet" href="https://raw.githubusercontent.com/anvbis/anvbis.github.io/gh-pages{{ $style.RelPermalink }}">
 
 {{ range $val := $.Site.Params.customCSS }}
     {{ if gt (len $val) 0 }}
