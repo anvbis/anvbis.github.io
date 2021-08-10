@@ -22,9 +22,9 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
     type="text/css">
 
-{{ $options := (dict "targetPath" "main.css" "outputStyle" "compressed" "enableSourceMap" true) }}
+{{ $options := (dict "targetPath" "main.css" "outputStyle" "compressed" "enableSourceMap" false) }}
 {{ $style := resources.Get "scss/main.scss" | resources.ToCSS $options | resources.Fingerprint }}
-<link rel="stylesheet" href="{{ $style.Permalink }}">
+<link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
 {{ range $val := $.Site.Params.customCSS }}
     {{ if gt (len $val) 0 }}
