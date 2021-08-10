@@ -25,9 +25,12 @@ paginate     = 10
   images = [""]
 
 [taxonomies]
-    category = "blog"
+    category = "categories"
     tag      = "tags"
     series   = "series"
+
+[permalinks]
+    categories = "/:section/:slug"
 
 [languages]
   [languages.en]

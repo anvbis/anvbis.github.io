@@ -12,7 +12,7 @@ pre[class*="language-"] {
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
 	font-size: 1em;
 	text-align: left;
-	text-shadow: 0 -.1em .2em black;
+	/* text-shadow: 0 -.1em .2em black; */
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
@@ -37,8 +37,8 @@ pre[class*="language-"],
 /* Code blocks */
 pre[class*="language-"] {
 	border-radius: .5em;
-	border: .3em solid hsl(0, 0%, 33%); /* #282A2B */
-	box-shadow: 1px 1px .5em black inset;
+	border: 0px solid hsl(0, 0%, 33%); /* #282A2B */
+	/* box-shadow: 1px 1px .5em black inset; */
 	margin: .5em 0;
 	overflow: auto;
 	padding: 1em;
