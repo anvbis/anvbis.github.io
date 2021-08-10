@@ -1,5 +1,5 @@
 baseurl      = "https://anvbis.github.io"
-title        = "My Blog"
+title        = "Anvbis"
 languageCode = "en-us"
 theme        = "hello-friend-ng"
 paginate     = 10
@@ -20,7 +20,7 @@ paginate     = 10
   enableSharingButtons = true
 
   # Metadata mostly used in document's head
-  description = "My new homepage or blog"
+  description = "Exploit developer."
   keywords = "homepage, blog"
   images = [""]
 
