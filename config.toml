@@ -20,7 +20,7 @@ paginate     = 10
   enableSharingButtons = true
 
   # Metadata mostly used in document's head
-  description = "Exploit developer."
+  description = "Exploit development and reverse engineering writeups."
   keywords = "homepage, blog"
   images = [""]
 
