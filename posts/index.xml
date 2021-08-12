@@ -107,7 +107,7 @@ Out[2]: 40
 0x004006a0      415e           pop r14 ; set to 0xcafebabecafebabe to store in $rsi
 0x004006a2      415f           pop r15 ; set to 0xd00df00dd00df00d to store in $rdx
 0x004006a4      c3             ret
-</code></pre><p>It&rsquo;ll be a little complex, but we should be able to use these to get the values we want into our target registers. I&rsquo;ve added some comments to the above</p>
+</code></pre><p>It&rsquo;ll be a little complex, but we should be able to use these to get the values we want into our target registers.</p>
 <p>We can use the second gadget to set up for the first gadget (so we can move the correct values into our target registers).</p>
 <p>Note the <code>call qword [r12 + rbx*8]</code> instruction. As it dereferences a pointer to a function, we can&rsquo;t use this to redirect execution.</p>
 <pre><code>0x00400686      4489ef         mov edi, r13d 
