@@ -80,6 +80,30 @@
       flex-shrink: 0;
       margin-left: 1em;
       @include dimmed;
+
+      &-time {
+	@media #{$media-size-phone} {
+	  display:none;
+	}
+      }
+    }
+
+    &-tags {
+      margin: -15px 0px 0px 0px;
+      
+      @media #{$media-size-phone} {
+        display: none;
+      }
+    }
+
+    &-tag {
+      display: flex;
+      opacity: .85;
+
+      a {
+        margin-right: 15px;
+	text-decoration: underline;
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 +++
 categories = ["Linux","Stack Overflow","Capture the Flag"]
 date = "2021-08-11"
-description = "Simple stack overflow exploit."
+description = "TuCTF 2018 'Shella Easy' challenge."
 featuredpath = "date"
 linktitle = ""
 title = "TuCTF 2018 :: Shella Easy"
@@ -120,7 +120,7 @@ We can now run the binary inside GDB and we'll give it the value `AAAA` when it 
 
 ```
 pwndbg> r
-Starting program: /home/stephen/Projects/nightmare/modules/06-bof_shellcode/tu18_shellaeasy/shella-easy 
+Starting program: ./shella-easy 
 Yeah I'll have a 0xffffcff0 with a side of fries thanks
 AAAA
 

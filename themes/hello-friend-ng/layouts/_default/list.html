@@ -19,12 +19,19 @@
                                 <span class="post-title">{{.Title}}</span>
                                 <span class="post-day">
                                     {{ if .Site.Params.dateformShort }}
-                                        {{ .Date.Format .Site.Params.dateformShort }}
+				        {{ .Date.Format .Site.Params.dateformShort }} <span class="post-day-time">- {{ .ReadingTime }} min read</span>
                                     {{ else }}
-                                        {{ .Date.Format "Jan 2"}}
+				        {{ .Date.Format "Jan 2"}} <span class="time-day-time">- {{ .ReadingTime }} min read</span>
                                     {{ end }}
                                 </span>
                             </a>
+			    <div class="post-tags">
+			        <span class="post-tag">
+				    {{ range .Params.categories }}
+				        <a href="{{ (urlize (printf "categories/%s" . )) | absURL }}/">#{{ . }}</a>
+				    {{ end }}
+			        </span>
+			    </div>
                         </li>
                     {{ end }}
                 </ul>
