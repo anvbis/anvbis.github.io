@@ -169,7 +169,7 @@ Note that we can use the first gadget to set the values of `$rsi` and `$rdx`.
 0x004006a4      c3             ret
 ```
 
-It'll be a little complex, but we should be able to use these to get the values we want into our target registers. I've added some comments to the above 
+It'll be a little complex, but we should be able to use these to get the values we want into our target registers.
 
 We can use the second gadget to set up for the first gadget (so we can move the correct values into our target registers). 
 
