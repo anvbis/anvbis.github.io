@@ -1,10 +1,10 @@
 +++
-categories = ["Linux","Return Oriented Programming","Capture the Flag"]
+categories = ["ROP","CTF","Linux"]
 date = "2021-08-12"
-description = "ROP Emporium 'ret2csu' challenge."
+description = "ROP Emporium 'ret2csu' challenge writeup."
 featuredpath = "date"
 linktitle = ""
-title = "ROP Emporium :: RET2CSU"
+title = "ROP Emporium :: ret2csu"
 slug = "rop-emporium-ret2csu"
 type = "post"
 +++
@@ -46,7 +46,7 @@ Thank you!
 
 After a tiny bit of reverse engineering, we see this `pwnme` function called by `main`. We can see that it allocates 0x20 bytes of memory for a buffer `buf`, before reading in 0x200 bytes from stdin and storing it in the buffer - here is our overflow. 
 
-```
+```c
 void pwnme(void)
 {
     void *buf;
@@ -115,7 +115,7 @@ First, let's find the offset of the return address from where our input buffer i
 
 We'll use a small script to attach the process to GDB and store a cyclic pattern of bytes in our input buffer. This will allow us to calculate the offset from the start of our input buffer to the return address.
 
-```
+```py
 #!/usr/bin/env python3
 
 from pwn import *
@@ -138,7 +138,7 @@ pwndbg> x/gx $rsp
 
 Using pwntools' `cyclic_find` function we can get the offset from the start of our input buffer to the return address stored on the stack.
 
-```
+```py
 In [2]: cyclic_find(0x6161616161616166, n=8)
 Out[2]: 40
 ```
@@ -257,7 +257,7 @@ Note: we have to be pretty careful when using the gadgets we found in the csu fu
 
 We also have to pad out the stack so that the `pop` instructions after the call don't destroy our rop chain.
 
-```
+```py
 #!/usr/bin/env python3
 
 from pwn import *

