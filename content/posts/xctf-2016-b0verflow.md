@@ -4,7 +4,7 @@ date = "2021-08-13"
 description = "X-CTF 2016 'b0verflow' challenge writeup."
 featuredpath = "date"
 linktitle = ""
-title = "X-CTF 2016 :: b0verflow"
+title = "X-CTF 2016 :: B0verflow"
 slug = "xctf-2016-b0verflow"
 type = "post"
 +++

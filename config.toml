@@ -1,6 +1,6 @@
 baseurl      = "https://anvbis.github.io"
 title        = "Anubis"
-languageCode = "en-us"
+languageCode = "en-au"
 theme        = "hello-friend-ng"
 paginate     = 10
 

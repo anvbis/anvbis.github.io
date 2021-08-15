@@ -4,7 +4,7 @@ date = "2021-08-12"
 description = "ROP Emporium 'ret2csu' challenge writeup."
 featuredpath = "date"
 linktitle = ""
-title = "ROP Emporium :: ret2csu"
+title = "ROP Emporium :: Ret2csu"
 slug = "rop-emporium-ret2csu"
 type = "post"
 +++
