@@ -1,5 +1,5 @@
 +++
-categories = ["SigROP","CTF","Linux"]
+categories = ["SigROP","Stack Pivot","CTF","Linux"]
 date = "2021-08-15"
 description = "CSAW 2019 'smallboi' challenge writeup."
 featuredpath = "date"
