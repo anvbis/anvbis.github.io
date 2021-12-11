@@ -1,10 +1,10 @@
 +++
-categories = ["Kernel","Linux"]
+categories = ["Kernel","Shellcode","Linux"]
 date = "2021-12-10"
 description = "Linux kernel return to user-space technique."
 featuredpath = "date"
 linktitle = ""
-title = "Linux Kernel :: Return to User-Space"
+title = "Linux Kernel :: Ret2usr"
 slug = "linux-kernel-ret2usr"
 type = "post"
 +++
