@@ -1,5 +1,5 @@
 +++
-categories = ["Stack BOF","CTF","Linux"]
+categories = ["Shellcode","CTF","Linux"]
 date = "2021-08-11"
 description = "TuCTF 2018 'Shella Easy' challenge writeup."
 featuredpath = "date"
