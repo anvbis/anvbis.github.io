@@ -1,5 +1,4 @@
 baseurl      = "https://anvbis.github.io"
-title        = "Anvbis"
 languageCode = "en-au"
 theme        = "terminal"
 paginate     = 5
@@ -8,40 +7,15 @@ paginate     = 5
   contentTypeName = "posts"
   themeColor = "green"
   showMenuItems = 2
-  showLanguageSelector = false
   fullWidthTheme = false
   centerTheme = true
   showLastUpdated = false
-
-  autoCover = true
-
-  # Subtitle for home
-  homeSubtitle = "Exploit development and reverse engineering."
-
-  # Set disableReadOtherPosts to true in order to hide the links to other posts.
-  disableReadOtherPosts = false
-
-  # Enable sharing buttons, if you like
-  enableSharingButtons = true
-
-  # Metadata mostly used in document's head
-  description = "Exploit development and reverse engineering writeups."
-  keywords = "homepage, blog"
-  images = [""]
-
-[taxonomies]
-    category = "categories"
-    tag      = "tags"
-    series   = "series"
-
-[permalinks]
-    categories = "/:section/:slug"
 
 [languages]
   [languages.en]
     languageName = "English"
     title = "Anvbis"
-  # subtitle = "Aspiring exploit developer."
+    subtitle = "Exploit development and reverse engineering."
     keywords = ""
     copyright = 'Copyright 2020 Anvbis'
     menuMore = "Show more"
@@ -56,9 +30,9 @@ paginate     = 5
       logoText = "anvbis"
       logoHomeLink = "/"
 
-  [languages.en.menu]
-    [[languages.en.menu.main]]
-      identifier = "about"
-      name       = "About"
-      url        = "/about"
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "about"
+        name       = "About"
+        url        = "/about"
 
