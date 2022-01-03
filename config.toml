@@ -1,4 +1,4 @@
-baseurl      = "https://anvbis.github.io"
+baseurl      = "/"
 languageCode = "en-au"
 theme        = "terminal"
 paginate     = 5
@@ -10,6 +10,7 @@ paginate     = 5
   fullWidthTheme = false
   centerTheme = true
   showLastUpdated = false
+  autoCover = true
 
 [languages]
   [languages.en]
