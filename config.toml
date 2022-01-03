@@ -1,17 +1,20 @@
-baseurl      = "https://anvbis.github.io"
-title        = "Anubis"
+baseurl      = "https://www.anvbis.net"
+title        = "Anvbis"
 languageCode = "en-au"
-theme        = "hello-friend-ng"
-paginate     = 10
+theme        = "terminal"
+paginate     = 5
 
 [params]
-  dateform        = "Jan 2, 2006"
-  dateformShort   = "2006-01-02"
-  dateformNum     = "2006-01-02"
-  dateformNumTime = "2006-01-02 15:04"
+  contentTypeName = "posts"
+  themeColor = "green"
+  showMenuItems = 2
+  showLanguageSelector = false
+  fullWidthTheme = false
+  centerTheme = true
+  showLastUpdated = false
 
   # Subtitle for home
-  homeSubtitle = "Aspiring exploit developer."
+  homeSubtitle = "Exploit development and reverse engineering."
 
   # Set disableReadOtherPosts to true in order to hide the links to other posts.
   disableReadOtherPosts = false
@@ -34,22 +37,25 @@ paginate     = 10
 
 [languages]
   [languages.en]
-    title = "Anubis"
+    languageName = "English"
+    title = "Anvbis"
   # subtitle = "Aspiring exploit developer."
     keywords = ""
     copyright = 'Copyright 2020 Anvbis'
+    menuMore = "Show more"
+    readMore = "Read more"
     readOtherPosts = "Read other posts"
+    newerPosts = "Newer posts"
+    olderPosts = "Older posts"
+    missingContentMessage = "Page not found..."
+    issingBackButtonLabel = "Return to home page"
 
     [languages.en.params.logo]
       logoText = "anvbis"
       logoHomeLink = "/"
-    # or
-    #
-    # path = "/img/logo.jpg"
-    # alt = "Your example logo alt text"
 
-  # And you can even create generic menu
-  [[menu.main]]
-    identifier = "blog"
-    name       = "Blog"
-    url        = "/posts"
+  [languages.en.menu]
+    [[languages.en.menu.main]]
+      identifier = "blog"
+      name       = "Blog"
+      url        = "/posts"
