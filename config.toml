@@ -1,7 +1,7 @@
-baseurl      = "/"
+baseurl = "https://anvbis.github.io/"
 languageCode = "en-au"
-theme        = "terminal"
-paginate     = 5
+theme = "hugo-theme-terminal"
+paginate = 5
 
 [params]
   contentTypeName = "posts"
@@ -9,31 +9,23 @@ paginate     = 5
   showMenuItems = 2
   fullWidthTheme = false
   centerTheme = true
-  showLastUpdated = false
-  autoCover = true
 
 [languages]
   [languages.en]
-    languageName = "English"
     title = "Anvbis"
     subtitle = "Exploit development and reverse engineering."
     keywords = ""
-    copyright = 'Copyright 2020 Anvbis'
+    copyright = ""
     menuMore = "Show more"
     readMore = "Read more"
     readOtherPosts = "Read other posts"
-    newerPosts = "Newer posts"
-    olderPosts = "Older posts"
-    missingContentMessage = "Page not found..."
-    issingBackButtonLabel = "Return to home page"
 
     [languages.en.params.logo]
-      logoText = "anvbis"
+      logoText = "Anvbis"
       logoHomeLink = "/"
 
     [languages.en.menu]
       [[languages.en.menu.main]]
         identifier = "about"
-        name       = "About"
-        url        = "/about"
-
+        name = "About"
+        url = "/about"
