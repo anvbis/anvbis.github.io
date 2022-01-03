@@ -1,5 +1,5 @@
 +++
-categories = ["Seccomp","ROP","CTF","Linux"]
+tags = ["Seccomp","ROP","CTF","Linux"]
 date = "2021-08-17"
 description = "DUCTF 2020 'return to whats revenge' challenge writeup."
 featuredpath = "date"

@@ -58,6 +58,11 @@ paginate     = 5
 
   [languages.en.menu]
     [[languages.en.menu.main]]
+      identifier = "home"
+      name       = "Home"
+      url        = "/"
+    [[languages.en.menu.main]]
       identifier = "blog"
       name       = "Blog"
       url        = "/posts"
+
