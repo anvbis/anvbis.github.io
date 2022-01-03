@@ -1,4 +1,4 @@
-baseurl      = "https://www.anvbis.net"
+baseurl      = "https://anvbis.github.io"
 title        = "Anvbis"
 languageCode = "en-au"
 theme        = "terminal"
