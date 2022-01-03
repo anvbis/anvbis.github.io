@@ -1,7 +1,7 @@
 +++
-categories = ["ROP","CTF","Linux"]
+tags = ["rop","ctf","linux"]
 date = "2021-08-16"
-description = "DUCTF 2020 'return to what' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'return to what' from DownUnderCTF 2020."
 featuredpath = "date"
 linktitle = ""
 title = "DUCTF 2020 :: Return to What"

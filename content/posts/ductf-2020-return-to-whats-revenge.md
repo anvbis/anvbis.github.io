@@ -1,7 +1,7 @@
 +++
-tags = ["Seccomp","ROP","CTF","Linux"]
+tags = ["seccomp","rop","ctf","linux"]
 date = "2021-08-17"
-description = "DUCTF 2020 'return to whats revenge' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'return to what's revenge' from DownUnderCTF 2020."
 featuredpath = "date"
 linktitle = ""
 title = "DUCTF 2020 :: Return to What's Revenge"
