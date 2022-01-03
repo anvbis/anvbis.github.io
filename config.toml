@@ -1,6 +1,6 @@
 baseurl = "https://anvbis.github.io/"
 languageCode = "en-au"
-theme = "hugo-theme-terminal"
+theme = "terminal"
 paginate = 5
 
 [params]
