@@ -1,6 +1,6 @@
 +++
 categories = ["Kernel","SMEP","Linux"]
-date = "2021-12-10"
+date = "2022-12-10"
 description = "Linux kernel SMEP bypass technique."
 featuredpath = "date"
 linktitle = ""

@@ -1,6 +1,6 @@
 +++
 categories = ["Kernel","Shellcode","Linux"]
-date = "2021-12-09"
+date = "2022-12-09"
 description = "Linux kernel return to user-space technique."
 featuredpath = "date"
 linktitle = ""

@@ -13,6 +13,8 @@ paginate     = 5
   centerTheme = true
   showLastUpdated = false
 
+  autoCover = true
+
   # Subtitle for home
   homeSubtitle = "Exploit development and reverse engineering."
 
