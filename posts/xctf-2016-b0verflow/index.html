@@ -1,73 +1,65 @@
 <!doctype html><html lang=en>
 <head>
+<title>X-CTF 2016 :: B0verflow :: Anvbis</title>
 <meta charset=utf-8>
-<meta http-equiv=x-ua-compatible content="ie=edge">
-<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
-<meta name=author content>
+<meta name=viewport content="width=device-width,initial-scale=1">
 <meta name=description content="X-CTF 2016 'b0verflow' challenge writeup.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
-<meta name=theme-color content>
-<link rel=canonical href=https://anvbis.github.io/posts/xctf-2016-b0verflow/>
-<title>
-X-CTF 2016 :: B0verflow :: Anubis
-</title>
-<link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
-<link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
-<meta itemprop=name content="X-CTF 2016 :: B0verflow">
-<meta itemprop=description content="X-CTF 2016 'b0verflow' challenge writeup."><meta itemprop=datePublished content="2021-08-13T00:00:00+00:00">
-<meta itemprop=dateModified content="2021-08-13T00:00:00+00:00">
-<meta itemprop=wordCount content="989"><meta itemprop=image content="https://anvbis.github.io">
-<meta itemprop=keywords content>
-<meta name=twitter:card content="summary_large_image">
-<meta name=twitter:image content="https://anvbis.github.io">
-<meta name=twitter:title content="X-CTF 2016 :: B0verflow">
-<meta name=twitter:description content="X-CTF 2016 'b0verflow' challenge writeup.">
+<link rel=canonical href=https://www.anvbis.net/posts/xctf-2016-b0verflow/>
+<link rel=stylesheet href=https://www.anvbis.net/assets/style.css>
+<link rel=stylesheet href=https://www.anvbis.net/assets/green.css>
+<link rel=apple-touch-icon href=https://www.anvbis.net/img/apple-touch-icon-192x192.png>
+<link rel="shortcut icon" href=https://www.anvbis.net/img/favicon/green.png>
+<meta name=twitter:card content="summary">
+<meta property="og:locale" content="en">
+<meta property="og:type" content="article">
 <meta property="og:title" content="X-CTF 2016 :: B0verflow">
 <meta property="og:description" content="X-CTF 2016 'b0verflow' challenge writeup.">
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://anvbis.github.io/posts/xctf-2016-b0verflow/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
-<meta property="article:published_time" content="2021-08-13T00:00:00+00:00">
-<meta property="article:modified_time" content="2021-08-13T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="og:url" content="https://www.anvbis.net/posts/xctf-2016-b0verflow/">
+<meta property="og:site_name" content="Anvbis">
+<meta property="og:image" content="https://www.anvbis.net/img/favicon/green.png">
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
 <meta property="article:section" content="Stack Pivot">
 <meta property="article:section" content="ROP">
 <meta property="article:section" content="CTF">
 <meta property="article:section" content="Linux">
 <meta property="article:published_time" content="2021-08-13 00:00:00 +0000 UTC">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1JEBQ6E1CF"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-1JEBQ6E1CF')</script>
 </head>
-<body>
-<div class=container>
+<body class=green>
+<div class="container center headings--one-size">
 <header class=header>
-<span class=header__inner>
-<a href=/ style=text-decoration:none>
+<div class=header__inner>
+<div class=header__logo>
+<a href=/>
 <div class=logo>
-<span class=logo__mark>></span>
-<span class=logo__text>anvbis</span>
-<span class=logo__cursor>
-</span>
+anvbis
 </div>
 </a>
-<span class=header__right>
+</div>
+<div class=menu-trigger>menu</div>
+</div>
 <nav class=menu>
-<ul class=menu__inner><li><a href=/posts>Blog</a></li>
+<ul class="menu__inner menu__inner--desktop">
+<li><a href=/posts>Blog</a></li>
+</ul>
+<ul class="menu__inner menu__inner--mobile">
+<li><a href=/posts>Blog</a></li>
 </ul>
 </nav>
-<span class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-</span>
-</span>
-</span>
 </header>
 <div class=content>
-<main class=post>
-<div class=post-info>
-</p>
+<div class=post>
+<h1 class=post-title>
+<a href=https://www.anvbis.net/posts/xctf-2016-b0verflow/>X-CTF 2016 :: B0verflow</a></h1>
+<div class=post-meta>
+<span class=post-date>
+2021-08-13
+</span>
 </div>
-<article>
-<h2 class=post-title><a href=https://anvbis.github.io/posts/xctf-2016-b0verflow/>X-CTF 2016 :: B0verflow</a></h2>
-<div class=post-content>
-<h2 id=reverse-engineering>Reverse Engineering</h2>
+<div class=post-content><div>
+<h2 id=reverse-engineering>Reverse Engineering<a href=#reverse-engineering class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Let&rsquo;s begin by using the <code>file</code> command to get a little insight into this executable. Note that it is a 32-bit linux binary.</p>
 <pre><code>$ file ./b0verflow 
 ./b0verflow: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.24, BuildID[sha1]=9f2d9dc0c9cc531c9656e6e84359398dd765b684, not stripped
@@ -116,7 +108,7 @@ Hello anvbis
     <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>;
 }
 </code></pre></div><p>We&rsquo;ve found our stack buffer overflow.</p>
-<h2 id=information-gathering>Information Gathering</h2>
+<h2 id=information-gathering>Information Gathering<a href=#information-gathering class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Next, let&rsquo;s find where the return address is relative to our input buffer. Note that the <code>vul</code> function doesn&rsquo;t read many bytes in (only 0x32) so hopefully this is enough to reach the return address.</p>
 <p>Here&rsquo;s a simple script that attaches the process to GDB and sends a cyclic pattern of 100 bytes that we can use to determine the return address' offset.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
@@ -167,7 +159,7 @@ Gadgets
 
 [INFO] File: ./b0verflow
 0x08048504: jmp esp;
-</code></pre><h2 id=exploit-development>Exploit Development</h2>
+</code></pre><h2 id=exploit-development>Exploit Development<a href=#exploit-development class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Now that we have all the information we need, we can start developing our exploit.</p>
 <p>Let&rsquo;s write some shellcode. We only have a limited amount of space to store it (about 32 bytes), so I&rsquo;ve used various techniques (such as using <code>xor</code> to set registers to <code>0</code>) to reduce the size of the shellcode.</p>
 <pre><code>.global _start
@@ -242,22 +234,19 @@ X-CTF{b0verflow}
 $ 
 [*] Stopped process './b0verflow' (pid 2328)
 </code></pre>
+</div></div>
 </div>
-</article>
-<hr>
-<div class=post-info>
-<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-<span class=tag><a href=https://anvbis.github.io/categories/stack-pivot/>Stack Pivot</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/rop/>ROP</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/ctf/>CTF</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
-</p>
-</div>
-</main>
 </div>
 <footer class=footer>
-</footer>
+<div class=footer__inner>
+<div class="copyright copyright--user">
+<span>Copyright 2020 Anvbis</span>
+<span>:: Theme made by <a href=https://twitter.com/panr>panr</a></span>
 </div>
-<script type=text/javascript src=/bundle.min.72f3cdb1757e654c5aa1329a4269ea6a8d7b37513de3b9d54d7a5ca25573fb3a64f872d6c36cdb2acf759068fd27157cda3ac3827a42378d38946a025e58b6e6.js integrity="sha512-cvPNsXV+ZUxaoTKaQmnqao17N1E947nVTXpcolVz+zpk+HLWw2zbKs91kGj9JxV82jrDgnpCN404lGoCXli25g=="></script>
+</div>
+</footer>
+<script src=https://www.anvbis.net/assets/main.js></script>
+<script src=https://www.anvbis.net/assets/prism.js></script>
+</div>
 </body>
 </html>

