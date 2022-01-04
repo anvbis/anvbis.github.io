@@ -1,12 +1,12 @@
 +++
-categories = ["Shellcode","CTF","Linux"]
+tags = ["shellcode","ctf","linux"]
 date = "2021-08-11"
-description = "TuCTF 2018 'Shella Easy' challenge writeup."
+description = "A writeup for the binary epxloitation challenge 'shella easy' from TuCTF 2018."
 featuredpath = "date"
 linktitle = ""
 title = "TuCTF 2018 :: Shella Easy"
 slug = "tuctf-2018-shella-easy"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering

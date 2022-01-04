@@ -1,12 +1,12 @@
 +++
-categories = ["ROP","CTF","Linux"]
+tags = ["rop","ctf","linux"]
 date = "2021-08-14"
-description = "CSAW 2019 'babyboi' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'babyboi' from CSAW 2019."
 featuredpath = "date"
 linktitle = ""
 title = "CSAW 2019 :: Babyboi"
 slug = "csaw-2019-babyboi"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering

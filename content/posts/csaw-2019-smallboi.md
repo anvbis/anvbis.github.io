@@ -1,12 +1,12 @@
 +++
-categories = ["SigROP","Stack Pivot","CTF","Linux"]
+tags = ["sigrop","stack pivot","ctf","linux"]
 date = "2021-08-15"
-description = "CSAW 2019 'smallboi' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'smallboi' from CSAW 2019."
 featuredpath = "date"
 linktitle = ""
 title = "CSAW 2019 :: Smallboi"
 slug = "csaw-2019-smallboi"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering

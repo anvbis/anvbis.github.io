@@ -1,12 +1,12 @@
 +++
-categories = ["Stack Pivot","ROP","CTF","Linux"]
+tags = ["stack pivot","rop",'ctf","linux"]
 date = "2021-08-13"
-description = "X-CTF 2016 'b0verflow' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'b0verflow' from X-CTF 2016."
 featuredpath = "date"
 linktitle = ""
 title = "X-CTF 2016 :: B0verflow"
 slug = "xctf-2016-b0verflow"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering

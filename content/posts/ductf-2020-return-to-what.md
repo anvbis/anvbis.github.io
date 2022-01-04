@@ -6,7 +6,7 @@ featuredpath = "date"
 linktitle = ""
 title = "DUCTF 2020 :: Return to What"
 slug = "ductf-2020-return-to-what"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering

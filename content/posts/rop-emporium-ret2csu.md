@@ -1,12 +1,12 @@
 +++
-categories = ["ROP","CTF","Linux"]
+tags = ["rop","ctf","linux"]
 date = "2021-08-12"
-description = "ROP Emporium 'ret2csu' challenge writeup."
+description = "A writeup for the binary exploitation challenge 'ret2csu' from the ROP Emporium challenge set."
 featuredpath = "date"
 linktitle = ""
 title = "ROP Emporium :: Ret2csu"
 slug = "rop-emporium-ret2csu"
-type = "posts"
+type = "post"
 +++
 
 ## Reverse Engineering
