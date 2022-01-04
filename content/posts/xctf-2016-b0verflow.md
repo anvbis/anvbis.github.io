@@ -1,5 +1,5 @@
 +++
-tags = ["stack pivot","rop",'ctf","linux"]
+tags = ["stack pivot","rop","ctf","linux"]
 date = "2021-08-13"
 description = "A writeup for the binary exploitation challenge 'b0verflow' from X-CTF 2016."
 featuredpath = "date"

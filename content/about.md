@@ -8,7 +8,7 @@ date = "2022-01-03"
 ...
 
 
-## Contact
+## Contact Me
 
 If you can crack the ciphertext below you'll have access to my contact information (hint: exclusive, repeating).
 
