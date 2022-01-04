@@ -3,7 +3,7 @@
 <title>CSAW 2019 :: Smallboi :: Anvbis</title>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content="CSAW 2019 'smallboi' challenge writeup.">
+<meta name=description content="A writeup for the binary exploitation challenge 'smallboi' from CSAW 2019.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
 <link rel=canonical href=https://anvbis.github.io/posts/csaw-2019-smallboi/>
@@ -15,16 +15,12 @@
 <meta property="og:locale" content="en">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CSAW 2019 :: Smallboi">
-<meta property="og:description" content="CSAW 2019 'smallboi' challenge writeup.">
+<meta property="og:description" content="A writeup for the binary exploitation challenge 'smallboi' from CSAW 2019.">
 <meta property="og:url" content="https://anvbis.github.io/posts/csaw-2019-smallboi/">
 <meta property="og:site_name" content="Anvbis">
 <meta property="og:image" content="https://anvbis.github.io/img/favicon/red.png">
 <meta property="og:image:width" content="2048">
 <meta property="og:image:height" content="1024">
-<meta property="article:section" content="SigROP">
-<meta property="article:section" content="Stack Pivot">
-<meta property="article:section" content="CTF">
-<meta property="article:section" content="Linux">
 <meta property="article:published_time" content="2021-08-15 00:00:00 +0000 UTC">
 </head>
 <body class=red>
@@ -60,6 +56,12 @@ Anvbis
 2021-08-15
 </span>
 </div>
+<span class=post-tags>
+#<a href=https://anvbis.github.io/tags/sigrop/>sigrop</a>&nbsp;
+#<a href=https://anvbis.github.io/tags/stack-pivot/>stack pivot</a>&nbsp;
+#<a href=https://anvbis.github.io/tags/ctf/>ctf</a>&nbsp;
+#<a href=https://anvbis.github.io/tags/linux/>linux</a>&nbsp;
+</span>
 <div class=post-content><div>
 <h2 id=reverse-engineering>Reverse Engineering<a href=#reverse-engineering class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Like usual, we&rsquo;ll start by running <code>file</code> to get a brief overflow of the executable&rsquo;s architecture. Note that it is a 64-bit linux executable.</p>
