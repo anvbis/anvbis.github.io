@@ -6,7 +6,7 @@ featuredpath = "date"
 linktitle = ""
 title = "TuCTF 2018 :: Shella Easy"
 slug = "tuctf-2018-shella-easy"
-type = "post"
+type = "posts"
 +++
 
 ## Reverse Engineering

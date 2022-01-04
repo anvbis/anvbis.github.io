@@ -6,7 +6,7 @@ featuredpath = "date"
 linktitle = ""
 title = "ROP Emporium :: Ret2csu"
 slug = "rop-emporium-ret2csu"
-type = "post"
+type = "posts"
 +++
 
 ## Reverse Engineering

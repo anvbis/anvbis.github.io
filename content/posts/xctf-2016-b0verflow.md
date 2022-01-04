@@ -6,7 +6,7 @@ featuredpath = "date"
 linktitle = ""
 title = "X-CTF 2016 :: B0verflow"
 slug = "xctf-2016-b0verflow"
-type = "post"
+type = "posts"
 +++
 
 ## Reverse Engineering

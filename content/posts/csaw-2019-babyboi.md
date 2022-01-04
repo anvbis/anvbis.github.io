@@ -6,7 +6,7 @@ featuredpath = "date"
 linktitle = ""
 title = "CSAW 2019 :: Babyboi"
 slug = "csaw-2019-babyboi"
-type = "post"
+type = "posts"
 +++
 
 ## Reverse Engineering
