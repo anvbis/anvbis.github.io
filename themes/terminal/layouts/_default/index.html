@@ -1,6 +1,7 @@
 {{ define "main" }}
   {{ if .Content }}
     <div class="index-content {{ if .Params.framed -}}framed{{- end -}}">
+      <img src="cover.png">
       {{ .Content }}
     </div>
   {{ end }}
