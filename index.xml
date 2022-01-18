@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><lastBuildDate>Tue, 17 Aug 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>About</title><link>https://anvbis.github.io/about/</link><pubDate>Mon, 03 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/about/</guid><description>About Me &amp;hellip;
-Contact Me If you can crack the ciphertext below you&amp;rsquo;ll have access to my contact information (hint: exclusive, repeating).
-300b4c031d13160742020752191c001f001e090114164f684d 4c521a1a00090d090241035d0703090d17102e150b0a180301 1a121c0e43021d04644554450d08021e1d3503031710001d4b 170018664f5a53061608111a0c0025180b1a0e06045d1b0719</description><content>&lt;h2 id="about-me">About Me&lt;/h2>
+Contact Me If you can solve the reversing challenge linked below you&amp;rsquo;ve earned my contact information.
+$ md5sum ./contact 51f000ce9d06fddc6c08e2af16e24e3b ./contact contact.zip</description><content>&lt;h2 id="about-me">About Me&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;h2 id="contact-me">Contact Me&lt;/h2>
-&lt;p>If you can crack the ciphertext below you&amp;rsquo;ll have access to my contact information (hint: exclusive, repeating).&lt;/p>
-&lt;pre>&lt;code>300b4c031d13160742020752191c001f001e090114164f684d
-4c521a1a00090d090241035d0703090d17102e150b0a180301
-1a121c0e43021d04644554450d08021e1d3503031710001d4b
-170018664f5a53061608111a0c0025180b1a0e06045d1b0719
-&lt;/code>&lt;/pre></content></item><item><title>DUCTF 2020 :: Return to What's Revenge</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</link><pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</guid><description>Reverse Engineering Running file tells us that the target binary is a 64-bit dynamically linked linux executable.
+&lt;p>If you can solve the reversing challenge linked below you&amp;rsquo;ve earned my contact information.&lt;/p>
+&lt;pre>&lt;code>$ md5sum ./contact
+51f000ce9d06fddc6c08e2af16e24e3b ./contact
+&lt;/code>&lt;/pre>&lt;p>&lt;a href="https://anvbis.github.io/files/contact.zip">contact.zip&lt;/a>&lt;/p></content></item><item><title>DUCTF 2020 :: Return to What's Revenge</title><link>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</link><pubDate>Tue, 17 Aug 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/ductf-2020-return-to-whats-revenge/</guid><description>Reverse Engineering Running file tells us that the target binary is a 64-bit dynamically linked linux executable.
 $ file ./return-to-whats-revenge ./return-to-whats-revenge: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 3.2.0, BuildID[sha1]=85709e2a953fc6f7da43f29d1dee0c5cc682a059, with debug_info, not stripped We can run pwntools' checksec tool to get a better overview of the protections the target binary has in place. Note that the only protection in place is DEP, so we&amp;rsquo;ll likely have to build a ROP chain to bypass it.</description><content>&lt;h2 id="reverse-engineering">Reverse Engineering&lt;/h2>
 &lt;p>Running &lt;code>file&lt;/code> tells us that the target binary is a 64-bit dynamically linked linux executable.&lt;/p>
 &lt;pre>&lt;code>$ file ./return-to-whats-revenge
