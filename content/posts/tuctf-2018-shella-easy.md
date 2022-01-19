@@ -1,7 +1,8 @@
 +++
 tags = ["shellcode","ctf","linux"]
+categories = ["Capture the Flag"]
 date = "2021-08-11"
-description = "A writeup for the binary epxloitation challenge 'shella easy' from TuCTF 2018."
+description = "A writeup for the binary exploitation challenge 'shella easy' from TuCTF 2018."
 featuredpath = "date"
 linktitle = ""
 title = "TuCTF 2018 :: Shella Easy"

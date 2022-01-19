@@ -1,5 +1,6 @@
 +++
 tags = ["rop","ctf","linux"]
+categories = ["Capture the Flag"]
 date = "2021-08-14"
 description = "A writeup for the binary exploitation challenge 'babyboi' from CSAW 2019."
 featuredpath = "date"

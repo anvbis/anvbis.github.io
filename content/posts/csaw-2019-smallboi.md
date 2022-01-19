@@ -1,5 +1,6 @@
 +++
 tags = ["sigrop","stack pivot","ctf","linux"]
+categories = ["Capture the Flag"]
 date = "2021-08-15"
 description = "A writeup for the binary exploitation challenge 'smallboi' from CSAW 2019."
 featuredpath = "date"
