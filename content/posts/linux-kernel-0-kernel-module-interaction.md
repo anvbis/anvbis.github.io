@@ -108,7 +108,7 @@ void cleanup_module(void)
 ```
 
 ## Compiling Kernel Modules
-```makefile
+{{< code language="makefile" title="Makefile" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
 # add more modules here!
 obj-m = challenge.o
 KERNEL_VERSION=5.4
@@ -127,10 +127,10 @@ clean:
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ...
-```
+{{< /code >}}
 
 ## Inserting Kernel Modules
-```c
+{{< code language="c" title="challenge.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -185,7 +185,7 @@ void cleanup_module(void)
     }
     printk(KERN_ALERT "module '/proc/challenge' removed");
 }
-```
+{{< /code >}}
 
 ```
 / # insmod ./challenge.ko
@@ -194,7 +194,7 @@ void cleanup_module(void)
 ```
 
 ## Reading / Writing to Modules
-```c
+{{< code language="c" title="challenge.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -251,10 +251,10 @@ void cleanup_module(void)
     }
     printk(KERN_ALERT "module '/proc/challenge' removed");
 }
-```
+{{< /code >}}
 
-```c
-```
+{{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< /code >}}
 
 ```
 / # insmod ./challenge.ko
@@ -266,7 +266,7 @@ void cleanup_module(void)
 ```
 
 ## Interacting with IOCTL
-```c
+{{< code language="c" title="challenge.c" id="5" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -328,10 +328,10 @@ void cleanup_module(void)
     }
     printk(KERN_ALERT "module '/proc/challenge' removed");
 }
-```
+{{< /code >}}
 
-```c
-```
+{{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< /code >}}
 
 ```
 / # insmod ./challenge.ko
