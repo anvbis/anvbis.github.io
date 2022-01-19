@@ -70,7 +70,7 @@ proc_remove(proc_entry);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="compiling-kernel-modules">Compiling Kernel Modules&lt;/h2>
 &lt;div class="collapsable-code">
-&lt;input id="1" type="checkbox" checked />
+&lt;input id="1" type="checkbox" />
 &lt;label for="1">
 &lt;span class="collapsable-code__language">makefile&lt;/span>
 &lt;span class="collapsable-code__title">Makefile&lt;/span>
@@ -85,16 +85,14 @@ echo $(OBJECTS)
 make -C ../linux-$(KERNEL_VERSION) M=$(PWD) modules
 clean:
 make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
-```
-```
-~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;pre>&lt;code>~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
 ~/ $ mv Makefile ~/pwnkernel/src/challenge.c
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ...
-&lt;/code>&lt;/pre>
-&lt;/div>
-&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
+&lt;/code>&lt;/pre>&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
 &lt;div class="collapsable-code">
 &lt;input id="2" type="checkbox" checked />
 &lt;label for="2">
@@ -217,6 +215,26 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
 &lt;/label>
 &lt;pre class="language-c" >&lt;code>
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;assert.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+int main(int argc, char** argv)
+{
+/* open the device */
+int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
+assert(fd &amp;gt; 0);
+/* perform a read */
+char output[32];
+read(fd, output, sizeof(char) * 32);
+/* perform a write */
+char input[32] = &amp;#34;Hello, World!\n&amp;#34;;
+write(fd, input, sizeof(char) * 32);
+/* close the device */
+close(fd);
+return 0;
+}
 &lt;/code>&lt;/pre>
 &lt;/div>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
@@ -293,6 +311,22 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
 &lt;/label>
 &lt;pre class="language-c" >&lt;code>
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;assert.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+#include &amp;lt;sys/ioctl.h&amp;gt;
+int main(int argc, char** argv)
+{
+/* open the device */
+int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
+assert(fd &amp;gt; 0);
+/* interact with ioctl here */
+/* close the device */
+close(fd);
+return 0;
+}
 &lt;/code>&lt;/pre>
 &lt;/div>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko

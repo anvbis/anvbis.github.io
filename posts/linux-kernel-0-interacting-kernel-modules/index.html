@@ -148,7 +148,7 @@ Resolving deltas: 100% (59/59), done.
 }
 </code></pre></div><h2 id=compiling-kernel-modules>Compiling Kernel Modules<a href=#compiling-kernel-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <div class=collapsable-code>
-<input id=1 type=checkbox checked>
+<input id=1 type=checkbox>
 <label for=1>
 <span class=collapsable-code__language>makefile</span>
 <span class=collapsable-code__title>Makefile</span>
@@ -165,17 +165,14 @@ all:
 
 clean:
     make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
-```
-
-```
-~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
+</code></pre>
+</div>
+<pre><code>~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
 ~/ $ mv Makefile ~/pwnkernel/src/challenge.c
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ...
-</code></pre>
-</div>
-<h2 id=inserting-kernel-modules>Inserting Kernel Modules<a href=#inserting-kernel-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+</code></pre><h2 id=inserting-kernel-modules>Inserting Kernel Modules<a href=#inserting-kernel-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <div class=collapsable-code>
 <input id=2 type=checkbox checked>
 <label for=2>
@@ -318,6 +315,31 @@ void cleanup_module(void)
 <span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
 </label>
 <pre class=language-c><code>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+int main(int argc, char** argv)
+{
+    /* open the device */
+    int fd = open(&#34;/proc/challenge&#34;, O_RDWR);
+    assert(fd &gt; 0);
+
+    /* perform a read */
+    char output[32];
+    read(fd, output, sizeof(char) * 32);
+
+    /* perform a write */
+    char input[32] = &#34;Hello, World!\n&#34;;
+    write(fd, input, sizeof(char) * 32); 
+
+    /* close the device */
+    close(fd);
+
+    return 0;
+}
 </code></pre>
 </div>
 <pre><code>/ # insmod ./challenge.ko
@@ -406,6 +428,26 @@ void cleanup_module(void)
 <span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
 </label>
 <pre class=language-c><code>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;sys/ioctl.h&gt;
+
+int main(int argc, char** argv)
+{
+    /* open the device */
+    int fd = open(&#34;/proc/challenge&#34;, O_RDWR);
+    assert(fd &gt; 0);
+
+    /* interact with ioctl here */
+
+    /* close the device */
+    close(fd);
+
+    return 0;
+}
 </code></pre>
 </div>
 <pre><code>/ # insmod ./challenge.ko
