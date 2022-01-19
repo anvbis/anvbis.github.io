@@ -69,174 +69,233 @@ proc_remove(proc_entry);
 }
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="compiling-kernel-modules">Compiling Kernel Modules&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-makefile" data-lang="makefile">&lt;span style="color:#75715e"># add more modules here!
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>obj-m &lt;span style="color:#f92672">=&lt;/span> challenge.o
-KERNEL_VERSION&lt;span style="color:#f92672">=&lt;/span>5.4
-&lt;span style="color:#a6e22e">all&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
-echo &lt;span style="color:#66d9ef">$(&lt;/span>OBJECTS&lt;span style="color:#66d9ef">)&lt;/span>
-make -C ../linux-&lt;span style="color:#66d9ef">$(&lt;/span>KERNEL_VERSION&lt;span style="color:#66d9ef">)&lt;/span> M&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">$(&lt;/span>PWD&lt;span style="color:#66d9ef">)&lt;/span> modules
-&lt;span style="color:#a6e22e">clean&lt;/span>&lt;span style="color:#f92672">:&lt;/span>
-make -C ../linux-&lt;span style="color:#66d9ef">$(&lt;/span>KERNEL_VERSION&lt;span style="color:#66d9ef">)&lt;/span> M&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">$(&lt;/span>PWD&lt;span style="color:#66d9ef">)&lt;/span> clean
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
+&lt;div class="collapsable-code">
+&lt;input id="1" type="checkbox" checked />
+&lt;label for="1">
+&lt;span class="collapsable-code__language">makefile&lt;/span>
+&lt;span class="collapsable-code__title">Makefile&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-makefile" >&lt;code>
+# add more modules here!
+obj-m = challenge.o
+KERNEL_VERSION=5.4
+all:
+echo $(OBJECTS)
+make -C ../linux-$(KERNEL_VERSION) M=$(PWD) modules
+clean:
+make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
+```
+```
+~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
 ~/ $ mv Makefile ~/pwnkernel/src/challenge.c
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ...
-&lt;/code>&lt;/pre>&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/kernel.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/module.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/proc_fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/uaccess.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>
-MODULE_LICENSE(&lt;span style="color:#e6db74">&amp;#34;GPL&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">struct&lt;/span> proc_dir_entry &lt;span style="color:#f92672">*&lt;/span>proc_entry;
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
+&lt;div class="collapsable-code">
+&lt;input id="2" type="checkbox" checked />
+&lt;label for="2">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">challenge.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/proc_fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
+struct proc_dir_entry *proc_entry;
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">-&lt;/span>EINVAL;
+return -EINVAL;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">-&lt;/span>EINVAL;
+return -EINVAL;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_open&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_open(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_release&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_release(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> file_operations fops &lt;span style="color:#f92672">=&lt;/span> {
-.read &lt;span style="color:#f92672">=&lt;/span> challenge_read,
-.write &lt;span style="color:#f92672">=&lt;/span> challenge_write,
-.open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
-.release &lt;span style="color:#f92672">=&lt;/span> challenge_release
+static struct file_operations fops = {
+.read = challenge_read,
+.write = challenge_write,
+.open = challenge_open,
+.release = challenge_release
 };
-&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+int init_module(void)
 {
-proc_entry &lt;span style="color:#f92672">=&lt;/span> proc_create(&lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">0666&lt;/span>, NULL, &lt;span style="color:#f92672">&amp;amp;&lt;/span>fops);
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">cleanup_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+void cleanup_module(void)
 {
-&lt;span style="color:#66d9ef">if&lt;/span> (proc_entry) {
+if (proc_entry) {
 proc_remove(proc_entry);
 }
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;&lt;/span>);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>/ # insmod ./challenge.ko
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # dmesg
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="reading--writing-to-modules">Reading / Writing to Modules&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/kernel.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/module.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/proc_fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/uaccess.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>
-MODULE_LICENSE(&lt;span style="color:#e6db74">&amp;#34;GPL&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">struct&lt;/span> proc_dir_entry &lt;span style="color:#f92672">*&lt;/span>proc_entry;
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+&lt;div class="collapsable-code">
+&lt;input id="3" type="checkbox" checked />
+&lt;label for="3">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">challenge.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/proc_fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
+struct proc_dir_entry *proc_entry;
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#75715e">// read logic
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+// read logic
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#75715e">// write logic
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+// write logic
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_open&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_open(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_release&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_release(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> file_operations fops &lt;span style="color:#f92672">=&lt;/span> {
-.read &lt;span style="color:#f92672">=&lt;/span> challenge_read,
-.write &lt;span style="color:#f92672">=&lt;/span> challenge_write,
-.open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
-.release &lt;span style="color:#f92672">=&lt;/span> challenge_release
+static struct file_operations fops = {
+.read = challenge_read,
+.write = challenge_write,
+.open = challenge_open,
+.release = challenge_release
 };
-&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+int init_module(void)
 {
-proc_entry &lt;span style="color:#f92672">=&lt;/span> proc_create(&lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">0666&lt;/span>, NULL, &lt;span style="color:#f92672">&amp;amp;&lt;/span>fops);
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">cleanup_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+void cleanup_module(void)
 {
-&lt;span style="color:#66d9ef">if&lt;/span> (proc_entry) {
+if (proc_entry) {
 proc_remove(proc_entry);
 }
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;&lt;/span>);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>/ # insmod ./challenge.ko
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;div class="collapsable-code">
+&lt;input id="4" type="checkbox" checked />
+&lt;label for="4">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">exploit.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
 ...
 / # dmesg
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="interacting-with-ioctl">Interacting with IOCTL&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/kernel.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/module.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/proc_fs.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;linux/uaccess.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>
-MODULE_LICENSE(&lt;span style="color:#e6db74">&amp;#34;GPL&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">struct&lt;/span> proc_dir_entry &lt;span style="color:#f92672">*&lt;/span>proc_entry;
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+&lt;div class="collapsable-code">
+&lt;input id="5" type="checkbox" checked />
+&lt;label for="5">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">challenge.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/proc_fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
+struct proc_dir_entry *proc_entry;
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">-&lt;/span>EINVAL;
+return -EINVAL;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">-&lt;/span>EINVAL;
+return -EINVAL;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_open&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_open(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">challenge_release&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> inode &lt;span style="color:#f92672">*&lt;/span>inode, &lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp)
+static int challenge_release(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">challenge_ioctl&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>filp, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> ioctl_num, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> ioctl_param)
+static long challenge_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
-&lt;span style="color:#75715e">// ioctl logic
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+// ioctl logic
+return 0;
 }
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> file_operations fops &lt;span style="color:#f92672">=&lt;/span> {
-.read &lt;span style="color:#f92672">=&lt;/span> challenge_read,
-.write &lt;span style="color:#f92672">=&lt;/span> challenge_write,
-.unlocked_ioctl &lt;span style="color:#f92672">=&lt;/span> challenge_ioctl,
-.open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
-.release &lt;span style="color:#f92672">=&lt;/span> challenge_release
+static struct file_operations fops = {
+.read = challenge_read,
+.write = challenge_write,
+.unlocked_ioctl = challenge_ioctl,
+.open = challenge_open,
+.release = challenge_release
 };
-&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+int init_module(void)
 {
-proc_entry &lt;span style="color:#f92672">=&lt;/span> proc_create(&lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">0666&lt;/span>, NULL, &lt;span style="color:#f92672">&amp;amp;&lt;/span>fops);
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;);
+return 0;
 }
-&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">cleanup_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+void cleanup_module(void)
 {
-&lt;span style="color:#66d9ef">if&lt;/span> (proc_entry) {
+if (proc_entry) {
 proc_remove(proc_entry);
 }
-printk(KERN_ALERT &lt;span style="color:#e6db74">&amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;&lt;/span>);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;/code>&lt;/pre>&lt;/div>&lt;pre>&lt;code>/ # insmod ./challenge.ko
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;div class="collapsable-code">
+&lt;input id="6" type="checkbox" checked />
+&lt;label for="6">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">exploit.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
 ...
 / # dmesg
