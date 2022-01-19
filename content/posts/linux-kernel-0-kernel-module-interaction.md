@@ -108,7 +108,7 @@ void cleanup_module(void)
 ```
 
 ## Compiling Kernel Modules
-{{< code language="makefile" title="Makefile" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< code language="makefile" title="Makefile" id="1" expand="Show" collapse="Hide" isCollapsed="false" >}}
 # add more modules here!
 obj-m = challenge.o
 KERNEL_VERSION=5.4
@@ -119,7 +119,7 @@ all:
 
 clean:
     make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
-```
+{{< /code >}}
 
 ```
 ~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
@@ -127,7 +127,7 @@ clean:
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ...
-{{< /code >}}
+```
 
 ## Inserting Kernel Modules
 {{< code language="c" title="challenge.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
@@ -254,6 +254,31 @@ void cleanup_module(void)
 {{< /code >}}
 
 {{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int main(int argc, char** argv)
+{
+    /* open the device */
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* perform a read */
+    char output[32];
+    read(fd, output, sizeof(char) * 32);
+
+    /* perform a write */
+    char input[32] = "Hello, World!\n";
+    write(fd, input, sizeof(char) * 32); 
+
+    /* close the device */
+    close(fd);
+
+    return 0;
+}
 {{< /code >}}
 
 ```
@@ -331,6 +356,26 @@ void cleanup_module(void)
 {{< /code >}}
 
 {{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
+int main(int argc, char** argv)
+{
+    /* open the device */
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* interact with ioctl here */
+
+    /* close the device */
+    close(fd);
+
+    return 0;
+}
 {{< /code >}}
 
 ```
