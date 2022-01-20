@@ -1,4 +1,8 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel Exploitation :: 0x00 :: Interacting with Kernel Modules</title><link>https://anvbis.github.io/posts/linux-kernel-0-interacting-kernel-modules/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-interacting-kernel-modules/</guid><description>Environment Setup ~/ $ git clone https://github.com/pwncollege/pwnkernel.git Cloning into 'pwnkernel'... remote: Enumerating objects: 115, done. remote: Counting objects: 100% (115/115), done. remote: Compressing objects: 100% (73/73), done. remote: Total 115 (delta 59), reused 92 (delta 37), pack-reused 0 Receiving objects: 100% (115/115), 18.84 KiB | 9.42 MiB/s, done. Resolving deltas: 100% (59/59), done. ~/ $ cd pwnkernel/ ~/pwnkernel $ ./build.sh ... Kernel Module Overview static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off) { // read from kernel space } static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off) { // write to kernel space } static int challenge_open(struct inode *inode, struct file *fp) { // when kernel module is opened } static int challenge_release(struct inode *inode, struct file *fp) { // when kernel module is released } static struct file_operations fops = { .</description><content>&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Environment Setup The easiest Kernel exploitation environment to set up (in my opinion) is pwnkernel developed by the guys over at &amp;lsquo;pwn.college&amp;rsquo;. It will allow us to easily compile different Kernels, in addition to streamlining building custom Kernel modules.
+It also allows us to easily emulate the various Kernel versions we want to test via the QEMU virtual machine.
+~/ $ git clone https://github.com/pwncollege/pwnkernel.git Cloning into 'pwnkernel'... remote: Enumerating objects: 115, done.</description><content>&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>The easiest Kernel exploitation environment to set up (in my opinion) is &lt;code>pwnkernel&lt;/code> developed by the guys over at &amp;lsquo;pwn.college&amp;rsquo;. It will allow us to easily compile different Kernels, in addition to streamlining building custom Kernel modules.&lt;/p>
+&lt;p>It also allows us to easily emulate the various Kernel versions we want to test via the QEMU virtual machine.&lt;/p>
 &lt;pre>&lt;code>~/ $ git clone https://github.com/pwncollege/pwnkernel.git
 Cloning into 'pwnkernel'...
 remote: Enumerating objects: 115, done.
@@ -7,10 +11,46 @@ remote: Compressing objects: 100% (73/73), done.
 remote: Total 115 (delta 59), reused 92 (delta 37), pack-reused 0
 Receiving objects: 100% (115/115), 18.84 KiB | 9.42 MiB/s, done.
 Resolving deltas: 100% (59/59), done.
-~/ $ cd pwnkernel/
+&lt;/code>&lt;/pre>&lt;p>To download and build the Kernel version specified in &lt;code>pwnkernel/build.sh&lt;/code> (in addition to compiling Kernel modules for testing - but more on that later) all we need to do is run the &lt;code>build.sh&lt;/code> script itself.&lt;/p>
+&lt;pre>&lt;code>~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
-...
-&lt;/code>&lt;/pre>&lt;h2 id="kernel-module-overview">Kernel Module Overview&lt;/h2>
+&lt;/code>&lt;/pre>&lt;p>We can run the kernel emulator by simply executing the &lt;code>launch.sh&lt;/code> script - note that the target Kernel version is specified within this script. After execution we can see that we&amp;rsquo;re dropped into a shell inside the QEMU virtual machine.&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ ./launch.sh
+&lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # id
+uid=0(root) gid=0
+&lt;/code>&lt;/pre>&lt;h2 id="debugging-in-the-kernel">Debugging in the Kernel&lt;/h2>
+&lt;p>First launch the Kernel virtual machine in a separate terminal window.&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ ./launch.sh
+&lt;/code>&lt;/pre>&lt;p>Then we need to open &lt;code>pwnkernel/linux-5.4/vmlinux&lt;/code> in our debugger (in this case, &lt;code>gdb&lt;/code>) - in order to resolve Kernel symbols and view Kernel code.&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ gdb linux-5.4/vmlinux
+GNU gdb (Ubuntu 9.2-0ubuntu1~20.04) 9.2
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later &amp;lt;http://gnu.org/licenses/gpl.html&amp;gt;
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type &amp;quot;show copying&amp;quot; and &amp;quot;show warranty&amp;quot; for details.
+This GDB was configured as &amp;quot;x86_64-linux-gnu&amp;quot;.
+Type &amp;quot;show configuration&amp;quot; for configuration details.
+For bug reporting instructions, please see:
+&amp;lt;http://www.gnu.org/software/gdb/bugs/&amp;gt;.
+Find the GDB manual and other documentation resources online at:
+&amp;lt;http://www.gnu.org/software/gdb/documentation/&amp;gt;.
+For help, type &amp;quot;help&amp;quot;.
+Type &amp;quot;apropos word&amp;quot; to search for commands related to &amp;quot;word&amp;quot;...
+pwndbg: loaded 198 commands. Type pwndbg [filter] for a list.
+pwndbg: created $rebase, $ida gdb functions (can be used with print/break)
+Reading symbols from linux-5.4/vmlinux...
+&lt;/code>&lt;/pre>&lt;p>By default the &lt;code>launch.sh&lt;/code> script will run QEMU with a gdbserver instance on port &lt;code>1234&lt;/code>. We can connect to this via the following command.&lt;/p>
+&lt;pre>&lt;code>pwndbg&amp;gt; target remote :1234
+Remote debugging using :1234
+default_idle () at arch/x86/kernel/process.c:581
+&lt;/code>&lt;/pre>&lt;p>Then, debugging is almost identical to debugging any other binary - we can set breakpoints, step through code, etc. Keep in mind however, when the debugger is paused you will be unable to interact with the Kernel (i.e. enter any commands, etc) until you continue execution.&lt;/p>
+&lt;h2 id="kernel-module-overview">Kernel Module Overview&lt;/h2>
+&lt;p>Below is a code snippet containing the core parts of any Kernel module. These include &lt;code>open&lt;/code>, &lt;code>release&lt;/code>, &lt;code>init_module&lt;/code>, and &lt;code>cleanup_module&lt;/code> functions.&lt;/p>
+&lt;p>The &lt;code>init_module&lt;/code> function is called when the module is inserted into the Kernel - typically creates an entry under &lt;code>/proc&lt;/code> or &lt;code>/dev&lt;/code> that the user can interact with.&lt;/p>
+&lt;p>The &lt;code>cleanup_module&lt;/code> function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the &lt;code>init_module&lt;/code> function logic.&lt;/p>
+&lt;p>The &lt;code>open&lt;/code> function is called when the entry under &lt;code>/proc&lt;/code> or &lt;code>/dev&lt;/code> is opened for read/write operations. While the &lt;code>release&lt;/code> function is called when that entry is closed.&lt;/p>
+&lt;p>The &lt;code>read&lt;/code> and &lt;code>write&lt;/code> functions are also important for interacting with the Kernel module, but more on these later.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
 {
 &lt;span style="color:#75715e">// read from kernel space
@@ -33,18 +73,18 @@ Resolving deltas: 100% (59/59), done.
 .open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
 .release &lt;span style="color:#f92672">=&lt;/span> challenge_release
 };
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">challenge_ioctl&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>filp, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> ioctl_num, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> ioctl_param)
+&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
 {
-&lt;span style="color:#75715e">// when interacted with via ioctl
+&lt;span style="color:#75715e">// when the module is inserted into the kernel
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>}
-&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> file_operations fops &lt;span style="color:#f92672">=&lt;/span> {
-.read &lt;span style="color:#f92672">=&lt;/span> challenge_read,
-.write &lt;span style="color:#f92672">=&lt;/span> challenge_write,
-.unlocked_ioctl &lt;span style="color:#f92672">=&lt;/span> challenge_ioctl,
-.open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
-.release &lt;span style="color:#f92672">=&lt;/span> challenge_release
-};
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">cleanup_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
+{
+&lt;span style="color:#75715e">// when the module is removed from the kernel
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>One way to create a Kernel module entry (so we can interact with it) is to use the &lt;code>register_chrdev&lt;/code> function. This function will assign what is called a &amp;lsquo;major number&amp;rsquo; to the Kernel module and we can create an entry under the &lt;code>/dev&lt;/code> directory for interaction with the module - using the command below.&lt;/p>
+&lt;p>The &lt;code>unregister_chrdev&lt;/code> function is used to remove the module entry.&lt;/p>
+&lt;pre>&lt;code>/ # mknod /dev/&amp;lt;module name&amp;gt; c &amp;lt;major number&amp;gt; 0
+&lt;/code>&lt;/pre>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
 {
 major_number &lt;span style="color:#f92672">=&lt;/span> register_chrdev(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>, &lt;span style="color:#f92672">&amp;amp;&lt;/span>fops);
 &lt;span style="color:#66d9ef">if&lt;/span> (major_number &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>)
@@ -56,7 +96,9 @@ printk(KERN_INFO &lt;span style="color:#e6db74">&amp;#34;create device with: &am
 {
 unregister_chrdev(major_number, &lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">struct&lt;/span> proc_dir_entry &lt;span style="color:#f92672">*&lt;/span>proc_entry;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>An even simpler way (in my opinion) to initialise a Kernel module entry is via the &lt;code>proc_create&lt;/code> function. It creates an entry under the &lt;code>/proc&lt;/code> directory for interaction with the module. It does not require any further user input to set up.&lt;/p>
+&lt;p>The &lt;code>proc_remove&lt;/code> function is used to remove the module entry.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">struct&lt;/span> proc_dir_entry &lt;span style="color:#f92672">*&lt;/span>proc_entry;
 &lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">init_module&lt;/span>(&lt;span style="color:#66d9ef">void&lt;/span>)
 {
 proc_entry &lt;span style="color:#f92672">=&lt;/span> proc_create(&lt;span style="color:#e6db74">&amp;#34;challenge&amp;#34;&lt;/span>, &lt;span style="color:#ae81ff">0666&lt;/span>, NULL, &lt;span style="color:#f92672">&amp;amp;&lt;/span>fops);
@@ -68,6 +110,18 @@ proc_entry &lt;span style="color:#f92672">=&lt;/span> proc_create(&lt;span style
 proc_remove(proc_entry);
 }
 }
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>While the &lt;code>read&lt;/code> and &lt;code>write&lt;/code> functions are often great for interacting with the module, there is another utility that we can use if we need even greater control over our input. This is &lt;code>ioctl&lt;/code>, which takes two main arguments an &lt;code>ioctl_num&lt;/code> and an &lt;code>ioctl_param&lt;/code>, where the &lt;code>ioctl_num&lt;/code> can be used (for example) to specify various tasks, and the &lt;code>ioctl_param&lt;/code> can be used to provide a pointer to an array or struct.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">challenge_ioctl&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>filp, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">int&lt;/span> ioctl_num, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> ioctl_param)
+{
+&lt;span style="color:#75715e">// when interacted with via ioctl
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">struct&lt;/span> file_operations fops &lt;span style="color:#f92672">=&lt;/span> {
+.read &lt;span style="color:#f92672">=&lt;/span> challenge_read,
+.write &lt;span style="color:#f92672">=&lt;/span> challenge_write,
+.unlocked_ioctl &lt;span style="color:#f92672">=&lt;/span> challenge_ioctl,
+.open &lt;span style="color:#f92672">=&lt;/span> challenge_open,
+.release &lt;span style="color:#f92672">=&lt;/span> challenge_release
+};
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="compiling-kernel-modules">Compiling Kernel Modules&lt;/h2>
 &lt;div class="collapsable-code">
 &lt;input id="1" type="checkbox" />
