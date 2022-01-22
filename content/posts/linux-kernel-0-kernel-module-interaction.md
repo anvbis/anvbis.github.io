@@ -343,13 +343,19 @@ struct proc_dir_entry *proc_entry;
 
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-    // read logic
+    char data[18] = "Here's some data!"
+    copy_to_user(buf, data);
+
     return 0;
 }
 
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-    // write logic
+    char data[16];
+    copy_from_user(data, buf, 16);
+
+    printk(KERN_ALERT "Message: '%s'.\n", data);
+
     return 0;
 }
 
@@ -447,6 +453,9 @@ Below is a pre-written kernel module that you can use for this exercise.
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 
+#define HELLO   0x01
+#define GOODBYE 0x02
+
 MODULE_LICENSE("GPL");
 
 struct proc_dir_entry *proc_entry;
@@ -463,19 +472,25 @@ static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, lof
 
 static int challenge_open(struct inode *inode, struct file *fp)
 {
-    printk(KERN_ALERT "device '/proc/challenge' opened");
+    printk(KERN_ALERT "device '/proc/challenge' opened\n");
     return 0;
 }
 
 static int challenge_release(struct inode *inode, struct file *fp)
 {
-    printk(KERN_ALERT "device '/proc/challenge' closed");
+    printk(KERN_ALERT "device '/proc/challenge' closed\n");
     return 0;
 }
 
 static long challenge_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
-    // ioctl logic
+    if (ioctl_num == HELLO) {
+        printk(KERN_ALERT "Hello, %s!\n", (char *)ioctl_param);
+    }
+    else if (ioctl_num == GOODBYE) {
+        printk(KERN_ALERT "Goodbye, %s!\n", (char *)ioctl_param);
+    }
+
     return 0;
 }
 
@@ -490,7 +505,7 @@ static struct file_operations fops = {
 int init_module(void)
 {
     proc_entry = proc_create("challenge", 0666, NULL, &fops);
-    printk(KERN_ALERT "module '/proc/challenge' created");
+    printk(KERN_ALERT "module '/proc/challenge' created\n");
 
     return 0;
 }
@@ -500,7 +515,7 @@ void cleanup_module(void)
     if (proc_entry) {
         proc_remove(proc_entry);
     }
-    printk(KERN_ALERT "module '/proc/challenge' removed");
+    printk(KERN_ALERT "module '/proc/challenge' removed\n");
 }
 {{< /code >}}
 
@@ -514,6 +529,9 @@ void cleanup_module(void)
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#define HELLO   0x01
+#define GOODBYE 0x02
+
 int main(int argc, char** argv)
 {
     /* open the device */
@@ -521,6 +539,9 @@ int main(int argc, char** argv)
     assert(fd > 0);
 
     /* interact with ioctl here */
+    char name[7] = "Anvbis";
+    ioctl(fd, HELLO, name); 
+    ioctl(fd, GOODBYE, name);
 
     /* close the device */
     close(fd);
