@@ -230,7 +230,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="reading--writing-to-modules">Reading / Writing to Modules&lt;/h2>
 &lt;p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.&lt;/p>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler is called. When you write to the open file descriptor the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler is called.&lt;/p>
 &lt;p>Below is a pre-written kernel module that can be used for this exercise.&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="3" type="checkbox" checked />
@@ -288,7 +288,13 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:&lt;/p>
+&lt;ul>
+&lt;li>It will first open the module entry with read/write access.&lt;/li>
+&lt;li>Then it&amp;rsquo;ll perform a read, reading from the kernel module (calling its &lt;code>read&lt;/code> handler function).&lt;/li>
+&lt;li>Then it&amp;rsquo;ll perform a write, writing to the kernel module (calling its &amp;lsquo;write` handler function).&lt;/li>
+&lt;li>Finally it&amp;rsquo;ll close the file descriptor.&lt;/li>
+&lt;/ul>
 &lt;div class="collapsable-code">
 &lt;input id="4" type="checkbox" checked />
 &lt;label for="4">
@@ -310,6 +316,7 @@ assert(fd &amp;gt; 0);
 /* perform a read */
 char output[32];
 read(fd, output, sizeof(char) * 32);
+puts(output);
 /* perform a write */
 char input[32] = &amp;#34;Hello, World!\n&amp;#34;;
 write(fd, input, sizeof(char) * 32);
@@ -319,7 +326,7 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Let&amp;rsquo;s start by inserting the kernel module and running our demonstration code. Running &lt;code>dmesg&lt;/code> afterwards we can see the result of our read / write actions.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
 ...

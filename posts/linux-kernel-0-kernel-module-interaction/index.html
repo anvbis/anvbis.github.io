@@ -321,7 +321,7 @@ void cleanup_module(void)
 ...
 </code></pre><h2 id=reading--writing-to-modules>Reading / Writing to Modules<a href=#reading--writing-to-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.</p>
-<p>&mldr;</p>
+<p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&rsquo;s <code>read</code> handler is called. When you write to the open file descriptor the kernel module&rsquo;s <code>write</code> handler is called.</p>
 <p>Below is a pre-written kernel module that can be used for this exercise.</p>
 <div class=collapsable-code>
 <input id=3 type=checkbox checked>
@@ -389,7 +389,13 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
-<p>&mldr;</p>
+<p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:</p>
+<ul>
+<li>It will first open the module entry with read/write access.</li>
+<li>Then it&rsquo;ll perform a read, reading from the kernel module (calling its <code>read</code> handler function).</li>
+<li>Then it&rsquo;ll perform a write, writing to the kernel module (calling its &lsquo;write` handler function).</li>
+<li>Finally it&rsquo;ll close the file descriptor.</li>
+</ul>
 <div class=collapsable-code>
 <input id=4 type=checkbox checked>
 <label for=4>
@@ -413,6 +419,7 @@ int main(int argc, char** argv)
     /* perform a read */
     char output[32];
     read(fd, output, sizeof(char) * 32);
+    puts(output);
 
     /* perform a write */
     char input[32] = &#34;Hello, World!\n&#34;;
@@ -425,7 +432,7 @@ int main(int argc, char** argv)
 }
 </code></pre>
 </div>
-<p>&mldr;</p>
+<p>Let&rsquo;s start by inserting the kernel module and running our demonstration code. Running <code>dmesg</code> afterwards we can see the result of our read / write actions.</p>
 <pre><code>/ # insmod ./challenge.ko
 / # ./exploit
 ...
