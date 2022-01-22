@@ -2,7 +2,7 @@
 tags = ["linux","kernel"]
 categories = ["Linux Kernel Exploitation"]
 date = "2022-01-19"
-description = "An introduction to Kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques."
+description = "An introduction to kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
 title = "Linux Kernel :: 0x00 :: Kernel Module Interaction"
@@ -12,9 +12,12 @@ type = "post"
 
 ## Environment Setup
 
-The easiest Kernel exploitation environment to set up (in my opinion) is `pwnkernel` developed by the guys over at 'pwn.college'. It will allow us to easily compile different Kernels, in addition to streamlining building custom Kernel modules.
+The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are extremely central to Linux kernel research:
+ - Downloading and building specific Kernel versions.
+ - Streamlining the kernel module build process.
+ - Emulate specific kernel versions under the QEMU virtual machine.
 
-It also allows us to easily emulate the various Kernel versions we want to test via the QEMU virtual machine.
+Installation is pretty simple, just clone the repository and run the build script.
 
 ```
 ~/ $ git clone https://github.com/pwncollege/pwnkernel.git
@@ -27,14 +30,14 @@ Receiving objects: 100% (115/115), 18.84 KiB | 9.42 MiB/s, done.
 Resolving deltas: 100% (59/59), done.
 ```
 
-To download and build the Kernel version specified in `pwnkernel/build.sh` (in addition to compiling Kernel modules for testing - but more on that later) all we need to do is run the `build.sh` script itself.
+You can optionally specify the kernel version you want to download and compile within the `build.sh` script. By default it should be Linux version 5.4.0.
 
 ```
 ~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 ```
 
-We can run the kernel emulator by simply executing the `launch.sh` script - note that the target Kernel version is specified within this script. After execution we can see that we're dropped into a shell inside the QEMU virtual machine.
+Running the virtual machine is equally simple, it's as easy as executing the `launch.sh` script - note that the target kernel version is specified within this script. After executing we can see we're dropped into a shell inside the virtual machine.
 
 ```
 ~/pwnkernel $ ./launch.sh
@@ -47,13 +50,13 @@ uid=0(root) gid=0
 
 ## Debugging in the Kernel
 
-First launch the Kernel virtual machine in a separate terminal window.
+First launch the kernel virtual machine in a separate terminal window.
 
 ```
 ~/pwnkernel $ ./launch.sh
 ```
 
-Then we need to open `pwnkernel/linux-5.4/vmlinux` in our debugger (in this case, `gdb`) - in order to resolve Kernel symbols and view Kernel code.
+Then we need to open `pwnkernel/linux-5.4/vmlinux` with GDB and we'll be able to debug the kernel as we see fit. This will allow us to resolve kernel symbols and view kernel memory.
 
 ```
 ~/pwnkernel $ gdb linux-5.4/vmlinux
@@ -77,7 +80,7 @@ pwndbg: created $rebase, $ida gdb functions (can be used with print/break)
 Reading symbols from linux-5.4/vmlinux...
 ```
 
-By default the `launch.sh` script will run QEMU with a gdbserver instance on port `1234`. We can connect to this via the following command.
+By default the `launch.sh` script will run QEMU with a gdbserver instance on port `1234`. We can connect to this with the following command.
 
 ```
 pwndbg> target remote :1234
@@ -87,17 +90,16 @@ default_idle () at arch/x86/kernel/process.c:581
 
 Then, debugging is almost identical to debugging any other binary - we can set breakpoints, step through code, etc. Keep in mind however, when the debugger is paused you will be unable to interact with the Kernel (i.e. enter any commands, etc) until you continue execution.
 
+
 ## Kernel Module Overview
 
-Below is a code snippet containing the core parts of any Kernel module. These include `open`, `release`, `init_module`, and `cleanup_module` functions. 
+Below is a code snippet containing the core parts of any kernel module. These include `open`, `release`, `init_module`, and `cleanup_module` functions. 
 
-The `init_module` function is called when the module is inserted into the Kernel - typically creates an entry under `/proc` or `/dev` that the user can interact with.
+The `init_module` function is called when the module is inserted into the kernel - typically creates an entry under '/proc/' or '/dev/' that the user can interact with. The `cleanup_module` function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the `init_module` function logic.
 
-The `cleanup_module` function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the `init_module` function logic.
+The `open` function is called when the entry is opened for read/write operations. While the `release` function is called when that entry is closed.
 
-The `open` function is called when the entry under `/proc` or `/dev` is opened for read/write operations. While the `release` function is called when that entry is closed.
-
-The `read` and `write` functions are also important for interacting with the Kernel module, but more on these later.
+The `read` and `write` functions are also important for interacting with the kernel module, but more on these later.
 
 ```c
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
@@ -138,13 +140,7 @@ void cleanup_module(void)
 }
 ```
 
-One way to create a Kernel module entry (so we can interact with it) is to use the `register_chrdev` function. This function will assign what is called a 'major number' to the Kernel module and we can create an entry under the `/dev` directory for interaction with the module - using the command below.
-
-The `unregister_chrdev` function is used to remove the module entry.
-
-```
-/ # mknod /dev/<module name> c <major number> 0
-```
+One way to create a kernel module entry is to utilise the `register_chrdev` function. This will assign what is called a 'major number' to the kernel module, allowing us to create a kernel module entry under the '/dev/' directory. The `unregister_chrdev` function is used to remove the kernel module entry.
 
 ```c
 int init_module(void)
@@ -165,9 +161,13 @@ void cleanup_module(void)
 }
 ```
 
-An even simpler way (in my opinion) to initialise a Kernel module entry is via the `proc_create` function. It creates an entry under the `/proc` directory for interaction with the module. It does not require any further user input to set up.
+We can create an entry in the '/dev/' directory with the command below.
 
-The `proc_remove` function is used to remove the module entry.
+```
+/ # mknod /dev/<module name> c <major number> 0
+```
+
+An even simpler way to initialise a kernel module entry is via the `proc_create` function. It creates a kernel module entry under the '/proc/' directory. It does not require any further user input to set up. The `proc_remove` function is used to remove the kernel module entry.
 
 ```c
 struct proc_dir_entry *proc_entry;
@@ -186,7 +186,9 @@ void cleanup_module(void)
 }
 ```
 
-While the `read` and `write` functions are often great for interacting with the module, there is another utility that we can use if we need even greater control over our input. This is `ioctl`, which takes two main arguments an `ioctl_num` and an `ioctl_param`, where the `ioctl_num` can be used (for example) to specify various tasks, and the `ioctl_param` can be used to provide a pointer to an array or struct.
+While the `read` and `write` functions are often great for kernel module interaction, there is another utility that we can use if we need even greater control over our input, this being `ioctl`.
+
+It takes two main arguments an `ioctl_num` and an `ioctl_param`, where the `ioctl_num` can be used (for example) to specify various tasks, and the `ioctl_param` can be used to provide something like a pointer to an array or struct.
 
 ```c
 static long challenge_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
