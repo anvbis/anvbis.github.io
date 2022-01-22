@@ -219,6 +219,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/5/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;p>Once we&amp;rsquo;ve compiled the above and started the kernel virtual machine, it&amp;rsquo;s as simple as running the &lt;code>insmod&lt;/code> command to insert the kernel module. There are other commands to do this such as &lt;code>modprobe&lt;/code>, which is better at resolving dependencies, but for this kernel module &lt;code>insmod&lt;/code> is sufficient.&lt;/p>
 &lt;p>Running &lt;code>dmesg&lt;/code> we can see that the &lt;code>init_module&lt;/code> function was executed when we inserted the kernel module.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
@@ -291,6 +292,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:&lt;/p>
 &lt;ul>
 &lt;li>It will first open the module entry with read/write access.&lt;/li>
@@ -329,6 +331,7 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;p>Let&amp;rsquo;s start by inserting the kernel module and running our demonstration code. Running &lt;code>dmesg&lt;/code> afterwards we can see the result of our read / write actions.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
@@ -405,6 +408,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="6" type="checkbox" checked />
@@ -437,6 +441,7 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit

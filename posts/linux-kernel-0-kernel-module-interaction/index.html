@@ -310,6 +310,7 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
+<p><a href=/files/linux-kernel/0/5/challenge.c>challenge.c</a></p>
 <p>Once we&rsquo;ve compiled the above and started the kernel virtual machine, it&rsquo;s as simple as running the <code>insmod</code> command to insert the kernel module. There are other commands to do this such as <code>modprobe</code>, which is better at resolving dependencies, but for this kernel module <code>insmod</code> is sufficient.</p>
 <p>Running <code>dmesg</code> we can see that the <code>init_module</code> function was executed when we inserted the kernel module.</p>
 <pre><code>/ # insmod ./challenge.ko
@@ -395,6 +396,7 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
+<p><a href=/files/linux-kernel/0/6/challenge.c>challenge.c</a></p>
 <p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:</p>
 <ul>
 <li>It will first open the module entry with read/write access.</li>
@@ -438,6 +440,7 @@ int main(int argc, char** argv)
 }
 </code></pre>
 </div>
+<p><a href=/files/linux-kernel/0/6/exploit.c>exploit.c</a></p>
 <p>Let&rsquo;s start by inserting the kernel module and running our demonstration code. Running <code>dmesg</code> afterwards we can see the result of our read / write actions.</p>
 <pre><code>/ # insmod ./challenge.ko
 / # ./exploit
@@ -528,6 +531,7 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
+<p><a href=/files/linux-kernel/0/7/challenge.c>challenge.c</a></p>
 <p>&mldr;</p>
 <div class=collapsable-code>
 <input id=6 type=checkbox checked>
@@ -565,6 +569,7 @@ int main(int argc, char** argv)
 }
 </code></pre>
 </div>
+<p><a href=/files/linux-kernel/0/7/exploit.c>exploit.c</a></p>
 <p>&mldr;</p>
 <pre><code>/ # insmod ./challenge.ko
 / # ./exploit
