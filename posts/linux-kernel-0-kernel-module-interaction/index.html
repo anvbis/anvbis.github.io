@@ -64,6 +64,16 @@ Anvbis
 #<a href=https://anvbis.github.io/tags/kernel/>kernel</a>&nbsp;
 </span>
 <div class=post-content><div>
+<h2 id=table-of-contents>Table of Contents<a href=#table-of-contents class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<ol>
+<li><a href=#environment-setup>Environment Setup</a></li>
+<li><a href=#debugging-in-the-kernel>Debugging in the Kernel</a></li>
+<li><a href=#kernel-module-overview>Kernel Module Overview</a></li>
+<li><a href=#compiling-kernel-modules>Compiling Kernel Modules</a></li>
+<li><a href=#inserting-kernel-modules>Inserting Kernel Modules</a></li>
+<li><a href=#reading--writing-to-modules>Reading / Writing to Modules</a></li>
+<li><a href=#interacting-with-ioctl>Interacting with IOCTL</a></li>
+</ol>
 <h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:</p>
 <ul>
@@ -300,7 +310,7 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
-<p>Once we&rsquo;ve compiled the above and started the kernel virtual machine, it&rsquo;s as simple as running the <code>insmod</code> command to inser the kernel module. There are other commands to do this such as <code>modprobe</code>, which is better at resolving dependencies, but for this kernel module <code>insmod</code> is sufficient.</p>
+<p>Once we&rsquo;ve compiled the above and started the kernel virtual machine, it&rsquo;s as simple as running the <code>insmod</code> command to insert the kernel module. There are other commands to do this such as <code>modprobe</code>, which is better at resolving dependencies, but for this kernel module <code>insmod</code> is sufficient.</p>
 <p>Running <code>dmesg</code> we can see that the <code>init_module</code> function was executed when we inserted the kernel module.</p>
 <pre><code>/ # insmod ./challenge.ko
 / # dmesg
