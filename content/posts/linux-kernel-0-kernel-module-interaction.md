@@ -10,6 +10,15 @@ slug = "linux-kernel-0-kernel-module-interaction"
 type = "post"
 +++
 
+## Table of Contents
+ 1. [Environment Setup](#environment-setup)
+ 2. [Debugging in the Kernel](#debugging-in-the-kernel)
+ 3. [Kernel Module Overview](#kernel-module-overview)
+ 4. [Compiling Kernel Modules](#compiling-kernel-modules)
+ 5. [Inserting Kernel Modules](#inserting-kernel-modules)
+ 6. [Reading / Writing to Modules](#reading--writing-to-modules)
+ 7. [Interacting with IOCTL](#interacting-with-ioctl)
+
 ## Environment Setup
 
 The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
@@ -295,7 +304,7 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
-Once we've compiled the above and started the kernel virtual machine, it's as simple as running the `insmod` command to inser the kernel module. There are other commands to do this such as `modprobe`, which is better at resolving dependencies, but for this kernel module `insmod` is sufficient.
+Once we've compiled the above and started the kernel virtual machine, it's as simple as running the `insmod` command to insert the kernel module. There are other commands to do this such as `modprobe`, which is better at resolving dependencies, but for this kernel module `insmod` is sufficient.
 
 Running `dmesg` we can see that the `init_module` function was executed when we inserted the kernel module.
 
