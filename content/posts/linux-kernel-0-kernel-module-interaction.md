@@ -12,7 +12,7 @@ type = "post"
 
 ## Environment Setup
 
-The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are extremely central to Linux kernel research:
+The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
  - Downloading and building specific Kernel versions.
  - Streamlining the kernel module build process.
  - Emulate specific kernel versions under the QEMU virtual machine.
@@ -37,7 +37,7 @@ You can optionally specify the kernel version you want to download and compile w
 ~/pwnkernel $ ./build.sh
 ```
 
-Running the virtual machine is equally simple, it's as easy as executing the `launch.sh` script - note that the target kernel version is specified within this script. After executing we can see we're dropped into a shell inside the virtual machine.
+Running the virtual machine is equally simple, it's as easy as executing the `launch.sh` script. Note that the target kernel version is specified within this script. After executing we can see we're dropped into a shell inside the virtual machine.
 
 ```
 ~/pwnkernel $ ./launch.sh
@@ -93,9 +93,11 @@ Then, debugging is almost identical to debugging any other binary - we can set b
 
 ## Kernel Module Overview
 
-Below is a code snippet containing the core parts of any kernel module. These include `open`, `release`, `init_module`, and `cleanup_module` functions. 
+Below is a code snippet containing the core parts of a kernel module. These include `open`, `release`, `init_module`, and `cleanup_module` functions. 
 
-The `init_module` function is called when the module is inserted into the kernel - typically creates an entry under '/proc/' or '/dev/' that the user can interact with. The `cleanup_module` function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the `init_module` function logic.
+The `init_module` function is called when the module is inserted into the kernel. It will typically create an entry under '/proc/' or '/dev/' that the user can interact with.
+
+The `cleanup_module` function is called when the kernel module is removed from the kernel. It will typically remove whatever entry it created within the `init_module` function logic.
 
 The `open` function is called when the entry is opened for read/write operations. While the `release` function is called when that entry is closed.
 
@@ -206,6 +208,10 @@ static struct file_operations fops = {
 ```
 
 ## Compiling Kernel Modules
+As mentioned before, pwnkernel makes the process of compiling new kernel modules very simple. Just move your kernel module source code to the 'src/' directory within pwnkernel. Make sure you update the makefile within the same 'src/' directory, as this is what is used to compile your kernel module.
+
+See the below makefile for reference.
+
 {{< code language="makefile" title="Makefile" id="1" expand="Show" collapse="Hide" isCollapsed="false" >}}
 # add more modules here!
 obj-m = challenge.o
@@ -219,6 +225,8 @@ clean:
     make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
 {{< /code >}}
 
+After updating the makefile, building a new kernel module is as simple as running the below commands.
+
 ```
 ~/ $ mv challenge.c ~/pwnkernel/src/challenge.c
 ~/ $ mv Makefile ~/pwnkernel/src/challenge.c
@@ -228,6 +236,8 @@ clean:
 ```
 
 ## Inserting Kernel Modules
+Before you can interact with your freshly compiled kernel module, it needs to be inserted into the kernel itself. Below is a pre-written kernel module that will be used for the purposes of this exercise. Compile it and run the launch script to start.
+
 {{< code language="c" title="challenge.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -285,13 +295,32 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+Once we've compiled the above and started the kernel virtual machine, it's as simple as running the `insmod` command to inser the kernel module. There are other commands to do this such as `modprobe`, which is better at resolving dependencies, but for this kernel module `insmod` is sufficient.
+
+Running `dmesg` we can see that the `init_module` function was executed when we inserted the kernel module.
+
 ```
 / # insmod ./challenge.ko
 / # dmesg
 ...
 ```
 
+To remove the kernel module, we can use the `rmmod` command. Running dmesg after, we can see that the `cleanup_module` function was called.
+
+```
+/ # rmmod challenge.ko
+/ # dmesg
+...
+```
+
+
 ## Reading / Writing to Modules
+The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.
+
+...
+
+Below is a pre-written kernel module that can be used for this exercise.
+
 {{< code language="c" title="challenge.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -351,6 +380,8 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+...
+
 {{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
 #include <stdlib.h>
@@ -379,6 +410,8 @@ int main(int argc, char** argv)
 }
 {{< /code >}}
 
+...
+
 ```
 / # insmod ./challenge.ko
 / # ./exploit
@@ -389,6 +422,10 @@ int main(int argc, char** argv)
 ```
 
 ## Interacting with IOCTL
+...
+
+Below is a pre-written kernel module that you can use for this exercise.
+
 {{< code language="c" title="challenge.c" id="5" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -453,6 +490,8 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+...
+
 {{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
 #include <stdlib.h>
@@ -475,6 +514,8 @@ int main(int argc, char** argv)
     return 0;
 }
 {{< /code >}}
+
+...
 
 ```
 / # insmod ./challenge.ko
