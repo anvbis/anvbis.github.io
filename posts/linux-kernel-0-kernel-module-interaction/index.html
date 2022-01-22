@@ -3,7 +3,7 @@
 <title>Linux Kernel :: 0x00 :: Kernel Module Interaction :: Anvbis</title>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content="An introduction to Kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques.">
+<meta name=description content="An introduction to kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
 <link rel=canonical href=https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/>
@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux Kernel :: 0x00 :: Kernel Module Interaction">
-<meta property="og:description" content="An introduction to Kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques.">
+<meta property="og:description" content="An introduction to kernel module interaciton. Part one on a series of posts on Linux kernel exploitation techniques.">
 <meta property="og:url" content="https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/">
 <meta property="og:site_name" content="Anvbis">
 <meta property="og:image" content="https://anvbis.github.io/img/favicon/red.png">
@@ -65,8 +65,13 @@ Anvbis
 </span>
 <div class=post-content><div>
 <h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>The easiest Kernel exploitation environment to set up (in my opinion) is <code>pwnkernel</code> developed by the guys over at &lsquo;pwn.college&rsquo;. It will allow us to easily compile different Kernels, in addition to streamlining building custom Kernel modules.</p>
-<p>It also allows us to easily emulate the various Kernel versions we want to test via the QEMU virtual machine.</p>
+<p>The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are extremely central to Linux kernel research:</p>
+<ul>
+<li>Downloading and building specific Kernel versions.</li>
+<li>Streamlining the kernel module build process.</li>
+<li>Emulate specific kernel versions under the QEMU virtual machine.</li>
+</ul>
+<p>Installation is pretty simple, just clone the repository and run the build script.</p>
 <pre><code>~/ $ git clone https://github.com/pwncollege/pwnkernel.git
 Cloning into 'pwnkernel'...
 remote: Enumerating objects: 115, done.
@@ -75,17 +80,17 @@ remote: Compressing objects: 100% (73/73), done.
 remote: Total 115 (delta 59), reused 92 (delta 37), pack-reused 0
 Receiving objects: 100% (115/115), 18.84 KiB | 9.42 MiB/s, done.
 Resolving deltas: 100% (59/59), done.
-</code></pre><p>To download and build the Kernel version specified in <code>pwnkernel/build.sh</code> (in addition to compiling Kernel modules for testing - but more on that later) all we need to do is run the <code>build.sh</code> script itself.</p>
+</code></pre><p>You can optionally specify the kernel version you want to download and compile within the <code>build.sh</code> script. By default it should be Linux version 5.4.0.</p>
 <pre><code>~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
-</code></pre><p>We can run the kernel emulator by simply executing the <code>launch.sh</code> script - note that the target Kernel version is specified within this script. After execution we can see that we&rsquo;re dropped into a shell inside the QEMU virtual machine.</p>
+</code></pre><p>Running the virtual machine is equally simple, it&rsquo;s as easy as executing the <code>launch.sh</code> script - note that the target kernel version is specified within this script. After executing we can see we&rsquo;re dropped into a shell inside the virtual machine.</p>
 <pre><code>~/pwnkernel $ ./launch.sh
 </code></pre><pre><code>/ # id
 uid=0(root) gid=0 
 </code></pre><h2 id=debugging-in-the-kernel>Debugging in the Kernel<a href=#debugging-in-the-kernel class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>First launch the Kernel virtual machine in a separate terminal window.</p>
+<p>First launch the kernel virtual machine in a separate terminal window.</p>
 <pre><code>~/pwnkernel $ ./launch.sh
-</code></pre><p>Then we need to open <code>pwnkernel/linux-5.4/vmlinux</code> in our debugger (in this case, <code>gdb</code>) - in order to resolve Kernel symbols and view Kernel code.</p>
+</code></pre><p>Then we need to open <code>pwnkernel/linux-5.4/vmlinux</code> with GDB and we&rsquo;ll be able to debug the kernel as we see fit. This will allow us to resolve kernel symbols and view kernel memory.</p>
 <pre><code>~/pwnkernel $ gdb linux-5.4/vmlinux
 GNU gdb (Ubuntu 9.2-0ubuntu1~20.04) 9.2
 Copyright (C) 2020 Free Software Foundation, Inc.
@@ -105,17 +110,16 @@ Type &quot;apropos word&quot; to search for commands related to &quot;word&quot;
 pwndbg: loaded 198 commands. Type pwndbg [filter] for a list.
 pwndbg: created $rebase, $ida gdb functions (can be used with print/break)
 Reading symbols from linux-5.4/vmlinux...
-</code></pre><p>By default the <code>launch.sh</code> script will run QEMU with a gdbserver instance on port <code>1234</code>. We can connect to this via the following command.</p>
+</code></pre><p>By default the <code>launch.sh</code> script will run QEMU with a gdbserver instance on port <code>1234</code>. We can connect to this with the following command.</p>
 <pre><code>pwndbg&gt; target remote :1234
 Remote debugging using :1234
 default_idle () at arch/x86/kernel/process.c:581
 </code></pre><p>Then, debugging is almost identical to debugging any other binary - we can set breakpoints, step through code, etc. Keep in mind however, when the debugger is paused you will be unable to interact with the Kernel (i.e. enter any commands, etc) until you continue execution.</p>
 <h2 id=kernel-module-overview>Kernel Module Overview<a href=#kernel-module-overview class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>Below is a code snippet containing the core parts of any Kernel module. These include <code>open</code>, <code>release</code>, <code>init_module</code>, and <code>cleanup_module</code> functions.</p>
-<p>The <code>init_module</code> function is called when the module is inserted into the Kernel - typically creates an entry under <code>/proc</code> or <code>/dev</code> that the user can interact with.</p>
-<p>The <code>cleanup_module</code> function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the <code>init_module</code> function logic.</p>
-<p>The <code>open</code> function is called when the entry under <code>/proc</code> or <code>/dev</code> is opened for read/write operations. While the <code>release</code> function is called when that entry is closed.</p>
-<p>The <code>read</code> and <code>write</code> functions are also important for interacting with the Kernel module, but more on these later.</p>
+<p>Below is a code snippet containing the core parts of any kernel module. These include <code>open</code>, <code>release</code>, <code>init_module</code>, and <code>cleanup_module</code> functions.</p>
+<p>The <code>init_module</code> function is called when the module is inserted into the kernel - typically creates an entry under &lsquo;/proc/&rsquo; or &lsquo;/dev/&rsquo; that the user can interact with. The <code>cleanup_module</code> function is called when the kernel module is removed from the kernel - typically will remove whatever entry it created within the <code>init_module</code> function logic.</p>
+<p>The <code>open</code> function is called when the entry is opened for read/write operations. While the <code>release</code> function is called when that entry is closed.</p>
+<p>The <code>read</code> and <code>write</code> functions are also important for interacting with the kernel module, but more on these later.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>static</span> ssize_t <span style=color:#a6e22e>challenge_read</span>(<span style=color:#66d9ef>struct</span> file <span style=color:#f92672>*</span>fp, <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>buf, size_t len, loff_t <span style=color:#f92672>*</span>off)
 {
     <span style=color:#75715e>// read from kernel space
@@ -152,10 +156,8 @@ default_idle () at arch/x86/kernel/process.c:581
 {
     <span style=color:#75715e>// when the module is removed from the kernel
 </span><span style=color:#75715e></span>}
-</code></pre></div><p>One way to create a Kernel module entry (so we can interact with it) is to use the <code>register_chrdev</code> function. This function will assign what is called a &lsquo;major number&rsquo; to the Kernel module and we can create an entry under the <code>/dev</code> directory for interaction with the module - using the command below.</p>
-<p>The <code>unregister_chrdev</code> function is used to remove the module entry.</p>
-<pre><code>/ # mknod /dev/&lt;module name&gt; c &lt;major number&gt; 0
-</code></pre><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>init_module</span>(<span style=color:#66d9ef>void</span>)
+</code></pre></div><p>One way to create a kernel module entry is to utilise the <code>register_chrdev</code> function. This will assign what is called a &lsquo;major number&rsquo; to the kernel module, allowing us to create a kernel module entry under the &lsquo;/dev/&rsquo; directory. The <code>unregister_chrdev</code> function is used to remove the kernel module entry.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>int</span> <span style=color:#a6e22e>init_module</span>(<span style=color:#66d9ef>void</span>)
 {
     major_number <span style=color:#f92672>=</span> register_chrdev(<span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#34;challenge&#34;</span>, <span style=color:#f92672>&amp;</span>fops);
 
@@ -171,8 +173,9 @@ default_idle () at arch/x86/kernel/process.c:581
 {
     unregister_chrdev(major_number, <span style=color:#e6db74>&#34;challenge&#34;</span>);
 }
-</code></pre></div><p>An even simpler way (in my opinion) to initialise a Kernel module entry is via the <code>proc_create</code> function. It creates an entry under the <code>/proc</code> directory for interaction with the module. It does not require any further user input to set up.</p>
-<p>The <code>proc_remove</code> function is used to remove the module entry.</p>
+</code></pre></div><p>We can create an entry in the &lsquo;/dev/&rsquo; directory with the command below.</p>
+<pre><code>/ # mknod /dev/&lt;module name&gt; c &lt;major number&gt; 0
+</code></pre><p>An even simpler way to initialise a kernel module entry is via the <code>proc_create</code> function. It creates a kernel module entry under the &lsquo;/proc/&rsquo; directory. It does not require any further user input to set up. The <code>proc_remove</code> function is used to remove the kernel module entry.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>struct</span> proc_dir_entry <span style=color:#f92672>*</span>proc_entry;
 
 <span style=color:#66d9ef>int</span> <span style=color:#a6e22e>init_module</span>(<span style=color:#66d9ef>void</span>)
@@ -187,7 +190,8 @@ default_idle () at arch/x86/kernel/process.c:581
         proc_remove(proc_entry);
     }
 }
-</code></pre></div><p>While the <code>read</code> and <code>write</code> functions are often great for interacting with the module, there is another utility that we can use if we need even greater control over our input. This is <code>ioctl</code>, which takes two main arguments an <code>ioctl_num</code> and an <code>ioctl_param</code>, where the <code>ioctl_num</code> can be used (for example) to specify various tasks, and the <code>ioctl_param</code> can be used to provide a pointer to an array or struct.</p>
+</code></pre></div><p>While the <code>read</code> and <code>write</code> functions are often great for kernel module interaction, there is another utility that we can use if we need even greater control over our input, this being <code>ioctl</code>.</p>
+<p>It takes two main arguments an <code>ioctl_num</code> and an <code>ioctl_param</code>, where the <code>ioctl_num</code> can be used (for example) to specify various tasks, and the <code>ioctl_param</code> can be used to provide something like a pointer to an array or struct.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>long</span> <span style=color:#a6e22e>challenge_ioctl</span>(<span style=color:#66d9ef>struct</span> file <span style=color:#f92672>*</span>filp, <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>int</span> ioctl_num, <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> ioctl_param)
 {
     <span style=color:#75715e>// when interacted with via ioctl
