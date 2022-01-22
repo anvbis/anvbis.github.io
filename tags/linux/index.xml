@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Reading / Writing to Modules Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 19 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
 Downloading and building specific Kernel versions. Streamlining the kernel module build process.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
@@ -6,7 +6,7 @@ Downloading and building specific Kernel versions. Streamlining the kernel modul
 &lt;li>&lt;a href="#kernel-module-overview">Kernel Module Overview&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#compiling-kernel-modules">Compiling Kernel Modules&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#inserting-kernel-modules">Inserting Kernel Modules&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#reading--writing-to-modules">Reading / Writing to Modules&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#interacting-with-file-based-operations">Interacting with File-based Operations&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#interacting-with-ioctl">Interacting with IOCTL&lt;/a>&lt;/li>
 &lt;/ol>
 &lt;h2 id="environment-setup">Environment Setup&lt;/h2>
@@ -228,7 +228,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;pre>&lt;code>/ # rmmod challenge.ko
 / # dmesg
 ...
-&lt;/code>&lt;/pre>&lt;h2 id="reading--writing-to-modules">Reading / Writing to Modules&lt;/h2>
+&lt;/code>&lt;/pre>&lt;h2 id="interacting-with-file-based-operations">Interacting with File-based Operations&lt;/h2>
 &lt;p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.&lt;/p>
 &lt;p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler is called. When you write to the open file descriptor the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler is called.&lt;/p>
 &lt;p>Below is a pre-written kernel module that can be used for this exercise.&lt;/p>

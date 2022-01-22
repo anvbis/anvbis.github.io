@@ -71,7 +71,7 @@ Anvbis
 <li><a href=#kernel-module-overview>Kernel Module Overview</a></li>
 <li><a href=#compiling-kernel-modules>Compiling Kernel Modules</a></li>
 <li><a href=#inserting-kernel-modules>Inserting Kernel Modules</a></li>
-<li><a href=#reading--writing-to-modules>Reading / Writing to Modules</a></li>
+<li><a href=#interacting-with-file-based-operations>Interacting with File-based Operations</a></li>
 <li><a href=#interacting-with-ioctl>Interacting with IOCTL</a></li>
 </ol>
 <h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
@@ -319,7 +319,7 @@ void cleanup_module(void)
 <pre><code>/ # rmmod challenge.ko
 / # dmesg
 ...
-</code></pre><h2 id=reading--writing-to-modules>Reading / Writing to Modules<a href=#reading--writing-to-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+</code></pre><h2 id=interacting-with-file-based-operations>Interacting with File-based Operations<a href=#interacting-with-file-based-operations class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.</p>
 <p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&rsquo;s <code>read</code> handler is called. When you write to the open file descriptor the kernel module&rsquo;s <code>write</code> handler is called.</p>
 <p>Below is a pre-written kernel module that can be used for this exercise.</p>
