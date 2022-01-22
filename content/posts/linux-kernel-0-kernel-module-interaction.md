@@ -16,7 +16,7 @@ type = "post"
  3. [Kernel Module Overview](#kernel-module-overview)
  4. [Compiling Kernel Modules](#compiling-kernel-modules)
  5. [Inserting Kernel Modules](#inserting-kernel-modules)
- 6. [Reading / Writing to Modules](#reading--writing-to-modules)
+ 6. [Interacting with File-based Operations](#interacting-with-file-based-operations)
  7. [Interacting with IOCTL](#interacting-with-ioctl)
 
 ## Environment Setup
@@ -323,7 +323,7 @@ To remove the kernel module, we can use the `rmmod` command. Running dmesg after
 ```
 
 
-## Reading / Writing to Modules
+## Interacting with File-based Operations
 The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.
 
 Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module's `read` handler is called. When you write to the open file descriptor the kernel module's `write` handler is called.
