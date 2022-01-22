@@ -249,12 +249,15 @@ MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
 struct proc_dir_entry *proc_entry;
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-// read logic
+char data[18] = &amp;#34;Here&amp;#39;s some data!&amp;#34;
+copy_to_user(buf, data);
 return 0;
 }
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-// write logic
+char data[16];
+copy_from_user(data, buf, 16);
+printk(KERN_ALERT &amp;#34;Message: &amp;#39;%s&amp;#39;.\n&amp;#34;, data);
 return 0;
 }
 static int challenge_open(struct inode *inode, struct file *fp)
@@ -348,6 +351,8 @@ return 0;
 #include &amp;lt;linux/fs.h&amp;gt;
 #include &amp;lt;linux/proc_fs.h&amp;gt;
 #include &amp;lt;linux/uaccess.h&amp;gt;
+#define HELLO 0x01
+#define GOODBYE 0x02
 MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
 struct proc_dir_entry *proc_entry;
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
@@ -360,17 +365,22 @@ return -EINVAL;
 }
 static int challenge_open(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened&amp;#34;);
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; opened\n&amp;#34;);
 return 0;
 }
 static int challenge_release(struct inode *inode, struct file *fp)
 {
-printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed&amp;#34;);
+printk(KERN_ALERT &amp;#34;device &amp;#39;/proc/challenge&amp;#39; closed\n&amp;#34;);
 return 0;
 }
 static long challenge_ioctl(struct file *filp, unsigned int ioctl_num, unsigned long ioctl_param)
 {
-// ioctl logic
+if (ioctl_num == HELLO) {
+printk(KERN_ALERT &amp;#34;Hello, %s!\n&amp;#34;, (char *)ioctl_param);
+}
+else if (ioctl_num == GOODBYE) {
+printk(KERN_ALERT &amp;#34;Goodbye, %s!\n&amp;#34;, (char *)ioctl_param);
+}
 return 0;
 }
 static struct file_operations fops = {
@@ -383,7 +393,7 @@ static struct file_operations fops = {
 int init_module(void)
 {
 proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
-printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; created&amp;#34;);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; created\n&amp;#34;);
 return 0;
 }
 void cleanup_module(void)
@@ -391,7 +401,7 @@ void cleanup_module(void)
 if (proc_entry) {
 proc_remove(proc_entry);
 }
-printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;#34;);
+printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&amp;#34;);
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
@@ -410,12 +420,17 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 #include &amp;lt;unistd.h&amp;gt;
 #include &amp;lt;fcntl.h&amp;gt;
 #include &amp;lt;sys/ioctl.h&amp;gt;
+#define HELLO 0x01
+#define GOODBYE 0x02
 int main(int argc, char** argv)
 {
 /* open the device */
 int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
 assert(fd &amp;gt; 0);
 /* interact with ioctl here */
+char name[7] = &amp;#34;Anvbis&amp;#34;;
+ioctl(fd, HELLO, name);
+ioctl(fd, GOODBYE, name);
 /* close the device */
 close(fd);
 return 0;
