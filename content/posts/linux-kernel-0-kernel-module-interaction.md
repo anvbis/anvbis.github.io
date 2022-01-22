@@ -326,7 +326,7 @@ To remove the kernel module, we can use the `rmmod` command. Running dmesg after
 ## Reading / Writing to Modules
 The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.
 
-...
+Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module's `read` handler is called. When you write to the open file descriptor the kernel module's `write` handler is called.
 
 Below is a pre-written kernel module that can be used for this exercise.
 
@@ -389,7 +389,11 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
-...
+The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:
+ - It will first open the module entry with read/write access.
+ - Then it'll perform a read, reading from the kernel module (calling its `read` handler function).
+ - Then it'll perform a write, writing to the kernel module (calling its 'write` handler function).
+ - Finally it'll close the file descriptor.
 
 {{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
@@ -407,6 +411,7 @@ int main(int argc, char** argv)
     /* perform a read */
     char output[32];
     read(fd, output, sizeof(char) * 32);
+    puts(output);
 
     /* perform a write */
     char input[32] = "Hello, World!\n";
@@ -419,7 +424,7 @@ int main(int argc, char** argv)
 }
 {{< /code >}}
 
-...
+Let's start by inserting the kernel module and running our demonstration code. Running `dmesg` afterwards we can see the result of our read / write actions.
 
 ```
 / # insmod ./challenge.ko
