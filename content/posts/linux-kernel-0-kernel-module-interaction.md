@@ -304,6 +304,8 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+[challenge.c](/files/linux-kernel/0/5/challenge.c)
+
 Once we've compiled the above and started the kernel virtual machine, it's as simple as running the `insmod` command to insert the kernel module. There are other commands to do this such as `modprobe`, which is better at resolving dependencies, but for this kernel module `insmod` is sufficient.
 
 Running `dmesg` we can see that the `init_module` function was executed when we inserted the kernel module.
@@ -395,6 +397,8 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+[challenge.c](/files/linux-kernel/0/6/challenge.c)
+
 The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:
  - It will first open the module entry with read/write access.
  - Then it'll perform a read, reading from the kernel module (calling its `read` handler function).
@@ -429,6 +433,8 @@ int main(int argc, char** argv)
     return 0;
 }
 {{< /code >}}
+
+[exploit.c](/files/linux-kernel/0/6/exploit.c)
 
 Let's start by inserting the kernel module and running our demonstration code. Running `dmesg` afterwards we can see the result of our read / write actions.
 
@@ -519,6 +525,8 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+[challenge.c](/files/linux-kernel/0/7/challenge.c)
+
 ...
 
 {{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
@@ -549,6 +557,8 @@ int main(int argc, char** argv)
     return 0;
 }
 {{< /code >}}
+
+[exploit.c](/files/linux-kernel/0/7/exploit.c)
 
 ...
 
