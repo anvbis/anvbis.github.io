@@ -165,6 +165,7 @@ make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
 &lt;p>Before you can interact with your freshly compiled kernel module, it needs to be inserted into the kernel itself. Below is a pre-written kernel module that will be used for the purposes of this exercise. Compile it and run the launch script to start.&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/5/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="2" type="checkbox" checked />
 &lt;label for="2">
@@ -219,7 +220,6 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/5/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;p>Once we&amp;rsquo;ve compiled the above and started the kernel virtual machine, it&amp;rsquo;s as simple as running the &lt;code>insmod&lt;/code> command to insert the kernel module. There are other commands to do this such as &lt;code>modprobe&lt;/code>, which is better at resolving dependencies, but for this kernel module &lt;code>insmod&lt;/code> is sufficient.&lt;/p>
 &lt;p>Running &lt;code>dmesg&lt;/code> we can see that the &lt;code>init_module&lt;/code> function was executed when we inserted the kernel module.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
@@ -233,6 +233,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.&lt;/p>
 &lt;p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler is called. When you write to the open file descriptor the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler is called.&lt;/p>
 &lt;p>Below is a pre-written kernel module that can be used for this exercise.&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="3" type="checkbox" checked />
 &lt;label for="3">
@@ -292,7 +293,6 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:&lt;/p>
 &lt;ul>
 &lt;li>It will first open the module entry with read/write access.&lt;/li>
@@ -300,6 +300,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;li>Then it&amp;rsquo;ll perform a write, writing to the kernel module (calling its &amp;lsquo;write` handler function).&lt;/li>
 &lt;li>Finally it&amp;rsquo;ll close the file descriptor.&lt;/li>
 &lt;/ul>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="4" type="checkbox" checked />
 &lt;label for="4">
@@ -331,7 +332,6 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;p>Let&amp;rsquo;s start by inserting the kernel module and running our demonstration code. Running &lt;code>dmesg&lt;/code> afterwards we can see the result of our read / write actions.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
@@ -339,8 +339,9 @@ return 0;
 / # dmesg
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="interacting-with-ioctl">Interacting with IOCTL&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;p>Below is a pre-written kernel module that you can use for this exercise.&lt;/p>
+&lt;p>As mentioned before, ioctl can provide us with much greater control over the way we interact with the kernel. Below is an example kernel module that will perform different actions depending on the input provided.&lt;/p>
+&lt;p>Here is a pre-written kernel module that you can use for this exercise.&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="5" type="checkbox" checked />
 &lt;label for="5">
@@ -408,8 +409,14 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/challenge.c">challenge.c&lt;/a>&lt;/p>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Below is an example interaction with the above kernel module, it&amp;rsquo;ll do several things:&lt;/p>
+&lt;ul>
+&lt;li>First it&amp;rsquo;ll open the kernel module entry with read/write access.&lt;/li>
+&lt;li>Next it&amp;rsquo;ll send the &lt;code>ioctl_num&lt;/code> for the &lt;code>HELLO&lt;/code> command, with a string pointer as the &lt;code>ioctl_param&lt;/code>.&lt;/li>
+&lt;li>Next it&amp;rsquo;ll send the &lt;code>ioctl_num&lt;/code> for the &lt;code>HELLO&lt;/code> command, with a string pointer as the &lt;code>ioctl_param&lt;/code>.&lt;/li>
+&lt;li>Finally it&amp;rsquo;ll close the file descriptor.&lt;/li>
+&lt;/ul>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="6" type="checkbox" checked />
 &lt;label for="6">
@@ -441,8 +448,7 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/exploit.c">exploit.c&lt;/a>&lt;/p>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>After running our exploit, and checking &lt;code>dmesg&lt;/code>, we can see that the kernel printed &amp;ldquo;Hello, Anvbis!&amp;rdquo; and &amp;ldquo;Goodbye, Anvbis!&amp;rdquo; as per the instructions we sent it via ioctl.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
 ...

@@ -246,6 +246,7 @@ clean:
 ...
 </code></pre><h2 id=inserting-kernel-modules>Inserting Kernel Modules<a href=#inserting-kernel-modules class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Before you can interact with your freshly compiled kernel module, it needs to be inserted into the kernel itself. Below is a pre-written kernel module that will be used for the purposes of this exercise. Compile it and run the launch script to start.</p>
+<p><a href=/files/linux-kernel/0/5/challenge.c>challenge.c</a></p>
 <div class=collapsable-code>
 <input id=2 type=checkbox checked>
 <label for=2>
@@ -310,7 +311,6 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
-<p><a href=/files/linux-kernel/0/5/challenge.c>challenge.c</a></p>
 <p>Once we&rsquo;ve compiled the above and started the kernel virtual machine, it&rsquo;s as simple as running the <code>insmod</code> command to insert the kernel module. There are other commands to do this such as <code>modprobe</code>, which is better at resolving dependencies, but for this kernel module <code>insmod</code> is sufficient.</p>
 <p>Running <code>dmesg</code> we can see that the <code>init_module</code> function was executed when we inserted the kernel module.</p>
 <pre><code>/ # insmod ./challenge.ko
@@ -324,6 +324,7 @@ void cleanup_module(void)
 <p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.</p>
 <p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&rsquo;s <code>read</code> handler is called. When you write to the open file descriptor the kernel module&rsquo;s <code>write</code> handler is called.</p>
 <p>Below is a pre-written kernel module that can be used for this exercise.</p>
+<p><a href=/files/linux-kernel/0/6/challenge.c>challenge.c</a></p>
 <div class=collapsable-code>
 <input id=3 type=checkbox checked>
 <label for=3>
@@ -396,7 +397,6 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
-<p><a href=/files/linux-kernel/0/6/challenge.c>challenge.c</a></p>
 <p>The below proof-of-concept code will do a few things to demonstrate how read / write actions are handled within the kernel module:</p>
 <ul>
 <li>It will first open the module entry with read/write access.</li>
@@ -404,6 +404,7 @@ void cleanup_module(void)
 <li>Then it&rsquo;ll perform a write, writing to the kernel module (calling its &lsquo;write` handler function).</li>
 <li>Finally it&rsquo;ll close the file descriptor.</li>
 </ul>
+<p><a href=/files/linux-kernel/0/6/exploit.c>exploit.c</a></p>
 <div class=collapsable-code>
 <input id=4 type=checkbox checked>
 <label for=4>
@@ -440,7 +441,6 @@ int main(int argc, char** argv)
 }
 </code></pre>
 </div>
-<p><a href=/files/linux-kernel/0/6/exploit.c>exploit.c</a></p>
 <p>Let&rsquo;s start by inserting the kernel module and running our demonstration code. Running <code>dmesg</code> afterwards we can see the result of our read / write actions.</p>
 <pre><code>/ # insmod ./challenge.ko
 / # ./exploit
@@ -449,8 +449,9 @@ int main(int argc, char** argv)
 / # dmesg
 ...
 </code></pre><h2 id=interacting-with-ioctl>Interacting with IOCTL<a href=#interacting-with-ioctl class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
-<p>Below is a pre-written kernel module that you can use for this exercise.</p>
+<p>As mentioned before, ioctl can provide us with much greater control over the way we interact with the kernel. Below is an example kernel module that will perform different actions depending on the input provided.</p>
+<p>Here is a pre-written kernel module that you can use for this exercise.</p>
+<p><a href=/files/linux-kernel/0/7/challenge.c>challenge.c</a></p>
 <div class=collapsable-code>
 <input id=5 type=checkbox checked>
 <label for=5>
@@ -531,8 +532,14 @@ void cleanup_module(void)
 }
 </code></pre>
 </div>
-<p><a href=/files/linux-kernel/0/7/challenge.c>challenge.c</a></p>
-<p>&mldr;</p>
+<p>Below is an example interaction with the above kernel module, it&rsquo;ll do several things:</p>
+<ul>
+<li>First it&rsquo;ll open the kernel module entry with read/write access.</li>
+<li>Next it&rsquo;ll send the <code>ioctl_num</code> for the <code>HELLO</code> command, with a string pointer as the <code>ioctl_param</code>.</li>
+<li>Next it&rsquo;ll send the <code>ioctl_num</code> for the <code>HELLO</code> command, with a string pointer as the <code>ioctl_param</code>.</li>
+<li>Finally it&rsquo;ll close the file descriptor.</li>
+</ul>
+<p><a href=/files/linux-kernel/0/7/exploit.c>exploit.c</a></p>
 <div class=collapsable-code>
 <input id=6 type=checkbox checked>
 <label for=6>
@@ -569,8 +576,7 @@ int main(int argc, char** argv)
 }
 </code></pre>
 </div>
-<p><a href=/files/linux-kernel/0/7/exploit.c>exploit.c</a></p>
-<p>&mldr;</p>
+<p>After running our exploit, and checking <code>dmesg</code>, we can see that the kernel printed &ldquo;Hello, Anvbis!&rdquo; and &ldquo;Goodbye, Anvbis!&rdquo; as per the instructions we sent it via ioctl.</p>
 <pre><code>/ # insmod ./challenge.ko
 / # ./exploit
 ...
