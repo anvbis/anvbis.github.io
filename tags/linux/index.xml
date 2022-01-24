@@ -302,7 +302,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;/ul>
 &lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
-&lt;input id="4" type="checkbox" checked />
+&lt;input id="4" type="checkbox" />
 &lt;label for="4">
 &lt;span class="collapsable-code__language">c&lt;/span>
 &lt;span class="collapsable-code__title">exploit.c&lt;/span>
@@ -418,7 +418,7 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 &lt;/ul>
 &lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
-&lt;input id="6" type="checkbox" checked />
+&lt;input id="6" type="checkbox" />
 &lt;label for="6">
 &lt;span class="collapsable-code__language">c&lt;/span>
 &lt;span class="collapsable-code__title">exploit.c&lt;/span>
