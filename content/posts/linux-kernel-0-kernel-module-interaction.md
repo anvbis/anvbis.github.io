@@ -407,7 +407,7 @@ The below proof-of-concept code will do a few things to demonstrate how read / w
 
 [exploit.c](/files/linux-kernel/0/6/exploit.c)
 
-{{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -535,7 +535,7 @@ Below is an example interaction with the above kernel module, it'll do several t
 
 [exploit.c](/files/linux-kernel/0/7/exploit.c)
 
-{{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
