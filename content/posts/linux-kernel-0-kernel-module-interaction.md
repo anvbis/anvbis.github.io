@@ -10,6 +10,12 @@ slug = "linux-kernel-0-kernel-module-interaction"
 type = "post"
 +++
 
+<p style="text-align:left;">
+    <span style="float:right;">
+        [Next >](/posts/linux-kernel-1-ret2usr)
+    </span>
+</p>
+
  1. [Linux Kernel :: 0x00 :: Kernel Module Interaction](/posts/linux-kernel-0-kernel-module-interaction)
  2. [Linux Kernel :: 0x01 :: Return to User-space](/posts/linux-kernel-1-ret2usr)
  3. [Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite](/posts/linux-kernel-2-bypassing-smep)
@@ -633,3 +639,10 @@ After running our exploit, and checking `dmesg`, we can see that the kernel prin
 [   12.189747] device '/proc/challenge' closed
 ```
 
+
+## Appendix
+ - [Kernel Modules - The Linux Kernel Documentation](https://linux-kernel-labs.github.io/refs/heads/master/labs/kernel_modules.html)
+ - [The Linux Kernel Programming Guide](https://students.mimuw.edu.pl/SO/Linux-doc/lkmpg.pdf)
+ - [LinuxDrivers - I/O Control in Linux](https://sysplay.github.io/books/LinuxDrivers/book/Content/Part09.html)
+ - [LinuxDrivers - Module Interactions](https://sysplay.github.io/books/LinuxDrivers/book/Content/Part17.html)
+ - [Controlling Linux kernel module through user application](https://developer.ibm.com/articles/control-linux-kernel-extensions/)
