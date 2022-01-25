@@ -10,15 +10,6 @@ slug = "linux-kernel-0-kernel-module-interaction"
 type = "post"
 +++
 
-[Linux Kernel :: 0x01 :: Return to User-space](/posts/linux-kernel-1-ret2usr)\
-Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite\
-Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers\
-Linux Kernel :: 0x04 :: Bypassing KPTI\
-Linux Kernel :: 0x05 :: Stack Pivot in the Kernel\
-Linux Kernel :: 0x06 :: Modprobe Path Overwrite\
-Linux Kernel :: 0x07 :: Bypassing KASLR\
-Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
-
 ## Table of Contents
  1. [Environment Setup](#environment-setup)
  2. [Debugging in the Kernel](#debugging-in-the-kernel)
