@@ -1,6 +1,6 @@
 +++
 tags = ["rop","ctf","linux"]
-categories = ["Capture the Flag"]
+categories = ["Capture the Flag", "Binary Exploitation"]
 date = "2021-08-12"
 description = "A writeup for the binary exploitation challenge 'ret2csu' from the ROP Emporium challenge set."
 featuredpath = "date"

@@ -1,6 +1,6 @@
 +++
 tags = ["stack pivot","rop","ctf","linux"]
-categories = ["Capture the Flag"]
+categories = ["Capture the Flag", "Binary Exploitation"]
 date = "2021-08-13"
 description = "A writeup for the binary exploitation challenge 'b0verflow' from X-CTF 2016."
 featuredpath = "date"

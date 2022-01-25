@@ -1,6 +1,6 @@
 +++
 tags = ["shellcode","ctf","linux"]
-categories = ["Capture the Flag"]
+categories = ["Capture the Flag", "Binary Exploitation"]
 date = "2021-08-11"
 description = "A writeup for the binary exploitation challenge 'shella easy' from TuCTF 2018."
 featuredpath = "date"
