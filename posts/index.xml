@@ -1,13 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anvbis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Linux Kernel :: 0x00 :: Kernel Module Interaction Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers Linux Kernel :: 0x04 :: Bypassing KPTI Linux Kernel :: 0x05 :: Stack Pivot in the Kernel Linux Kernel :: 0x06 :: Modprobe Path Overwrite Linux Kernel :: 0x07 :: Bypassing KASLR Linux Kernel :: 0x08 :: Return to Direct-mapped Memory Table of Contents User-space vs.</description><content>&lt;ol>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction">Linux Kernel :: 0x00 :: Kernel Module Interaction&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-2-bypassing-smep">Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-3-bypassing-smap">Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-4-bypassing-kpti">Linux Kernel :: 0x04 :: Bypassing KPTI&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-5-stack-pivot">Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-6-modprobe-path-overwrite">Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-7-bypassing-kaslr">Linux Kernel :: 0x07 :: Bypassing KASLR&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://anvbis.github.io/posts/linux-kernel-8-ret2dir">Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/a>&lt;/li>
-&lt;/ol>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anvbis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Linux Kernel :: 0x00 :: Kernel Module Interaction
+Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite
+Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers
+Linux Kernel :: 0x04 :: Bypassing KPTI
+Linux Kernel :: 0x05 :: Stack Pivot in the Kernel
+Linux Kernel :: 0x06 :: Modprobe Path Overwrite
+Linux Kernel :: 0x07 :: Bypassing KASLR
+Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
+Table of Contents User-space vs.</description><content>&lt;p>&lt;a href="https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction">Linux Kernel :: 0x00 :: Kernel Module Interaction&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-2-bypassing-smep">Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-3-bypassing-smap">Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-4-bypassing-kpti">Linux Kernel :: 0x04 :: Bypassing KPTI&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-5-stack-pivot">Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-6-modprobe-path-overwrite">Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-7-bypassing-kaslr">Linux Kernel :: 0x07 :: Bypassing KASLR&lt;/a>&lt;br>
+&lt;a href="https://anvbis.github.io/posts/linux-kernel-8-ret2dir">Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/a>&lt;/p>
 &lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#user--space-vs--kernel--space">User-space vs. Kernel-space&lt;/a>&lt;/li>
