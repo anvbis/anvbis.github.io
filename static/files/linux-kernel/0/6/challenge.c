@@ -10,8 +10,8 @@ struct proc_dir_entry *proc_entry;
 
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-    char data[18] = "Here's some data!"
-    copy_to_user(buf, data);
+    char data[18] = "Here's some data!";
+    copy_to_user(buf, data, 18);
 
     return 0;
 }

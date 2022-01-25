@@ -48,6 +48,8 @@ You can optionally specify the kernel version you want to download and compile w
 
 Running the virtual machine is equally simple, it's as easy as executing the `launch.sh` script. Note that the target kernel version is specified within this script. After executing we can see we're dropped into a shell inside the virtual machine.
 
+Note: by defauled pwnkernel launches the emulator without any kernel space protections (e.g. kpti, smap, smep, etc).
+
 ```
 ~/pwnkernel $ ./launch.sh
 ```
@@ -314,14 +316,8 @@ Running `dmesg` we can see that the `init_module` function was executed when we 
 / # insmod ./challenge.ko
 / # dmesg
 ...
-```
-
-To remove the kernel module, we can use the `rmmod` command. Running dmesg after, we can see that the `cleanup_module` function was called.
-
-```
-/ # rmmod challenge.ko
-/ # dmesg
-...
+[    8.437878] challenge: loading out-of-tree module taints kernel.
+[    8.445662] module '/proc/challenge' created
 ```
 
 
@@ -347,8 +343,8 @@ struct proc_dir_entry *proc_entry;
 
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-    char data[18] = "Here's some data!"
-    copy_to_user(buf, data);
+    char data[18] = "Here's some data!";
+    copy_to_user(buf, data, 18);
 
     return 0;
 }
@@ -426,7 +422,7 @@ int main(int argc, char** argv)
     puts(output);
 
     /* perform a write */
-    char input[32] = "Hello, World!\n";
+    char input[32] = "Hello, World!";
     write(fd, input, sizeof(char) * 32); 
 
     /* close the device */
@@ -436,15 +432,25 @@ int main(int argc, char** argv)
 }
 {{< /code >}}
 
+```
+~/ $ gcc exploit.c -o exploit -static 
+```
+
 Let's start by inserting the kernel module and running our demonstration code. Running `dmesg` afterwards we can see the result of our read / write actions.
 
 ```
 / # insmod ./challenge.ko
 / # ./exploit
-...
-
+Here's some data!
+```
+```
 / # dmesg
 ...
+[   12.547802] challenge: loading out-of-tree module taints kernel.
+[   12.557454] module '/proc/challenge' created
+[   18.904788] device '/proc/challenge' opened
+[   18.909735] Message: 'Hello, World!'.
+[   18.911169] device '/proc/challenge' closed
 ```
 
 ## Interacting with IOCTL
@@ -461,8 +467,8 @@ Here is a pre-written kernel module that you can use for this exercise.
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 
-#define HELLO   0x01
-#define GOODBYE 0x02
+#define HELLO   _IO('p', 1)
+#define GOODBYE _IO('p', 2)
 
 MODULE_LICENSE("GPL");
 
@@ -527,6 +533,40 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
+After compiling our kernel module we'll want to check the values of `HELLO` and `GOODBYE`, so we can send them to the module via ioctl. We can see that `HELLO = 0x7001` and `GOODBYE = 0x7002`.
+
+```
+~/pwnkernel $ objdump -d src/challenge.ko -M intel
+...
+000000000000001e <challenge_ioctl>:
+  1e:   41 54                   push   r12
+  20:   48 c7 c7 00 00 00 00    mov    rdi,0x0
+  27:   49 89 d4                mov    r12,rdx
+  2a:   55                      push   rbp
+  2b:   89 f5                   mov    ebp,esi
+  2d:   e8 00 00 00 00          call   32 <challenge_ioctl+0x14>
+  32:   81 fd 01 70 00 00       cmp    ebp,0x7001
+  38:   75 11                   jne    4b <challenge_ioctl+0x2d>
+  3a:   4c 89 e6                mov    rsi,r12
+  3d:   48 c7 c7 00 00 00 00    mov    rdi,0x0
+  44:   e8 00 00 00 00          call   49 <challenge_ioctl+0x2b>
+  49:   eb 27                   jmp    72 <challenge_ioctl+0x54>
+  4b:   81 fd 02 70 00 00       cmp    ebp,0x7002
+  51:   75 11                   jne    64 <challenge_ioctl+0x46>
+  53:   4c 89 e6                mov    rsi,r12
+  56:   48 c7 c7 00 00 00 00    mov    rdi,0x0
+  5d:   e8 00 00 00 00          call   62 <challenge_ioctl+0x44>
+  62:   eb 0e                   jmp    72 <challenge_ioctl+0x54>
+  64:   89 ee                   mov    esi,ebp
+  66:   48 c7 c7 00 00 00 00    mov    rdi,0x0
+  6d:   e8 00 00 00 00          call   72 <challenge_ioctl+0x54>
+  72:   31 c0                   xor    eax,eax
+  74:   5d                      pop    rbp
+  75:   41 5c                   pop    r12
+  77:   c3                      ret
+...
+```
+
 Below is an example interaction with the above kernel module, it'll do several things:
  - First it'll open the kernel module entry with read/write access.
  - Next it'll send the `ioctl_num` for the `HELLO` command, with a string pointer as the `ioctl_param`.
@@ -543,8 +583,8 @@ Below is an example interaction with the above kernel module, it'll do several t
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#define HELLO   0x01
-#define GOODBYE 0x02
+#define HELLO   0x7001
+#define GOODBYE 0x7002
 
 int main(int argc, char** argv)
 {
@@ -564,14 +604,22 @@ int main(int argc, char** argv)
 }
 {{< /code >}}
 
+```
+~/ $ gcc exploit.c -o exploit -static 
+```
+
 After running our exploit, and checking `dmesg`, we can see that the kernel printed "Hello, Anvbis!" and "Goodbye, Anvbis!" as per the instructions we sent it via ioctl.
 
 ```
 / # insmod ./challenge.ko
 / # ./exploit
-...
-
+```
+```
 / # dmesg
 ...
+[   12.187784] device '/proc/challenge' opened
+[   12.188714] Hello, Anvbis!
+[   12.189492] Goodbye, Anvbis!
+[   12.189747] device '/proc/challenge' closed
 ```
 
