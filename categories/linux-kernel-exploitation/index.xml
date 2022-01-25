@@ -7,13 +7,13 @@ Linux Kernel :: 0x06 :: Modprobe Path Overwrite
 Linux Kernel :: 0x07 :: Bypassing KASLR
 Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
 Table of Contents User-space vs.</description><content>&lt;p>&lt;a href="https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction">Linux Kernel :: 0x00 :: Kernel Module Interaction&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-2-bypassing-smep">Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-3-bypassing-smap">Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-4-bypassing-kpti">Linux Kernel :: 0x04 :: Bypassing KPTI&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-5-stack-pivot">Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-6-modprobe-path-overwrite">Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-7-bypassing-kaslr">Linux Kernel :: 0x07 :: Bypassing KASLR&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-8-ret2dir">Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/a>&lt;/p>
+Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;br>
+Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;br>
+Linux Kernel :: 0x04 :: Bypassing KPTI&lt;br>
+Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;br>
+Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;br>
+Linux Kernel :: 0x07 :: Bypassing KASLR&lt;br>
+Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/p>
 &lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#user--space-vs--kernel--space">User-space vs. Kernel-space&lt;/a>&lt;/li>
@@ -28,13 +28,13 @@ Linux Kernel :: 0x06 :: Modprobe Path Overwrite
 Linux Kernel :: 0x07 :: Bypassing KASLR
 Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
 Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel.</description><content>&lt;p>&lt;a href="https://anvbis.github.io/posts/linux-kernel-1-ret2usr">Linux Kernel :: 0x01 :: Return to User-space&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-2-bypassing-smep">Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-3-bypassing-smap">Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-4-bypassing-kpti">Linux Kernel :: 0x04 :: Bypassing KPTI&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-5-stack-pivot">Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-6-modprobe-path-overwrite">Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-7-bypassing-kaslr">Linux Kernel :: 0x07 :: Bypassing KASLR&lt;/a>&lt;br>
-&lt;a href="https://anvbis.github.io/posts/linux-kernel-8-ret2dir">Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/a>&lt;/p>
+Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;br>
+Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;br>
+Linux Kernel :: 0x04 :: Bypassing KPTI&lt;br>
+Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;br>
+Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;br>
+Linux Kernel :: 0x07 :: Bypassing KASLR&lt;br>
+Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/p>
 &lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
