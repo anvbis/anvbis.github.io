@@ -10,6 +10,10 @@ slug = "linux-kernel-0-kernel-module-interaction"
 type = "post"
 +++
 
+| Previous | Next                                                                          |
+| -------- | ----------------------------------------------------------------------------: |
+|          | [Linux Kernel :: 0x01 :: Return to User-space](/posts/linux-kernel-1-ret2usr) |
+
  2. [Linux Kernel :: 0x01 :: Return to User-space](/posts/linux-kernel-1-ret2usr)
  3. [Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite](/posts/linux-kernel-2-bypassing-smep)
  4. [Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers](/posts/linux-kernel-3-bypassing-smap)
