@@ -29,6 +29,7 @@ Resolving deltas: 100% (59/59), done.
 &lt;pre>&lt;code>~/ $ cd pwnkernel/
 ~/pwnkernel $ ./build.sh
 &lt;/code>&lt;/pre>&lt;p>Running the virtual machine is equally simple, it&amp;rsquo;s as easy as executing the &lt;code>launch.sh&lt;/code> script. Note that the target kernel version is specified within this script. After executing we can see we&amp;rsquo;re dropped into a shell inside the virtual machine.&lt;/p>
+&lt;p>Note: by defauled pwnkernel launches the emulator without any kernel space protections (e.g. kpti, smap, smep, etc).&lt;/p>
 &lt;pre>&lt;code>~/pwnkernel $ ./launch.sh
 &lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # id
 uid=0(root) gid=0
@@ -225,10 +226,8 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # dmesg
 ...
-&lt;/code>&lt;/pre>&lt;p>To remove the kernel module, we can use the &lt;code>rmmod&lt;/code> command. Running dmesg after, we can see that the &lt;code>cleanup_module&lt;/code> function was called.&lt;/p>
-&lt;pre>&lt;code>/ # rmmod challenge.ko
-/ # dmesg
-...
+[ 8.437878] challenge: loading out-of-tree module taints kernel.
+[ 8.445662] module '/proc/challenge' created
 &lt;/code>&lt;/pre>&lt;h2 id="interacting-with-file-based-operations">Interacting with File-based Operations&lt;/h2>
 &lt;p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.&lt;/p>
 &lt;p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler is called. When you write to the open file descriptor the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler is called.&lt;/p>
@@ -251,8 +250,8 @@ MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
 struct proc_dir_entry *proc_entry;
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-char data[18] = &amp;#34;Here&amp;#39;s some data!&amp;#34;
-copy_to_user(buf, data);
+char data[18] = &amp;#34;Here&amp;#39;s some data!&amp;#34;;
+copy_to_user(buf, data, 18);
 return 0;
 }
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
@@ -324,7 +323,7 @@ char output[32];
 read(fd, output, sizeof(char) * 32);
 puts(output);
 /* perform a write */
-char input[32] = &amp;#34;Hello, World!\n&amp;#34;;
+char input[32] = &amp;#34;Hello, World!&amp;#34;;
 write(fd, input, sizeof(char) * 32);
 /* close the device */
 close(fd);
@@ -332,12 +331,18 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>Let&amp;rsquo;s start by inserting the kernel module and running our demonstration code. Running &lt;code>dmesg&lt;/code> afterwards we can see the result of our read / write actions.&lt;/p>
+&lt;pre>&lt;code>~/ $ gcc exploit.c -o exploit -static
+&lt;/code>&lt;/pre>&lt;p>Let&amp;rsquo;s start by inserting the kernel module and running our demonstration code. Running &lt;code>dmesg&lt;/code> afterwards we can see the result of our read / write actions.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
+Here's some data!
+&lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # dmesg
 ...
-/ # dmesg
-...
+[ 12.547802] challenge: loading out-of-tree module taints kernel.
+[ 12.557454] module '/proc/challenge' created
+[ 18.904788] device '/proc/challenge' opened
+[ 18.909735] Message: 'Hello, World!'.
+[ 18.911169] device '/proc/challenge' closed
 &lt;/code>&lt;/pre>&lt;h2 id="interacting-with-ioctl">Interacting with IOCTL&lt;/h2>
 &lt;p>As mentioned before, ioctl can provide us with much greater control over the way we interact with the kernel. Below is an example kernel module that will perform different actions depending on the input provided.&lt;/p>
 &lt;p>Here is a pre-written kernel module that you can use for this exercise.&lt;/p>
@@ -355,8 +360,8 @@ return 0;
 #include &amp;lt;linux/fs.h&amp;gt;
 #include &amp;lt;linux/proc_fs.h&amp;gt;
 #include &amp;lt;linux/uaccess.h&amp;gt;
-#define HELLO 0x01
-#define GOODBYE 0x02
+#define HELLO _IO(&amp;#39;p&amp;#39;, 1)
+#define GOODBYE _IO(&amp;#39;p&amp;#39;, 2)
 MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
 struct proc_dir_entry *proc_entry;
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
@@ -409,7 +414,37 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>Below is an example interaction with the above kernel module, it&amp;rsquo;ll do several things:&lt;/p>
+&lt;p>After compiling our kernel module we&amp;rsquo;ll want to check the values of &lt;code>HELLO&lt;/code> and &lt;code>GOODBYE&lt;/code>, so we can send them to the module via ioctl. We can see that &lt;code>HELLO = 0x7001&lt;/code> and &lt;code>GOODBYE = 0x7002&lt;/code>.&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ objdump -d src/challenge.ko -M intel
+...
+000000000000001e &amp;lt;challenge_ioctl&amp;gt;:
+1e: 41 54 push r12
+20: 48 c7 c7 00 00 00 00 mov rdi,0x0
+27: 49 89 d4 mov r12,rdx
+2a: 55 push rbp
+2b: 89 f5 mov ebp,esi
+2d: e8 00 00 00 00 call 32 &amp;lt;challenge_ioctl+0x14&amp;gt;
+32: 81 fd 01 70 00 00 cmp ebp,0x7001
+38: 75 11 jne 4b &amp;lt;challenge_ioctl+0x2d&amp;gt;
+3a: 4c 89 e6 mov rsi,r12
+3d: 48 c7 c7 00 00 00 00 mov rdi,0x0
+44: e8 00 00 00 00 call 49 &amp;lt;challenge_ioctl+0x2b&amp;gt;
+49: eb 27 jmp 72 &amp;lt;challenge_ioctl+0x54&amp;gt;
+4b: 81 fd 02 70 00 00 cmp ebp,0x7002
+51: 75 11 jne 64 &amp;lt;challenge_ioctl+0x46&amp;gt;
+53: 4c 89 e6 mov rsi,r12
+56: 48 c7 c7 00 00 00 00 mov rdi,0x0
+5d: e8 00 00 00 00 call 62 &amp;lt;challenge_ioctl+0x44&amp;gt;
+62: eb 0e jmp 72 &amp;lt;challenge_ioctl+0x54&amp;gt;
+64: 89 ee mov esi,ebp
+66: 48 c7 c7 00 00 00 00 mov rdi,0x0
+6d: e8 00 00 00 00 call 72 &amp;lt;challenge_ioctl+0x54&amp;gt;
+72: 31 c0 xor eax,eax
+74: 5d pop rbp
+75: 41 5c pop r12
+77: c3 ret
+...
+&lt;/code>&lt;/pre>&lt;p>Below is an example interaction with the above kernel module, it&amp;rsquo;ll do several things:&lt;/p>
 &lt;ul>
 &lt;li>First it&amp;rsquo;ll open the kernel module entry with read/write access.&lt;/li>
 &lt;li>Next it&amp;rsquo;ll send the &lt;code>ioctl_num&lt;/code> for the &lt;code>HELLO&lt;/code> command, with a string pointer as the &lt;code>ioctl_param&lt;/code>.&lt;/li>
@@ -431,8 +466,8 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 #include &amp;lt;unistd.h&amp;gt;
 #include &amp;lt;fcntl.h&amp;gt;
 #include &amp;lt;sys/ioctl.h&amp;gt;
-#define HELLO 0x01
-#define GOODBYE 0x02
+#define HELLO 0x7001
+#define GOODBYE 0x7002
 int main(int argc, char** argv)
 {
 /* open the device */
@@ -448,12 +483,16 @@ return 0;
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>After running our exploit, and checking &lt;code>dmesg&lt;/code>, we can see that the kernel printed &amp;ldquo;Hello, Anvbis!&amp;rdquo; and &amp;ldquo;Goodbye, Anvbis!&amp;rdquo; as per the instructions we sent it via ioctl.&lt;/p>
+&lt;pre>&lt;code>~/ $ gcc exploit.c -o exploit -static
+&lt;/code>&lt;/pre>&lt;p>After running our exploit, and checking &lt;code>dmesg&lt;/code>, we can see that the kernel printed &amp;ldquo;Hello, Anvbis!&amp;rdquo; and &amp;ldquo;Goodbye, Anvbis!&amp;rdquo; as per the instructions we sent it via ioctl.&lt;/p>
 &lt;pre>&lt;code>/ # insmod ./challenge.ko
 / # ./exploit
+&lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # dmesg
 ...
-/ # dmesg
-...
+[ 12.187784] device '/proc/challenge' opened
+[ 12.188714] Hello, Anvbis!
+[ 12.189492] Goodbye, Anvbis!
+[ 12.189747] device '/proc/challenge' closed
 &lt;/code>&lt;/pre></content></item><item><title>About</title><link>https://anvbis.github.io/about/</link><pubDate>Mon, 03 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/about/</guid><description>About Me I just love binary exploitation, man.
 I&amp;rsquo;m currently expanding my knowledge about Linux kernel exploitation and browser exploitation (with a strong focus on V8 and JavaScript engines).
 Maybe I&amp;rsquo;ll get decent at it someday.

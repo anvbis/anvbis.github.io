@@ -4,8 +4,8 @@
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 
-#define HELLO   0x01
-#define GOODBYE 0x02
+#define HELLO   _IO('p', 1)
+#define GOODBYE _IO('p', 2)
 
 MODULE_LICENSE("GPL");
 
