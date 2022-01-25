@@ -10,15 +10,7 @@ slug = "linux-kernel-1-ret2usr"
 type = "post"
 +++
 
-<p style="text-align:left;">
-    [<< Kernel Module Interaction](/posts/linux-kernel-2-bypassing-smep)
-    <span style="float:right;">
-        [Bypassing SMEP with CR4 Overwrite >>](/posts/linux-kernel-1-ret2usr)
-    </span>
-</p>
-
  1. [Linux Kernel :: 0x00 :: Kernel Module Interaction](/posts/linux-kernel-0-kernel-module-interaction)
- 2. [Linux Kernel :: 0x01 :: Return to User-space](/posts/linux-kernel-1-ret2usr)
  3. [Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite](/posts/linux-kernel-2-bypassing-smep)
  4. [Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers](/posts/linux-kernel-3-bypassing-smap)
  5. [Linux Kernel :: 0x04 :: Bypassing KPTI](/posts/linux-kernel-4-bypassing-kpti)
