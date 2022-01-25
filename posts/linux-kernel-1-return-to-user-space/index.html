@@ -1,27 +1,28 @@
 <!doctype html><html lang=en>
 <head>
-<title>kernel :: Anvbis</title>
+<title>Linux Kernel :: 0x01 :: Return to User-space :: Anvbis</title>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content>
+<meta name=description content="Our first kernel exploitation technique, returning to user-space. Part two of a series of posts on Linux kernel exploitation techniques.">
 <meta name=keywords content>
 <meta name=robots content="noodp">
-<link rel=canonical href=https://anvbis.github.io/tags/kernel/>
+<link rel=canonical href=https://anvbis.github.io/posts/linux-kernel-1-return-to-user-space/>
 <link rel=stylesheet href=https://anvbis.github.io/assets/style.css>
 <link rel=stylesheet href=https://anvbis.github.io/assets/red.css>
 <link rel=apple-touch-icon href=https://anvbis.github.io/img/apple-touch-icon-192x192.png>
 <link rel="shortcut icon" href=https://anvbis.github.io/img/favicon/red.png>
 <meta name=twitter:card content="summary">
 <meta property="og:locale" content="en">
-<meta property="og:type" content="website">
-<meta property="og:title" content="kernel">
-<meta property="og:description" content>
-<meta property="og:url" content="https://anvbis.github.io/tags/kernel/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Kernel :: 0x01 :: Return to User-space">
+<meta property="og:description" content="Our first kernel exploitation technique, returning to user-space. Part two of a series of posts on Linux kernel exploitation techniques.">
+<meta property="og:url" content="https://anvbis.github.io/posts/linux-kernel-1-return-to-user-space/">
 <meta property="og:site_name" content="Anvbis">
 <meta property="og:image" content="https://anvbis.github.io/img/favicon/red.png">
 <meta property="og:image:width" content="2048">
 <meta property="og:image:height" content="1024">
-<link href=/tags/kernel/index.xml rel=alternate type=application/rss+xml title=Anvbis>
+<meta property="article:section" content="Linux Kernel Exploitation">
+<meta property="article:published_time" content="2022-01-25 00:00:00 +0000 UTC">
 </head>
 <body class=red>
 <div class="container center headings--one-size">
@@ -50,11 +51,9 @@ Anvbis
 </nav>
 </header>
 <div class=content>
-<div class=posts>
-<div class="post on-list">
+<div class=post>
 <h1 class=post-title>
-<a href=https://anvbis.github.io/posts/linux-kernel-1-return-to-user-space/>Linux Kernel :: 0x01 :: Return to User-space</a>
-</h1>
+<a href=https://anvbis.github.io/posts/linux-kernel-1-return-to-user-space/>Linux Kernel :: 0x01 :: Return to User-space</a></h1>
 <div class=post-meta>
 <span class=post-date>
 2022-01-25
@@ -64,37 +63,15 @@ Anvbis
 #<a href=https://anvbis.github.io/tags/linux/>linux</a>&nbsp;
 #<a href=https://anvbis.github.io/tags/kernel/>kernel</a>&nbsp;
 </span>
-<div class=post-content>
-Our first kernel exploitation technique, returning to user-space. Part two of a series of posts on Linux kernel exploitation techniques.
-</div>
-<div>
-<a class="read-more button" href=/posts/linux-kernel-1-return-to-user-space/>Read more →</a>
-</div>
-</div>
-<div class="post on-list">
-<h1 class=post-title>
-<a href=https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/>Linux Kernel :: 0x00 :: Kernel Module Interaction</a>
-</h1>
-<div class=post-meta>
-<span class=post-date>
-2022-01-19
-</span>
-</div>
-<span class=post-tags>
-#<a href=https://anvbis.github.io/tags/linux/>linux</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/kernel/>kernel</a>&nbsp;
-</span>
-<div class=post-content>
-An introduction to kernel module interaction. Part one of a series of posts on Linux kernel exploitation techniques.
-</div>
-<div>
-<a class="read-more button" href=/posts/linux-kernel-0-kernel-module-interaction/>Read more →</a>
-</div>
-</div>
-<div class=pagination>
-<div class=pagination__buttons>
-</div>
-</div>
+<div class=post-content><div>
+<p><a href=/posts/linux-kernel-0-kernel-module-interaction>Linux kernel :: 0x00 :: Kernel Module Interaction</a></p>
+<h2 id=table-of-contents>Table of Contents<a href=#table-of-contents class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<ol>
+<li><a href=#user--space-vs--kernel--space>User-space vs. Kernel-space</a></li>
+</ol>
+<h2 id=user-space-vs-kernel-space>User-space vs. Kernel-space<a href=#user-space-vs-kernel-space class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>&mldr;</p>
+</div></div>
 </div>
 </div>
 <footer class=footer>
