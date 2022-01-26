@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kernel on Anvbis</title><link>https://anvbis.github.io/tags/kernel/</link><description>Recent content in kernel on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/kernel/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Putting it All Together User-space vs. Kernel-space &amp;hellip;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kernel on Anvbis</title><link>https://anvbis.github.io/tags/kernel/</link><description>Recent content in kernel on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/kernel/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Execution Protection Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of Supervisor Mode Execution Protection &amp;hellip;
+Overwriting the Control Register &amp;hellip;
+A Vulnerable Kernel Module &amp;hellip;
+Building a ROP Chain &amp;hellip;
+Environment Setup &amp;hellip;
+Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#overview-of-supervisor-mode-execution-protection">Overview of Supervisor Mode Execution Protection&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#overwriting-the-control-register">Overwriting the Control Register&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-a-rop-chain">Building a ROP Chain&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="overview-of-supervisor-mode-execution-protection">Overview of Supervisor Mode Execution Protection&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="overwriting-the-control-register">Overwriting the Control Register&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-a-rop-chain">Building a ROP Chain&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space &amp;hellip;
 Return to User-space Overview &amp;hellip;
 Saving the Initial State &amp;hellip;
 unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* save user-space */ __asm__( &amp;#34;.intel_syntax noprefix;&amp;#34; &amp;#34;mov save_ss, ss;&amp;#34; &amp;#34;mov save_sp, rsp;&amp;#34; &amp;#34;pushf;&amp;#34; &amp;#34;pop save_rf;&amp;#34; &amp;#34;mov save_cs, cs;&amp;#34; &amp;#34;.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
@@ -11,7 +36,7 @@ unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* sa
 &lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#exploiting-the-kernel-module">Exploiting the Kernel Module&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#putting-it-all-together">Putting it All Together&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
 &lt;/ol>
 &lt;h2 id="user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
@@ -188,7 +213,7 @@ popd
 ~/pwnkernel $ ./launch.sh
 / # id
 uid=0(root) gid=0
-&lt;/code>&lt;/pre>&lt;h2 id="putting-it-all-together">Putting it All Together&lt;/h2>
+&lt;/code>&lt;/pre>&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">shell&lt;/span>()
 {
