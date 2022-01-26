@@ -19,7 +19,7 @@ type = "post"
  6. [A Vulnerable Kernel Module](#a-vulnerable-kernel-module)
  7. [Exploiting the Kernel Module](#exploiting-the-kernel-module)
  8. [Environment Setup](#environment-setup)
- 9. [Putting it All Together](#putting-it-all-together)
+ 9. [Building the Exploit](#building-the-exploit)
 
 
 ## User-space vs. Kernel-space
@@ -244,7 +244,7 @@ uid=0(root) gid=0
 ```
 
 
-## Putting it All Together
+## Building the Exploit
 ...
 
 ```c
