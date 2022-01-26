@@ -72,6 +72,8 @@ Anvbis
 <li><a href=#restoring-the-initial-state>Restoring the Initial State</a></li>
 <li><a href=#escalating-privileges-in-the-kernel>Escalating Privileges in the Kernel</a></li>
 <li><a href=#a-vulnerable-kernel-module>A Vulnerable Kernel Module</a></li>
+<li><a href=#exploiting-the-kernel-module>Exploiting the Kernel Module</a></li>
+<li><a href=#environment-setup>Environment Setup</a></li>
 <li><a href=#putting-it-all-together>Putting it All Together</a></li>
 </ol>
 <h2 id=user-space-vs-kernel-space>User-space vs. Kernel-space<a href=#user-space-vs-kernel-space class=hanchor arialabel=Anchor>&#8983;</a> </h2>
@@ -146,6 +148,78 @@ Anvbis
 }
 </code></pre></div><h2 id=a-vulnerable-kernel-module>A Vulnerable Kernel Module<a href=#a-vulnerable-kernel-module class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>&mldr;</p>
+<p><a href=/files/linux-kernel/1/challenge.c>challenge.c</a></p>
+<div class=collapsable-code>
+<input id=1 type=checkbox checked>
+<label for=1>
+<span class=collapsable-code__language>c</span>
+<span class=collapsable-code__title>challenge.c</span>
+<span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
+</label>
+<pre class=language-c><code>
+#include &lt;linux/kernel.h&gt;
+#include &lt;linux/module.h&gt;
+#include &lt;linux/fs.h&gt;
+#include &lt;linux/proc_fs.h&gt;
+#include &lt;linux/uaccess.h&gt;
+
+MODULE_LICENSE(&#34;GPL&#34;);
+
+struct proc_dir_entry *proc_entry;
+
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+    // vulnerable read function
+}
+
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+    // vulnerable write function
+}
+
+static int challenge_open(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static int challenge_release(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static struct file_operations fops = {
+    .read    = challenge_read,
+    .write   = challenge_write,
+    .open    = challenge_open,
+    .release = challenge_release
+};
+
+int init_module(void)
+{
+    proc_entry = proc_create(&#34;challenge&#34;, 0666, NULL, &amp;fops);
+    return 0;
+}
+
+void cleanup_module(void)
+{
+    if (proc_entry) {
+        proc_remove(proc_entry);
+    }
+}
+</code></pre>
+</div>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>static</span> ssize_t <span style=color:#a6e22e>challenge_read</span>(<span style=color:#66d9ef>struct</span> file <span style=color:#f92672>*</span>fp, <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>buf, size_t len, loff_t <span style=color:#f92672>*</span>off)
+{
+    <span style=color:#75715e>// vulnerable read function
+</span><span style=color:#75715e></span>}
+</code></pre></div><p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>static</span> ssize_t <span style=color:#a6e22e>challenge_write</span>(<span style=color:#66d9ef>struct</span> file <span style=color:#f92672>*</span>fp, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span> <span style=color:#f92672>*</span>buf, size_t len, loff_t <span style=color:#f92672>*</span>off)
+{
+    <span style=color:#75715e>// vulnerable write function
+</span><span style=color:#75715e></span>}
+</code></pre></div><h2 id=exploiting-the-kernel-module>Exploiting the Kernel Module<a href=#exploiting-the-kernel-module class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>&mldr;</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> <span style=color:#a6e22e>leak_canary</span>(<span style=color:#66d9ef>int</span> fd)
 {
     <span style=color:#75715e>// ...
@@ -155,7 +229,42 @@ Anvbis
 {
     <span style=color:#75715e>// ...
 </span><span style=color:#75715e></span>}
-</code></pre></div><h2 id=putting-it-all-together>Putting it All Together<a href=#putting-it-all-together class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+</code></pre></div><h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>&mldr;</p>
+<div class=collapsable-code>
+<input id=2 type=checkbox>
+<label for=2>
+<span class=collapsable-code__language>sh</span>
+<span class=collapsable-code__title>launch.sh</span>
+<span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
+</label>
+<pre class=language-sh><code>
+#!/bin/bash
+
+# build root fs
+pushd fs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 &gt; ../initramfs.cpio.gz
+popd
+
+# launch
+/usr/bin/qemu-system-x86_64 \
+    -kernel linux-5.4/arch/x86/boot/bzImage \
+    -initrd $PWD/initramfs.cpio.gz \
+    -fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
+    -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
+    -nographic \
+    -monitor none \
+    -s \
+    -append &#34;console=ttyS0 nokaslr quiet&#34;
+</code></pre>
+</div>
+<p>&mldr;</p>
+<pre><code>~/pwnkernel $ ./build.sh
+...
+~/pwnkernel $ ./launch.sh
+/ # id
+uid=0(root) gid=0
+</code></pre><h2 id=putting-it-all-together>Putting it All Together<a href=#putting-it-all-together class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>&mldr;</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>shell</span>()
 {
@@ -180,8 +289,8 @@ Anvbis
 </code></pre></div><p>&mldr;</p>
 <p><a href=/files/linux-kernel/1/exploit.c>exploit.c</a></p>
 <div class=collapsable-code>
-<input id=6 type=checkbox checked>
-<label for=6>
+<input id=3 type=checkbox checked>
+<label for=3>
 <span class=collapsable-code__language>c</span>
 <span class=collapsable-code__title>exploit.c</span>
 <span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>

