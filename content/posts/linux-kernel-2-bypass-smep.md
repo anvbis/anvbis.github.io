@@ -5,7 +5,7 @@ date = "2022-01-26"
 description = "Bypassing supervisor mode execution protection (SMEP), a kernel exploit mitigation feature. Part three of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
-title = "Linux Kernel :: 0x02 :: Bypass SMEP with CR4 Overwrite"
+title = "Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite"
 slug = "linux-kernel-2-bypass-smep"
 type = "post"
 +++

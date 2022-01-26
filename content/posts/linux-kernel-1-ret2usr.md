@@ -5,7 +5,7 @@ date = "2022-01-25"
 description = "Our first kernel exploitation technique, returning to user-space. Part two of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
-title = "Linux Kernel :: 0x01 :: Return to User-space"
+title = "Linux Kernel 0x01 :: Return to User-space"
 slug = "linux-kernel-1-ret2usr"
 type = "post"
 +++

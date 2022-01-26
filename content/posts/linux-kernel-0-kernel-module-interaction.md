@@ -5,7 +5,7 @@ date = "2022-01-19"
 description = "An introduction to kernel module interaction. Part one of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
-title = "Linux Kernel :: 0x00 :: Kernel Module Interaction"
+title = "Linux Kernel 0x00 :: Kernel Module Interaction"
 slug = "linux-kernel-0-kernel-module-interaction"
 type = "post"
 +++
