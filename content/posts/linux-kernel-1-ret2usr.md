@@ -231,7 +231,7 @@ popd
     -monitor none \
     -s \
     -append "console=ttyS0 nokaslr quiet"
-{{< /code }}
+{{< /code >}}
 
 ...
 
