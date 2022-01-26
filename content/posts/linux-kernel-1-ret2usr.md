@@ -213,7 +213,7 @@ void overflow_buffer(int fd, unsigned long canary)
 ## Environment Setup
 ...
 
-{{< code language="sh" title="launch.sh" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< code language="sh" title="launch.sh" id="2" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #!/bin/bash
 
 # build root fs
