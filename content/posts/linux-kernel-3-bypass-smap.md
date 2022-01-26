@@ -5,7 +5,7 @@ date = "2022-01-27"
 description = "Bypassing supervisor mode access prevention (SMAP), a kernel exploit mitigation feature. Part four of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
-title = "Linux Kernel :: 0x03 :: Bypass SMAP with SIGSEGV"
+title = "Linux Kernel :: 0x03 :: Bypass SMAP with SIGSEGV Handler"
 slug = "linux-kernel-3-bypass-smep"
 type = "post"
 +++
