@@ -17,7 +17,9 @@ type = "post"
  4. [Restoring the Initial State](#restoring-the-initial-state)
  5. [Escalating Privileges in the Kernel](#escalating-privileges-in-the-kernel)
  6. [A Vulnerable Kernel Module](#a-vulnerable-kernel-module)
- 7. [Putting it All Together](#putting-it-all-together)
+ 7. [Exploiting the Kernel Module](#exploiting-the-kernel-module)
+ 8. [Environment Setup](#environment-setup)
+ 9. [Putting it All Together](#putting-it-all-together)
 
 
 ## User-space vs. Kernel-space
@@ -116,6 +118,81 @@ void escalate_privileges()
 ## A Vulnerable Kernel Module
 ...
 
+[challenge.c](/files/linux-kernel/1/challenge.c)
+
+{{< code language="c" title="challenge.c" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/proc_fs.h>
+#include <linux/uaccess.h>
+
+MODULE_LICENSE("GPL");
+
+struct proc_dir_entry *proc_entry;
+
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+    // vulnerable read function
+}
+
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+    // vulnerable write function
+}
+
+static int challenge_open(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static int challenge_release(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static struct file_operations fops = {
+    .read    = challenge_read,
+    .write   = challenge_write,
+    .open    = challenge_open,
+    .release = challenge_release
+};
+
+int init_module(void)
+{
+    proc_entry = proc_create("challenge", 0666, NULL, &fops);
+    return 0;
+}
+
+void cleanup_module(void)
+{
+    if (proc_entry) {
+        proc_remove(proc_entry);
+    }
+}
+{{< /code >}}
+
+...
+
+```c
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+    // vulnerable read function
+}
+```
+
+...
+
+```c
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+    // vulnerable write function
+}
+```
+
+## Exploiting the Kernel Module
+...
+
 ```c
 unsigned long leak_canary(int fd)
 {
@@ -130,6 +207,40 @@ void overflow_buffer(int fd, unsigned long canary)
 {
     // ...
 }
+```
+
+
+## Environment Setup
+...
+
+{{< code language="sh" title="launch.sh" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#!/bin/bash
+
+# build root fs
+pushd fs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs.cpio.gz
+popd
+
+# launch
+/usr/bin/qemu-system-x86_64 \
+    -kernel linux-5.4/arch/x86/boot/bzImage \
+    -initrd $PWD/initramfs.cpio.gz \
+    -fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
+    -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
+    -nographic \
+    -monitor none \
+    -s \
+    -append "console=ttyS0 nokaslr quiet"
+{{< /code }}
+
+...
+
+```
+~/pwnkernel $ ./build.sh
+...
+~/pwnkernel $ ./launch.sh
+/ # id
+uid=0(root) gid=0
 ```
 
 
@@ -167,7 +278,7 @@ int main(int argc, char **argv)
 
 [exploit.c](/files/linux-kernel/1/exploit.c)
 
-{{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< code language="c" title="exploit.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
