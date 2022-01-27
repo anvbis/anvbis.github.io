@@ -389,3 +389,6 @@ int main(int argc, char **argv)
 / # id
 / # uid=0(root) gid=0
 ```
+
+## Appendix
+ - [Learning Linux Kernel Exploitation - Part 1](https://lkmidas.github.io/posts/20210123-linux-kernel-pwn-part-1/)

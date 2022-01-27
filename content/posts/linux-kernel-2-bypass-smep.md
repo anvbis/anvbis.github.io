@@ -41,3 +41,7 @@ type = "post"
 
 ## Building the Exploit
 ...
+
+
+## Appendix
+ - [Learning Linux Kernel Exploitation - Part 2](https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/)
