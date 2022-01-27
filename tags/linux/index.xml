@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Execution Protection Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of Supervisor Mode Execution Protection &amp;hellip;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Thu, 27 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler</title><link>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</link><pubDate>Thu, 27 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Access Prevention SMAP Bypass Techniques A Vulnerable Kernel Module Building a Complete Escalation Chain Environment Setup Building the Exploit Overview of Supervisor Mode Access Prevention &amp;hellip;
+SMAP Bypass Techniques &amp;hellip;
+A Vulnerable Kernel Module &amp;hellip;
+Building a Complete Escalation Chain &amp;hellip;
+Environment Setup &amp;hellip;
+Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#smap-bypass-techniques">SMAP Bypass Techniques&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="smap-bypass-techniques">SMAP Bypass Techniques&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Execution Protection Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of Supervisor Mode Execution Protection &amp;hellip;
 Overwriting the Control Register &amp;hellip;
 A Vulnerable Kernel Module &amp;hellip;
 Building a ROP Chain &amp;hellip;
