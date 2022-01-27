@@ -3,7 +3,8 @@ SMAP Bypass Techniques &amp;hellip;
 A Vulnerable Kernel Module &amp;hellip;
 Building a Complete Escalation Chain &amp;hellip;
 Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+Building the Exploit &amp;hellip;
+Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#smap-bypass-techniques">SMAP Bypass Techniques&lt;/a>&lt;/li>
@@ -23,12 +24,17 @@ Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-cont
 &lt;h2 id="environment-setup">Environment Setup&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Execution Protection Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of Supervisor Mode Execution Protection &amp;hellip;
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Execution Protection Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of Supervisor Mode Execution Protection &amp;hellip;
 Overwriting the Control Register &amp;hellip;
 A Vulnerable Kernel Module &amp;hellip;
 Building a ROP Chain &amp;hellip;
 Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+Building the Exploit &amp;hellip;
+Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#overview-of-supervisor-mode-execution-protection">Overview of Supervisor Mode Execution Protection&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#overwriting-the-control-register">Overwriting the Control Register&lt;/a>&lt;/li>
@@ -48,7 +54,11 @@ Building the Exploit &amp;hellip;</description><content>&lt;h2 id="table-of-cont
 &lt;h2 id="environment-setup">Environment Setup&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space &amp;hellip;
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space &amp;hellip;
 Return to User-space Overview &amp;hellip;
 Saving the Initial State &amp;hellip;
 unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* save user-space */ __asm__( &amp;#34;.intel_syntax noprefix;&amp;#34; &amp;#34;mov save_ss, ss;&amp;#34; &amp;#34;mov save_sp, rsp;&amp;#34; &amp;#34;pushf;&amp;#34; &amp;#34;pop save_rf;&amp;#34; &amp;#34;mov save_cs, cs;&amp;#34; &amp;#34;.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
@@ -356,7 +366,10 @@ return 0;
 ...
 / # id
 / # uid=0(root) gid=0
-&lt;/code>&lt;/pre></content></item><item><title>Linux Kernel 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
+&lt;/code>&lt;/pre>&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210123-linux-kernel-pwn-part-1/">Learning Linux Kernel Exploitation - Part 1&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x00 :: Kernel Module Interaction</title><link>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</link><pubDate>Wed, 19 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-0-kernel-module-interaction/</guid><description>Table of Contents Environment Setup Debugging in the Kernel Kernel Module Overview Compiling Kernel Modules Inserting Kernel Modules Interacting with File-based Operations Interacting with IOCTL Environment Setup The easiest kernel exploitation environment to set up for beginners (in my opinion) is pwnkernel. It will allow us to do several things that are central to Linux kernel research:
 Downloading and building specific Kernel versions. Streamlining the kernel module build process.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
