@@ -1,4 +1,38 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Fri, 28 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x04 :: Bypass KPTI with Trampoline</title><link>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</link><pubDate>Fri, 28 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</guid><description>Table of Contents Overview of Kernel Page-Table Isolation The KPTI Trampoline A Vulnerable Kernel Module Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Page-Table Isolation &amp;hellip;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Sat, 29 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x05 :: Bypass KASLR with Pointer Leak</title><link>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</link><pubDate>Sat, 29 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</guid><description>Table of Contents Overview of Kernel Address-Space Layout Randomization Bypass Techniques A Vulnerable Kernel Module Leaking a Kernel Pointer Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Address-Space Layout Randomization &amp;hellip;
+Bypass Techniques &amp;hellip;
+A Vulnerable Kernel Module &amp;hellip;
+Leaking a Kernel Pointer &amp;hellip;
+Building an Escalation Chain &amp;hellip;
+Environment Setup &amp;hellip;
+Building the Exploit &amp;hellip;
+Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#overview-of-kernel-address-space-layout-randomization">Overview of Kernel Address-Space Layout Randomization&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#bypass-techniques">Bypass Techniques&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#leaking-a-kernel-pointer">Leaking a Kernel Pointer&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-an-escalation-chain">Building an Escalation Chain&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="overview-of-kernel-address-space-layout-randomization">Overview of Kernel Address-Space Layout Randomization&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="bypass-techniques">Bypass Techniques&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="leaking-a-kernel-pointer">Leaking a Kernel Pointer&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-an-escalation-chain">Building an Escalation Chain&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x04 :: Bypass KPTI with Trampoline</title><link>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</link><pubDate>Fri, 28 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</guid><description>Table of Contents Overview of Kernel Page-Table Isolation The KPTI Trampoline A Vulnerable Kernel Module Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Page-Table Isolation &amp;hellip;
 The KPTI Trampoline &amp;hellip;
 A Vulnerable Kernel Module &amp;hellip;
 Building an Escalation Chain &amp;hellip;
