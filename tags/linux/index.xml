@@ -1,4 +1,64 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Sat, 29 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x05 :: Bypass KASLR with Pointer Leak</title><link>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</link><pubDate>Sat, 29 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</guid><description>Table of Contents Overview of Kernel Address-Space Layout Randomization Bypass Techniques A Vulnerable Kernel Module Leaking a Kernel Pointer Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Address-Space Layout Randomization &amp;hellip;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Anvbis</title><link>https://anvbis.github.io/tags/linux/</link><description>Recent content in linux on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Mon, 31 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x07 :: Modprobe Path Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-7-modprobe-path/</link><pubDate>Mon, 31 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-7-modprobe-path/</guid><description>Table of Contents Modprobe Path Overview Overwriting Modprobe Path A Vulnerable Kernel Module Environment Setup Building the Exploit Escalating Privileges Modprobe Path Overview &amp;hellip;
+Overwriting Modprobe Path &amp;hellip;
+A Vulnerable kernel Module &amp;hellip;
+Environment Setup &amp;hellip;
+Building the Exploit &amp;hellip;
+Escalating Privileges &amp;hellip;
+Appendix Linux Kernel Exploitation Technique - Overwriting modprobe_path</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#modprobe-path-overview">Modprobe Path Overview&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#overwriting-modprobe-path">Overwriting Modprobe Path&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#escalating-privileges">Escalating Privileges&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="modprobe-path-overview">Modprobe Path Overview&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="overwriting-modprobe-path">Overwriting Modprobe Path&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="escalating-privileges">Escalating Privileges&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210223-linux-kernel-pwn-modprobe/">Linux Kernel Exploitation Technique - Overwriting modprobe_path&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x06 :: Stack Pivot in the Kernel</title><link>https://anvbis.github.io/posts/linux-kernel-6-stack-pivot/</link><pubDate>Sun, 30 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-6-stack-pivot/</guid><description>Table of Contents A Vulnerable Kernel Module Encountering Limited Overflow Space Pivoting the Stack Building a Fake Stack Environment Setup Building the Exploit A Vulnerable Kernel Module &amp;hellip;
+Encountering Limited Overflow Space &amp;hellip;
+Pivoting the Stack &amp;hellip;
+Building a Fake Stack &amp;hellip;
+Environment Setup &amp;hellip;
+Building the Exploit &amp;hellip;
+Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#encountering-limited-overflow-space">Encountering Limited Overflow Space&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#pivoting-the-stack">Pivoting the Stack&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-a-fake-stack">Building a Fake Stack&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="encountering-limited-overflow-space">Encountering Limited Overflow Space&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="pivoting-the-stack">Pivoting the Stack&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-a-fake-stack">Building a Fake Stack&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x05 :: Bypass KASLR with Pointer Leak</title><link>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</link><pubDate>Sat, 29 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</guid><description>Table of Contents Overview of Kernel Address-Space Layout Randomization Bypass Techniques A Vulnerable Kernel Module Leaking a Kernel Pointer Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Address-Space Layout Randomization &amp;hellip;
 Bypass Techniques &amp;hellip;
 A Vulnerable Kernel Module &amp;hellip;
 Leaking a Kernel Pointer &amp;hellip;
