@@ -2,7 +2,7 @@
 tags = ["linux","kernel"]
 categories = ["Linux Kernel Exploitation"]
 date = "2022-01-31"
-description = "Performing a modprobe\_path overwrite, no need to return to user-space for privilege escalation. Part eight of a series of posts on Linux kernel exploitation techniques."
+description = "Performing a modprobe_path overwrite, no need to return to user-space for privilege escalation. Part eight of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
 title = "Linux Kernel 0x07 :: Modprobe Path Overwrite"
