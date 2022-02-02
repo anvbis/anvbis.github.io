@@ -2,7 +2,7 @@
 tags = ["linux","kernel"]
 categories = ["Linux Kernel Exploitation"]
 date = "2022-01-28"
-description = "Bypassing kernel page-table isolation (KPTI), a kernel exploit mitigation feature. Part four of a series of posts on Linux kernel exploitation techniques."
+description = "Bypassing kernel page-table isolation (KPTI), a kernel exploit mitigation feature. Part five of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
 title = "Linux Kernel 0x04 :: Bypass KPTI with Trampoline"

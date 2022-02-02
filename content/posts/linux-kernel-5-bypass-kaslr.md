@@ -2,7 +2,7 @@
 tags = ["linux","kernel"]
 categories = ["Linux Kernel Exploitation"]
 date = "2022-01-29"
-description = "Bypassing kernel address-space layout randomization (KASLR), a kernel exploit mitigation feature. Part four of a series of posts on Linux kernel exploitation techniques."
+description = "Bypassing kernel address-space layout randomization (KASLR), a kernel exploit mitigation feature. Part six of a series of posts on Linux kernel exploitation techniques."
 featuredpath = "date"
 linktitle = ""
 title = "Linux Kernel 0x05 :: Bypass KASLR with Pointer Leak"
