@@ -4,7 +4,7 @@
       {{ .Content }}
     </div>
   {{ end }}
-  <img src="cover.png">
+  <img src="cover.png" style="height: 50vh">
   <div class="posts">
     {{ $isntDefault := not (or (eq (trim $.Site.Params.contentTypeName " ") "posts") (eq (trim $.Site.Params.contentTypeName " ") "")) }}
     {{ $contentTypeName := cond $isntDefault (string $.Site.Params.contentTypeName) "posts" }}
