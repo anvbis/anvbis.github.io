@@ -31,7 +31,9 @@ type = "post"
 
 
 ## Saving the Initial State
-...
+Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the `iretq` instruction will use the information saved below in order to return to user-space.
+
+We save the required registers with the assembly code below in order to build our `iret` frame to later exit kernel-space.
 
 ```c
 unsigned long save_ss, save_sp, save_rf, save_cs;
@@ -53,7 +55,11 @@ void save_user_space()
 
 
 ## Restoring the Initial State
-...
+In order to restore the initial state and return to user-space we require two instructions, `swapgs` and `iretq`. In x86\_64 systems the `swapgs` instruction must be made before the `iretq` instruction as it swaps the `gs` register between kernel-mode and user-mode.
+
+We next build our `iret` frame, containing the information required to return to user-space by pushing our saved user-space registers onto the top of the stack. Finally we make our `iretq` instruction to return from kernel-space.
+
+Note: At the very top of our `iret` frame we put the address we want to return to.
 
 ```c
 void load_user_space(unsigned long target)
@@ -81,7 +87,11 @@ void load_user_space(unsigned long target)
 
 
 ## Escalating Privileges in the Kernel
-...
+Escalating privileges inside kernel-space is done via two function calls, `prepare_kernel_cred` and `commit_creds`.
+
+The `prepare_kernel_cred` function call creates a credentials struct for whatever uid is provided to it (this will almost always be '0', for the root user). The `commit_creds` function call takes whatever credentials struct is provided to it and applies those privileges to the current user.
+
+We can find the address (in kernel-space) of both these functions by reading the `/proc/kallsyms` file.
 
 ```
 / # cat /proc/kallsyms | grep prepare_kernel_cred
@@ -90,7 +100,7 @@ ffffffff810881c0 T prepare_kernel_cred
 ffffffff81087e80 T commit_creds
 ```
 
-...
+Using the addresses we found earlier, we can write a bit of assembly that escalates our privileges to that of the root user.
 
 ```asm
 xor    rdi, rdi
@@ -101,7 +111,7 @@ mov    rdi, rax
 call   rbx
 ```
 
-...
+Let's place this inside a function so we can easily use it within our final exploit.
 
 ```c
 void escalate_privileges()
