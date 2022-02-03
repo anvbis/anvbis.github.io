@@ -353,7 +353,7 @@ uid=0(root) gid=0
 
 
 ## Building the Exploit
-...
+First, let's write a simple function that will spawn a shell via the `system` function. We'll need this after we return to user-space after escalating privileges.
 
 ```c
 void shell()
@@ -362,7 +362,12 @@ void shell()
 }
 ```
 
-...
+Now let's write the main logic of our exploit, it will do several things:
+ 1. Save the initial user-space state.
+ 2. Leak the stack canary with the vulnerability in the `read` handler to perform a safe overflow.
+ 3. Overflow the vulnerable buffer and redirect execution to our `escalate_privileges` function.
+ 4. Escalate privileges in kernel-space.
+ 5. Return to user-space and get a root shell.
 
 ```c
 int main(int argc, char **argv)
@@ -382,7 +387,7 @@ int main(int argc, char **argv)
 }
 ```
 
-...
+You can find the complete exploit code below.
 
 [exploit.c](/files/linux-kernel/1/exploit.c)
 
@@ -488,13 +493,13 @@ int main(int argc, char **argv)
 }
 {{< /code >}}
 
-...
+Note that the exploit code will need to be compiled as a static executable in order to run on the kernel emulator.
 
 ```
 ~/ $ gcc exploit.c -o exploit -static
 ```
 
-...
+After inserting the vulnerable kernel module and running our exploit we can see that our exploit leaked the stack canary and gave us a root shell.
 
 ```
 / # insmod challenge.ko
@@ -507,4 +512,6 @@ int main(int argc, char **argv)
 
 ## Appendix
  - [Learning Linux Kernel Exploitation - Part 1](https://lkmidas.github.io/posts/20210123-linux-kernel-pwn-part-1/)
+ - [iSecLab - Kernel-mode exploits primer](http://old.iseclab.org/projects/vifuzz/docs/exploit.pdf)
+
 
