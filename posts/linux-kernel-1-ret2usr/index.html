@@ -77,9 +77,12 @@ Anvbis
 <li><a href=#building-the-exploit>Building the Exploit</a></li>
 </ol>
 <h2 id=user-space-vs-kernel-space>User-space vs. Kernel-space<a href=#user-space-vs-kernel-space class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it&rsquo;s own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.</p>
+<p>Within kernel-space all physical memory is available (to some degree, depending on which kernel exploit mitigations are enabled). What this means, is that we are able to read and potentially execute code loaded in user-space.</p>
+<p>It is important to note, however, that most kernel exploit mitigations attempt to separate user-space from kernel-space, preventing us from executing any code loaded in user-space.</p>
 <h2 id=return-to-user-space-overview>Return to User-space Overview<a href=#return-to-user-space-overview class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>The <code>ret2usr</code> exploit technique is very straight-forward. When all kernel exploit mitigations are disabled, you are able to execute user-space code inside kernel-space. This means we can write code that escalates our privileges and returns from kernel-space in order to execute arbitrary code, with the end goal of spawning a root shell.</p>
+<p>As a result, all we need to do within our exploit is redirect process execution to user-space code that escalates privileges, returns to user-space and pops a shell.</p>
 <h2 id=saving-the-initial-state>Saving the Initial State<a href=#saving-the-initial-state class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the <code>iretq</code> instruction will use the information saved below in order to return to user-space.</p>
 <p>We save the required registers with the assembly code below in order to build our <code>iret</code> frame to later exit kernel-space.</p>
@@ -319,7 +322,7 @@ void cleanup_module(void)
     write(fd, payload, <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span>) <span style=color:#f92672>*</span> <span style=color:#ae81ff>18</span>);
 }
 </code></pre></div><h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>In order for this technique to work, we&rsquo;ll need to disable all kernel exploit mitigation features in our kernel emulator. This means removing all instances of <code>+smep</code>, <code>+smap</code>, <code>kpti=1</code> and <code>kaslr</code>, and adding the <code>nokaslr</code> and <code>nopti</code> flags.</p>
 <div class=collapsable-code>
 <input id=2 type=checkbox>
 <label for=2>
@@ -344,10 +347,10 @@ popd
     -nographic \
     -monitor none \
     -s \
-    -append &#34;console=ttyS0 nokaslr quiet&#34;
+    -append &#34;console=ttyS0 nokaslr nopti quiet&#34;
 </code></pre>
 </div>
-<p>&mldr;</p>
+<p>Running the build and then the run scripts will drop us into a root shell on the kernel emulator.</p>
 <pre><code>~/pwnkernel $ ./build.sh
 ...
 ~/pwnkernel $ ./launch.sh

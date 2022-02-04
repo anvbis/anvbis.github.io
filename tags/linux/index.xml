@@ -182,9 +182,7 @@ Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h
 &lt;h2 id="appendix">Appendix&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space &amp;hellip;
-Return to User-space Overview &amp;hellip;
-Saving the Initial State Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the iretq instruction will use the information saved below in order to return to user-space.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;/ul></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it&amp;rsquo;s own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#return-to-user-space-overview">Return to User-space Overview&lt;/a>&lt;/li>
@@ -197,9 +195,12 @@ Saving the Initial State Before we can begin exploitation we will need to find s
 &lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
 &lt;/ol>
 &lt;h2 id="user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it&amp;rsquo;s own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.&lt;/p>
+&lt;p>Within kernel-space all physical memory is available (to some degree, depending on which kernel exploit mitigations are enabled). What this means, is that we are able to read and potentially execute code loaded in user-space.&lt;/p>
+&lt;p>It is important to note, however, that most kernel exploit mitigations attempt to separate user-space from kernel-space, preventing us from executing any code loaded in user-space.&lt;/p>
 &lt;h2 id="return-to-user-space-overview">Return to User-space Overview&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>The &lt;code>ret2usr&lt;/code> exploit technique is very straight-forward. When all kernel exploit mitigations are disabled, you are able to execute user-space code inside kernel-space. This means we can write code that escalates our privileges and returns from kernel-space in order to execute arbitrary code, with the end goal of spawning a root shell.&lt;/p>
+&lt;p>As a result, all we need to do within our exploit is redirect process execution to user-space code that escalates privileges, returns to user-space and pops a shell.&lt;/p>
 &lt;h2 id="saving-the-initial-state">Saving the Initial State&lt;/h2>
 &lt;p>Before we can begin exploitation we will need to find some way to save the current user-space state. This is done as the &lt;code>iretq&lt;/code> instruction will use the information saved below in order to return to user-space.&lt;/p>
 &lt;p>We save the required registers with the assembly code below in order to build our &lt;code>iret&lt;/code> frame to later exit kernel-space.&lt;/p>
@@ -420,7 +421,7 @@ payload[&lt;span style="color:#ae81ff">17&lt;/span>] &lt;span style="color:#f926
 write(fd, payload, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">18&lt;/span>);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>In order for this technique to work, we&amp;rsquo;ll need to disable all kernel exploit mitigation features in our kernel emulator. This means removing all instances of &lt;code>+smep&lt;/code>, &lt;code>+smap&lt;/code>, &lt;code>kpti=1&lt;/code> and &lt;code>kaslr&lt;/code>, and adding the &lt;code>nokaslr&lt;/code> and &lt;code>nopti&lt;/code> flags.&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="2" type="checkbox" />
 &lt;label for="2">
@@ -443,10 +444,10 @@ popd
 -nographic \
 -monitor none \
 -s \
--append &amp;#34;console=ttyS0 nokaslr quiet&amp;#34;
+-append &amp;#34;console=ttyS0 nokaslr nopti quiet&amp;#34;
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Running the build and then the run scripts will drop us into a root shell on the kernel emulator.&lt;/p>
 &lt;pre>&lt;code>~/pwnkernel $ ./build.sh
 ...
 ~/pwnkernel $ ./launch.sh
