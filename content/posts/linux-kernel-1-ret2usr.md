@@ -23,11 +23,17 @@ type = "post"
 
 
 ## User-space vs. Kernel-space
-...
+Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it's own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.
+
+Within kernel-space all physical memory is available (to some degree, depending on which kernel exploit mitigations are enabled). What this means, is that we are able to read and potentially execute code loaded in user-space.
+
+It is important to note, however, that most kernel exploit mitigations attempt to separate user-space from kernel-space, preventing us from executing any code loaded in user-space.
 
 
 ## Return to User-space Overview
-...
+The `ret2usr` exploit technique is very straight-forward. When all kernel exploit mitigations are disabled, you are able to execute user-space code inside kernel-space. This means we can write code that escalates our privileges and returns from kernel-space in order to execute arbitrary code, with the end goal of spawning a root shell.
+
+As a result, all we need to do within our exploit is redirect process execution to user-space code that escalates privileges, returns to user-space and pops a shell.
 
 
 ## Saving the Initial State
@@ -319,7 +325,7 @@ void overflow_buffer(int fd, unsigned long canary)
 
 
 ## Environment Setup
-...
+In order for this technique to work, we'll need to disable all kernel exploit mitigation features in our kernel emulator. This means removing all instances of `+smep`, `+smap`, `kpti=1` and `kaslr`, and adding the `nokaslr` and `nopti` flags. 
 
 {{< code language="sh" title="launch.sh" id="2" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #!/bin/bash
@@ -338,10 +344,10 @@ popd
     -nographic \
     -monitor none \
     -s \
-    -append "console=ttyS0 nokaslr quiet"
+    -append "console=ttyS0 nokaslr nopti quiet"
 {{< /code >}}
 
-...
+Running the build and then the run scripts will drop us into a root shell on the kernel emulator.
 
 ```
 ~/pwnkernel $ ./build.sh
