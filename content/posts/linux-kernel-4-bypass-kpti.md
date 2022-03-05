@@ -8,6 +8,7 @@ linktitle = ""
 title = "Linux Kernel 0x04 :: Bypass KPTI with Trampoline"
 slug = "linux-kernel-4-bypass-kpti"
 type = "post"
+draft = true
 +++
 
 ## Table of Contents

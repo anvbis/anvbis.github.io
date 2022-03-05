@@ -8,6 +8,7 @@ linktitle = ""
 title = "Linux Kernel 0x07 :: Modprobe Path Overwrite"
 slug = "linux-kernel-7-modprobe-path"
 type = "post"
+draft = true
 +++
 
 ## Table of Contents

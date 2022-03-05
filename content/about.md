@@ -14,7 +14,7 @@ Maybe I'll get decent at it someday.
 
 ## Contact Me
 
-If you can solve the reversing challenge linked below you've earned my contact information.
+If you can solve the reversing challenge linked below you'll find my contact information.
 
 [contact.zip](/files/contact.zip)
 

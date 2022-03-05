@@ -8,6 +8,7 @@ linktitle = ""
 title = "Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite"
 slug = "linux-kernel-2-bypass-smep"
 type = "post"
+draft = true
 +++
 
 ## Table of Contents
@@ -45,8 +46,6 @@ We can use the same vulnerable kernel module as in the return to user-space post
 
 For an overview of the vulnerabilities present in this kernel module, please read the previous post.
 
-[challenge.c](/files/linux-kernel/2/challenge.c)
-
 {{< code language="c" title="challenge.c" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -61,18 +60,13 @@ char out[256];
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    memcpy(out, tmp, len);
-    return copy_to_user(buf, out, len);
+    return raw_copy_to_user(buf, tmp, len);
 }
 
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    if (copy_from_user(out, buf, len))
-        return -EINVAL;
-
-    memcpy(tmp, out, len);
-    return 0;
+    return raw_copy_from_user(tmp, buf, len);
 }
 
 static int challenge_open(struct inode *inode, struct file *fp)

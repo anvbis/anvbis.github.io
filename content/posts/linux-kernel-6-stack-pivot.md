@@ -8,6 +8,7 @@ linktitle = ""
 title = "Linux Kernel 0x06 :: Stack Pivot in the Kernel"
 slug = "linux-kernel-6-stack-pivot"
 type = "post"
+draft = true
 +++
 
 ## Table of Contents

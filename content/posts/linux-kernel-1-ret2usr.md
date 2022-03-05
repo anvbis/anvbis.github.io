@@ -143,7 +143,6 @@ void escalate_privileges()
 ## A Vulnerable Kernel Module
 I've written a vulnerable kernel module to demonstrate the exploit technique detailed above. This kernel module has buffer overflow vulnerabilities in both its `challenge_read` and `challenge_write` functions.
 
-[challenge.c](/files/linux-kernel/1/challenge.c)
 
 {{< code language="c" title="challenge.c" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
@@ -154,23 +153,16 @@ I've written a vulnerable kernel module to demonstrate the exploit technique det
 
 MODULE_LICENSE("GPL");
 
-char out[256];
-
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    memcpy(out, tmp, len);
-    return copy_to_user(buf, out, len);
+    return raw_copy_to_user(buf, tmp, len);
 }
 
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    if (copy_from_user(out, buf, len))
-        return -EINVAL;
-
-    memcpy(tmp, out, len);
-    return 0;
+    return raw_copy_from_user(tmp, buf, len);
 }
 
 static int challenge_open(struct inode *inode, struct file *fp)
@@ -214,8 +206,7 @@ Perhaps we can use this to read stack values (e.g. the value of the stack canary
 static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    memcpy(out, tmp, len);
-    return copy_to_user(buf, out, len);
+    return raw_copy_to_user(buf, tmp, len);
 }
 ```
 
@@ -227,11 +218,7 @@ This gives us a buffer overflow of 128 bytes that we can potentially use to cont
 static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
 {
     char tmp[128];
-    if (copy_from_user(out, buf, len))
-        return -EINVAL;
-
-    memcpy(tmp, out, len);
-    return 0;
+    return raw_copy_from_user(out, buf, len);
 }
 ```
 
@@ -282,20 +269,7 @@ In the output below we can see a couple values that look like a stack canary and
 15: 0xa73ee2eeab3d9f00
 16: 0xa73ee2eeab3d9f00  <-- stack canary
 17: 0xffff888006bcd840  <-- return address
-18: 0xfffffffffffffffb
-19: 0xffffffff8123e347
-20: 0x1
-21: 0x0
-22: 0xffffffff811c89f8
-23: 0xffff888006bf5700
-24: 0xffff888006bf5700
-25: 0x7ffeeb3f3d10
-26: 0x100
-27: 0x0
-28: 0x0
-29: 0xffffffff811c8d1a
-30: 0x0
-31: 0xa73ee2eeab3d9f00
+...
 ```
 
 Now we can write a function that leaks the stack canary, so we can use it later when we want to redirect process execution. From our investigation above we can see that the stack canary is stored at index 16 (just below the `tmp` buffer on the stack).
@@ -394,8 +368,6 @@ int main(int argc, char **argv)
 ```
 
 You can find the complete exploit code below.
-
-[exploit.c](/files/linux-kernel/1/exploit.c)
 
 {{< code language="c" title="exploit.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>

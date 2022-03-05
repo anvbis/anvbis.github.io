@@ -249,8 +249,6 @@ After updating the makefile, building a new kernel module is as simple as runnin
 ## Inserting Kernel Modules
 Before you can interact with your freshly compiled kernel module, it needs to be inserted into the kernel itself. Below is a pre-written kernel module that will be used for the purposes of this exercise. Compile it and run the launch script to start.
 
-[challenge.c](/files/linux-kernel/0/5/challenge.c)
-
 {{< code language="c" title="challenge.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -328,8 +326,6 @@ Interaction is performed first by opening the module entry. When you read from t
 
 Below is a pre-written kernel module that can be used for this exercise.
 
-[challenge.c](/files/linux-kernel/0/6/challenge.c)
-
 {{< code language="c" title="challenge.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -401,8 +397,6 @@ The below proof-of-concept code will do a few things to demonstrate how read / w
  - Then it'll perform a write, writing to the kernel module (calling its 'write` handler function).
  - Finally it'll close the file descriptor.
 
-[exploit.c](/files/linux-kernel/0/6/exploit.c)
-
 {{< code language="c" title="exploit.c" id="4" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #include <stdio.h>
 #include <stdlib.h>
@@ -457,8 +451,6 @@ Here's some data!
 As mentioned before, ioctl can provide us with much greater control over the way we interact with the kernel. Below is an example kernel module that will perform different actions depending on the input provided.
 
 Here is a pre-written kernel module that you can use for this exercise.
-
-[challenge.c](/files/linux-kernel/0/7/challenge.c)
 
 {{< code language="c" title="challenge.c" id="5" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <linux/kernel.h>
@@ -572,8 +564,6 @@ Below is an example interaction with the above kernel module, it'll do several t
  - Next it'll send the `ioctl_num` for the `HELLO` command, with a string pointer as the `ioctl_param`.
  - Next it'll send the `ioctl_num` for the `HELLO` command, with a string pointer as the `ioctl_param`.
  - Finally it'll close the file descriptor.
-
-[exploit.c](/files/linux-kernel/0/7/exploit.c)
 
 {{< code language="c" title="exploit.c" id="6" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #include <stdio.h>
