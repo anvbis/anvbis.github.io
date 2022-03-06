@@ -485,7 +485,7 @@ After inserting the vulnerable kernel module and running our exploit we can see 
 / $ /home/ctf/exploit
 ...
 / # id
-/ # uid=0(root) gid=0
+uid=0(root) gid=0
 ```
 
 ## Appendix
