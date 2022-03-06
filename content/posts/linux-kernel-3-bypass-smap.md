@@ -21,15 +21,79 @@ draft = true
 
 
 ## Overview of Supervisor Mode Access Prevention
-...
+Supervisor mode access prevention (SMAP) is a kernel exploit mitigation feature that marks all user-space pages as non-accessible when the process is in kernel-space (slightly different to SMEP, as SMEP marks user-space pages as non-executable). This means that read/write access to user-space pages is disabled.
+
+When used in combination with SMEP, it will remove read / write / execution permissions from all user-space pages. This can be a powerful way to mitigate kernel exploitation.
+
+As we cannot read or write user-space memory, we'll have to find a different way to control process execution. We can (once again) do this via return-oriented programming (ROP).
 
 
 ## SMAP Bypass Techniques
+Unlike SMEP, there isn't a straight-forward way to simply bypass SMAP. Instead, we'll have to craft a full exploit chain that replicates the return to user-space process. This way we'll be able to return to user-space and execute arbitrary code with elevated privileges.
+
 ...
 
 
 ## A Vulnerable Kernel Module
-...
+We can use the same vulnerable kernel module as in the return to user-space post to demonstrate this technique. This kernel module ha.
+
+For an overview of the vulnerabilities present in this kernel module, please read the post detailing the `ret2usr` technique.
+
+{{< code language="c" title="challenge.c" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/proc_fs.h>
+#include <linux/uaccess.h>
+
+MODULE_LICENSE("GPL");
+
+char out[256];
+
+static ssize_t challenge_read(struct file *fp, char *buf, size_t len, loff_t *off)
+{
+    char tmp[128];
+    return raw_copy_to_user(buf, tmp, len);
+}
+
+static ssize_t challenge_write(struct file *fp, const char *buf, size_t len, loff_t *off)
+{
+    char tmp[128];
+    return raw_copy_from_user(tmp, buf, len);
+}
+
+static int challenge_open(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static int challenge_release(struct inode *inode, struct file *fp)
+{
+    return 0;
+}
+
+static struct file_operations fops = {
+    .read    = challenge_read,
+    .write   = challenge_write,
+    .open    = challenge_open,
+    .release = challenge_release
+};
+
+struct proc_dir_entry *proc_entry;
+
+int init_module(void)
+{
+    proc_entry = proc_create("challenge", 0666, NULL, &fops);
+    return 0;
+}
+
+void cleanup_module(void)
+{
+    if (proc_entry) {
+        proc_remove(proc_entry);
+    }
+}
+{{< /code >}}
 
 
 ## Building a Complete Escalation Chain
