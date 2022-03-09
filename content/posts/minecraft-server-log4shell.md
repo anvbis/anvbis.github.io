@@ -5,7 +5,7 @@ date = "2022-03-09"
 description = "An in-depth exploration of the log4shell vulnerability in Minecraft server 1.18."
 featuredpath = "date"
 linktitle = ""
-title = "Minecraft Server :: Reverse Engineering Log4Shell"
+title = "Reversing Engineering :: Minecraft Log4Shell Vulnerability"
 slug = "minecraft-server-log4shell"
 type = "post"
 +++
