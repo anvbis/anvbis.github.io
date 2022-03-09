@@ -1,6 +1,6 @@
 +++
-tags = ["linux","kernel"]
-categories = ["Linux Kernel Exploitation"]
+tags = ["reverse engineering","real world"]
+categories = ["Reverse Engineering"]
 date = "2022-03-09"
 description = "An in-depth exploration of the log4shell vulnerability in Minecraft server 1.18."
 featuredpath = "date"
