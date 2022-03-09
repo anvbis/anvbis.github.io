@@ -1,4 +1,97 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anvbis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Thu, 27 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler</title><link>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</link><pubDate>Thu, 27 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Access Prevention SMAP Bypass Techniques A Vulnerable Kernel Module Building a Complete Escalation Chain Environment Setup Building the Exploit Fixing the Exploit with a SIGSEGV Handler Overview of Supervisor Mode Access Prevention Supervisor mode access prevention (SMAP) is a kernel exploit mitigation feature that marks all user-space pages as non-accessible when the process is in kernel-space (slightly different to SMEP, as SMEP marks user-space pages as non-executable).</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Anvbis</title><link>https://anvbis.github.io/posts/</link><description>Recent content in Posts on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Wed, 09 Mar 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Minecraft Server :: Reverse Engineering Log4Shell</title><link>https://anvbis.github.io/posts/minecraft-server-log4shell/</link><pubDate>Wed, 09 Mar 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/minecraft-server-log4shell/</guid><description>Table of Contents An Introduction to Log4Shell Reverse Engineering the Server Exploring the Vulnerable Code Verifying the Vulnerability Getting Code Execution An Introduction to Log4Shell &amp;hellip;
+Reverse Engineering the Server &amp;hellip;
+1.18/ $ unzip server-1.18.jar ... &amp;hellip;
+1.18/ $ ls assets/minecraft/lang en_us.json &amp;hellip;
+{ ... &amp;#34;chat.type.text&amp;#34;: &amp;#34;&amp;lt;%s&amp;gt; %s&amp;#34;, &amp;#34;chat.type.text.narrate&amp;#34;: &amp;#34;%s says %s&amp;#34;, ... } &amp;hellip;
+1.18/ $ zipgrep &amp;quot;chat.type.text&amp;quot; server-1.18.jar aea.class:Binary file (standard input) matches assets/minecraft/lang/en_us.json: &amp;quot;chat.type.text&amp;quot;: &amp;quot;&amp;lt;%s&amp;gt; %s&amp;quot;, assets/minecraft/lang/en_us.</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#an-introduction-to-log4shell">An Introduction to Log4Shell&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#reverse-engineering-the-server">Reverse Engineering the Server&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#exploring-the-vulnerable-code">Exploring the Vulnerable Code&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#verifying-the-vulnerability">Verifying the Vulnerability&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#getting-code-execution">Getting Code Execution&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h2 id="an-introduction-to-log4shell">An Introduction to Log4Shell&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="reverse-engineering-the-server">Reverse Engineering the Server&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>1.18/ $ unzip server-1.18.jar
+...
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>1.18/ $ ls assets/minecraft/lang
+en_us.json
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-json" data-lang="json">{
+&lt;span style="color:#960050;background-color:#1e0010">...&lt;/span>
+&lt;span style="color:#f92672">&amp;#34;chat.type.text&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;&amp;lt;%s&amp;gt; %s&amp;#34;&lt;/span>,
+&lt;span style="color:#f92672">&amp;#34;chat.type.text.narrate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;%s says %s&amp;#34;&lt;/span>,
+&lt;span style="color:#960050;background-color:#1e0010">...&lt;/span>
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;pre>&lt;code>1.18/ $ zipgrep &amp;quot;chat.type.text&amp;quot; server-1.18.jar
+aea.class:Binary file (standard input) matches
+assets/minecraft/lang/en_us.json: &amp;quot;chat.type.text&amp;quot;: &amp;quot;&amp;lt;%s&amp;gt; %s&amp;quot;,
+assets/minecraft/lang/en_us.json: &amp;quot;chat.type.text.narrate&amp;quot;: &amp;quot;%s says %s&amp;quot;,
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">aea&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> aed&lt;span style="color:#f92672">,&lt;/span> ux
+&lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#a6e22e">aea&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">final&lt;/span> MinecraftServer $$0&lt;span style="color:#f92672">,&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> pl $$1&lt;span style="color:#f92672">,&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> adj $$2&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span> &lt;span style="color:#f92672">=&lt;/span> $$0&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">=&lt;/span> $$1&lt;span style="color:#f92672">).&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">);&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span> &lt;span style="color:#f92672">=&lt;/span> $$2&lt;span style="color:#f92672">;&lt;/span>
+$$2&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">;&lt;/span>
+$$2&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">T&lt;/span>&lt;span style="color:#f92672">().&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> &lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">final&lt;/span> aef&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span> $$0&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">A&lt;/span>&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">==&lt;/span> bnp&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">c&lt;/span>&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> rk&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> qn&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6db74">&amp;#34;chat.disabled.options&amp;#34;&lt;/span>&lt;span style="color:#f92672">).&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>p&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">m&lt;/span>&lt;span style="color:#f92672">),&lt;/span> pw&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">,&lt;/span> ad&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">));&lt;/span>
+&lt;span style="color:#66d9ef">return&lt;/span>&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">C&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
+&lt;span style="color:#66d9ef">final&lt;/span> String $$ &lt;span style="color:#f92672">=&lt;/span> $$0&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
+&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">(&lt;/span>$$&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">startsWith&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6db74">&amp;#34;/&amp;#34;&lt;/span>&lt;span style="color:#f92672">))&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>$$&lt;span style="color:#f92672">);&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">final&lt;/span> String $$2 &lt;span style="color:#f92672">=&lt;/span> $$0&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">();&lt;/span>
+&lt;span style="color:#66d9ef">final&lt;/span> pz $$3 &lt;span style="color:#f92672">=&lt;/span> $$2&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">isEmpty&lt;/span>&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">?&lt;/span> &lt;span style="color:#66d9ef">null&lt;/span> &lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> qn&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6db74">&amp;#34;chat.type.text&amp;#34;&lt;/span>&lt;span style="color:#f92672">,&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Object&lt;span style="color:#f92672">[]&lt;/span> &lt;span style="color:#f92672">{&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">C_&lt;/span>&lt;span style="color:#f92672">(),&lt;/span> $$2 &lt;span style="color:#f92672">});&lt;/span>
+&lt;span style="color:#66d9ef">final&lt;/span> pz $$4 &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> qn&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6db74">&amp;#34;chat.type.text&amp;#34;&lt;/span>&lt;span style="color:#f92672">,&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Object&lt;span style="color:#f92672">[]&lt;/span> &lt;span style="color:#f92672">{&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">C_&lt;/span>&lt;span style="color:#f92672">(),&lt;/span> $$ &lt;span style="color:#f92672">});&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">ac&lt;/span>&lt;span style="color:#f92672">().&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">(&lt;/span>$$4&lt;span style="color:#f92672">,&lt;/span> $$2 &lt;span style="color:#f92672">-&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">(&lt;/span>$$2&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#f92672">?&lt;/span> $$0 &lt;span style="color:#f92672">:&lt;/span> $$1&lt;span style="color:#f92672">,&lt;/span> pw&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">,&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">cm&lt;/span>&lt;span style="color:#f92672">());&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">j&lt;/span> &lt;span style="color:#f92672">+=&lt;/span> 20&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">j&lt;/span> &lt;span style="color:#f92672">&amp;gt;&lt;/span> 200 &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#f92672">!&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">ac&lt;/span>&lt;span style="color:#f92672">().&lt;/span>&lt;span style="color:#a6e22e">f&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">fp&lt;/span>&lt;span style="color:#f92672">()))&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">b&lt;/span>&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> qn&lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#e6db74">&amp;#34;disconnect.spam&amp;#34;&lt;/span>&lt;span style="color:#f92672">));&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">abstract&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">MinecraftServer&lt;/span> &lt;span style="color:#66d9ef">extends&lt;/span> aul&lt;span style="color:#f92672">&amp;lt;&lt;/span>yx&lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#66d9ef">implements&lt;/span> dl&lt;span style="color:#f92672">,&lt;/span> AutoCloseable
+&lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#66d9ef">private&lt;/span> afy S&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#66d9ef">public&lt;/span> afy &lt;span style="color:#a6e22e">ac&lt;/span>&lt;span style="color:#f92672">()&lt;/span> &lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">this&lt;/span>&lt;span style="color:#f92672">.&lt;/span>&lt;span style="color:#a6e22e">S&lt;/span>&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#f92672">import&lt;/span> org.apache.logging.log4j.Logger&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">abstract&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">afy&lt;/span>
+&lt;span style="color:#f92672">{&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">final&lt;/span> Logger a&lt;span style="color:#f92672">;&lt;/span>
+&lt;span style="color:#f92672">...&lt;/span>
+&lt;span style="color:#f92672">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="exploring-the-vulnerable-code">Exploring the Vulnerable Code&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="verifying-the-vulnerability">Verifying the Vulnerability&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;h2 id="getting-code-execution">Getting Code Execution&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p></content></item><item><title>Linux Kernel 0x03 :: Bypass SMAP with SIGSEGV Handler</title><link>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</link><pubDate>Thu, 27 Jan 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/linux-kernel-3-bypass-smep/</guid><description>Table of Contents Overview of Supervisor Mode Access Prevention SMAP Bypass Techniques A Vulnerable Kernel Module Building a Complete Escalation Chain Environment Setup Building the Exploit Fixing the Exploit with a SIGSEGV Handler Overview of Supervisor Mode Access Prevention Supervisor mode access prevention (SMAP) is a kernel exploit mitigation feature that marks all user-space pages as non-accessible when the process is in kernel-space (slightly different to SMEP, as SMEP marks user-space pages as non-executable).</description><content>&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ol>
 &lt;li>&lt;a href="#overview-of-supervisor-mode-access-prevention">Overview of Supervisor Mode Access Prevention&lt;/a>&lt;/li>
 &lt;li>&lt;a href="#smap-bypass-techniques">SMAP Bypass Techniques&lt;/a>&lt;/li>
