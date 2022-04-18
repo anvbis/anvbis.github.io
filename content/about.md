@@ -16,10 +16,10 @@ Maybe I'll get decent at it someday.
 
 If you can solve the reversing challenge linked below you'll find my contact information.
 
-[contact.zip](/files/contact.zip)
+[contact.tar.gz](/files/contact.tar.gz)
 
 ```
-$ md5sum ./contact
-51f000ce9d06fddc6c08e2af16e24e3b  ./contact
+$ md5sum ./contact.tar.gz 
+48eb318cccad4e04809f5036c823a8dc  ./contact.tar.gz 
 ```
 
