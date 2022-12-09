@@ -1,13 +1,44 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chromium on Anvbis</title><link>https://anvbis.github.io/tags/chromium/</link><description>Recent content in chromium on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 06 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/chromium/index.xml" rel="self" type="application/rss+xml"/><item><title>Root Cause Analysis of CVE-2021-21224</title><link>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</link><pubDate>Tue, 06 Dec 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</guid><description>1. Overview An incorrect optimization in TurboFan&amp;rsquo;s typer results in Int64 values being erroneously truncated to Int32 values.
-2. Patch Implementation Details [compiler] Fix bug in RepresentationChanger::GetWord32RepresentationFor We have to respect the TypeCheckKind.
-diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc index 64b274c..3d937ad 100644 --- a/src/compiler/representation-change.cc +++ b/src/compiler/representation-change.cc @@ -949,10 +949,10 @@ return node; } else if (output_rep == MachineRepresentation::kWord64) { if (output_type.Is(Type::Signed32()) || - output_type.Is(Type::Unsigned32())) { - op = machine()-&amp;gt;TruncateInt64ToInt32(); - } else if (output_type.</description><content>&lt;h2 id="1-overview">1. Overview&lt;/h2>
-&lt;p>An incorrect optimization in TurboFan&amp;rsquo;s typer results in Int64 values being erroneously truncated to Int32 values.&lt;/p>
-&lt;h2 id="2-patch-implementation-details">2. Patch Implementation Details&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chromium on Anvbis</title><link>https://anvbis.github.io/tags/chromium/</link><description>Recent content in chromium on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 06 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/chromium/index.xml" rel="self" type="application/rss+xml"/><item><title>Root Cause Analysis of CVE-2021-21224</title><link>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</link><pubDate>Tue, 06 Dec 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</guid><description>1. Overview An incorrect optimization in TurboFan&amp;rsquo;s representation changer results in Int64 values being erroneously truncated to Int32 values. I figured this bug would be a great way to further explore TurboFan&amp;rsquo;s simplified lowering phase, and learn more about representation change internals.
+Another fun aspect of this vulnerability is that it should still be exploitable if it was introduced into modern V8, even though a number of exploit mitigation strategies have been introduced since this bug was discovered.</description><content>&lt;h2 id="1-overview">1. Overview&lt;/h2>
+&lt;p>An incorrect optimization in TurboFan&amp;rsquo;s representation changer results in Int64 values being erroneously truncated to Int32 values. I figured this bug would be a great way to further explore TurboFan&amp;rsquo;s simplified lowering phase, and learn more about representation change internals.&lt;/p>
+&lt;p>Another fun aspect of this vulnerability is that it should still be exploitable if it was introduced into modern V8, even though a number of exploit mitigation strategies have been introduced since this bug was discovered.&lt;/p>
+&lt;h2 id="2-proof-of-concept">2. Proof of Concept&lt;/h2>
+&lt;p>Below is the proof-of-concept that was provided in the original issue. I&amp;rsquo;ve reformatted it a little in order to make it a bit more readable, but the code is the same.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* supplied_poc.js */&lt;/span>
+&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>) {
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span> &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#66d9ef">new&lt;/span> Date(&lt;span style="color:#ae81ff">42&lt;/span>)).&lt;span style="color:#a6e22e">getMilliseconds&lt;/span>();
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">a&lt;/span>) &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>;
+&lt;span style="color:#66d9ef">return&lt;/span> Math.&lt;span style="color:#a6e22e">max&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>, &lt;span style="color:#a6e22e">i&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>) &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>;
+}
+&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>)); &lt;span style="color:#75715e">/* true */&lt;/span>
+&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">PrepareFunctionForOptimization&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
+&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>);
+&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">OptimizeFunctionOnNextCall&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
+&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>)); &lt;span style="color:#75715e">/* false */&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>In the process of investigating this bug, I also managed to produce this much simpler proof-of-concept. This is what I&amp;rsquo;ll be using for further analysis - at the very least, a simpler PoC means a simpler Turbolizer graph.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* simplified_poc.js */&lt;/span>
+&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>) {
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>;
+&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">a&lt;/span>) &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">=&lt;/span> Math.&lt;span style="color:#a6e22e">max&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#a6e22e">i&lt;/span>);
+&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span>;
+}
+&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>)); &lt;span style="color:#75715e">/* -4294967295 */&lt;/span>
+&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">PrepareFunctionForOptimization&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
+&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">OptimizeFunctionOnNextCall&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
+&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>)); &lt;span style="color:#75715e">/* 1 */&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>What I find particularly interesting about this simplified proof-of-concept is that it doesn&amp;rsquo;t use the left shift operator - while the original bug report states the following:&lt;/p>
 &lt;blockquote>
-&lt;p>[compiler] Fix bug in RepresentationChanger::GetWord32RepresentationFor
-We have to respect the TypeCheckKind.&lt;/p>
+&lt;p>The following PoC generates a V8 incorrect optimization of [the] left shift operator, which leads to [the] optimized function return value to be different than [the] unoptimized function return value.&lt;/p>
 &lt;/blockquote>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-diff" data-lang="diff">diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc
+&lt;p>My initial assumption is that bug is actually due to an incorrect optimization in the comparison operator (as TurboFan effectively optimizes the &lt;code>Math.max()&lt;/code> call to an &lt;code>Int64LessThan&lt;/code> node) rather than an incorrect optimization in the left shift operator.&lt;/p>
+&lt;p>While I might be completely wrong, it&amp;rsquo;s definitely a topic that requires further investigation.&lt;/p>
+&lt;h2 id="3-patch-implementation-details">3. Patch Implementation Details&lt;/h2>
+&lt;pre>&lt;code>[compiler] Fix bug in RepresentationChanger::GetWord32RepresentationFor
+We have to respect the TypeCheckKind.
+&lt;/code>&lt;/pre>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-diff" data-lang="diff">diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc
 index 64b274c..3d937ad 100644
 &lt;span style="color:#f92672">--- a/src/compiler/representation-change.cc
 &lt;/span>&lt;span style="color:#f92672">&lt;/span>&lt;span style="color:#a6e22e">+++ b/src/compiler/representation-change.cc
@@ -26,39 +57,7 @@ if (output_type.Is(Type::Signed32()) ||
 &lt;/span>&lt;span style="color:#a6e22e">&lt;/span> op = machine()-&amp;gt;TruncateInt64ToInt32();
 } else if (use_info.type_check() == TypeCheckKind::kSignedSmall ||
 use_info.type_check() == TypeCheckKind::kSigned32 ||
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="3-proof-of-concept">3. Proof of Concept&lt;/h2>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* supplied poc */&lt;/span>
-&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>) {
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span> &lt;span style="color:#f92672">=&lt;/span> (&lt;span style="color:#66d9ef">new&lt;/span> Date(&lt;span style="color:#ae81ff">42&lt;/span>)).&lt;span style="color:#a6e22e">getMilliseconds&lt;/span>();
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>;
-&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">a&lt;/span>) &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>;
-&lt;span style="color:#66d9ef">return&lt;/span> Math.&lt;span style="color:#a6e22e">max&lt;/span>(&lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>, &lt;span style="color:#a6e22e">i&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span> &lt;span style="color:#f92672">+&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>) &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#a6e22e">y&lt;/span>;
-}
-&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>)); &lt;span style="color:#75715e">/* true */&lt;/span>
-&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">PrepareFunctionForOptimization&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
-&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>);
-&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">OptimizeFunctionOnNextCall&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
-&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>)); &lt;span style="color:#75715e">/* false */&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>In the process of investigating this bug, I also managed to produce this much simpler proof-of-concept. This is what I&amp;rsquo;ll be using for further analysis - at the very least, a simpler proof-of-concept means a simpler Turbolizer graph.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* simplified poc */&lt;/span>
-&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>) {
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>;
-&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">a&lt;/span>) &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>;
-&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">=&lt;/span> Math.&lt;span style="color:#a6e22e">max&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#a6e22e">i&lt;/span>);
-&lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span>;
-}
-&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>)); &lt;span style="color:#75715e">/* -4294967295 */&lt;/span>
-&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">PrepareFunctionForOptimization&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
-&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
-&lt;span style="color:#f92672">%&lt;/span>&lt;span style="color:#a6e22e">OptimizeFunctionOnNextCall&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>);
-&lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>)); &lt;span style="color:#75715e">/* 1 */&lt;/span>
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>What I find particularly interesting about this simplified proof-of-concept is that it doesn&amp;rsquo;t use the left shift operator - while the original bug report states the following.&lt;/p>
-&lt;blockquote>
-&lt;p>The following PoC generates a V8 incorrect optimization of [the] left shift operator, which leads to [the] optimized function return value to be different than [the] unoptimized function return value.&lt;/p>
-&lt;/blockquote>
-&lt;p>And yet, our simplified PoC doesn&amp;rsquo;t use the left shift operator at all. My initial assumption is that bug is due to an incorrect optimization in the comparison operator (as TurboFan effectively optimizes the &lt;code>Math.max()&lt;/code> call to an &lt;code>Int64LessThan&lt;/code> node) rather than an incorrect optimization in the left shift operator.&lt;/p>
-&lt;p>While I might be completely wrong, it&amp;rsquo;s definitely a topic that requires further investigation.&lt;/p>
-&lt;h2 id="references">References&lt;/h2>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">References&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1195777">Issue 1195777: Incorrect representation change from Word64 to Word32&lt;/a>&lt;/li>
 &lt;/ul></content></item><item><title>Code Execution in Chromium's V8 Heap Sandbox</title><link>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</link><pubDate>Sun, 27 Nov 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</guid><description>1. Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
