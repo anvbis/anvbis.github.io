@@ -77,7 +77,7 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Why is the representation change occurring in the first place? What is &lt;code>TypeCheckKind&lt;/code> and why does it need to be kNone in order to be safe?&lt;/p>
 &lt;h1 id="4-comparing-turbolizer-graphs">4. Comparing Turbolizer Graphs&lt;/h1>
-&lt;p>&lt;!-- raw HTML omitted -->
+&lt;p>{{ &lt;!-- raw HTML omitted --> }}
 &lt;em>Figure 1: Vulnerable&lt;/em>&lt;/p>
 &lt;p>&lt;img src="https://anvbis.github.io/img/20221206/turbolizer-2.png" alt="alt text">
 &lt;em>Figure 2: Patched&lt;/em>&lt;/p>
