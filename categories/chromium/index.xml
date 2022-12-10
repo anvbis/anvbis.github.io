@@ -73,16 +73,18 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 &lt;span style="color:#75715e">/* ... */&lt;/span>
 &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">InsertConversion&lt;/span>(node, op, use_node);
 }
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>Why is the representation change occurring in the first place? What is &lt;code>TypeCheckKind&lt;/code> and why does it need to be &lt;code>kNone&lt;/code> in order to be safe?&lt;/p>
-&lt;p>The first question is easily answered; &lt;code>Math.max()&lt;/code> returns a &lt;code>Type::Number()&lt;/code>. Which is of a 32-bit integer representation.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> &lt;span style="color:#66d9ef">case&lt;/span> Builtins&lt;span style="color:#f92672">::&lt;/span>kMathMax:
-&lt;span style="color:#66d9ef">case&lt;/span> Builtins&lt;span style="color:#f92672">::&lt;/span>kMathMin:
-&lt;span style="color:#66d9ef">case&lt;/span> Builtins&lt;span style="color:#f92672">::&lt;/span>kMathHypot:
-&lt;span style="color:#66d9ef">return&lt;/span> Type&lt;span style="color:#f92672">::&lt;/span>Number();
-&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="4-comparing-turbolizer-graphs">4. Comparing Turbolizer Graphs&lt;/h1>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Wwhy is the representation change occurring in the first place? What is &lt;code>TypeCheckKind&lt;/code> and why does it need to be kNone in order to be safe?&lt;/p>
+&lt;h1 id="4-comparing-turbolizer-graphs">4. Comparing Turbolizer Graphs&lt;/h1>
 &lt;!-- raw HTML omitted -->
 &lt;!-- raw HTML omitted -->
-&lt;h2 id="references">References&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> } &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (&lt;span style="color:#75715e">/* ... */&lt;/span>
+output_type.Is(Type&lt;span style="color:#f92672">::&lt;/span>Unsigned32()) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+use_info.type_check() &lt;span style="color:#f92672">==&lt;/span> TypeCheckKind&lt;span style="color:#f92672">::&lt;/span>kNone &lt;span style="color:#75715e">/* ... */&lt;/span>) {
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>But in our case, as &lt;code>use_info.type_check()&lt;/code> is kSigned32 rather than kNone, we fail the added check.&lt;/p>
+&lt;p>So instead, our input is passed on to the following bit of code that checks whether the input is a &lt;code>kPositiveSafeInteger&lt;/code>, which it is, before being converted to a &lt;code>CheckUint64ToInt32&lt;/code> node, rather than a &lt;code>TruncateInt64ToInt32&lt;/code> node.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> &lt;span style="color:#66d9ef">if&lt;/span> (output_type.Is(cache_&lt;span style="color:#f92672">-&amp;gt;&lt;/span>kPositiveSafeInteger)) {
+op &lt;span style="color:#f92672">=&lt;/span> simplified()&lt;span style="color:#f92672">-&amp;gt;&lt;/span>CheckedUint64ToInt32(use_info.feedback());
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">References&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1195777">Issue 1195777: Incorrect representation change from Word64 to Word32&lt;/a>&lt;/li>
 &lt;/ul></content></item><item><title>Code Execution in Chromium's V8 Heap Sandbox</title><link>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</link><pubDate>Sun, 27 Nov 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</guid><description>1. Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
