@@ -78,10 +78,15 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Why is the representation change occurring in the first place? What is &lt;code>TypeCheckKind&lt;/code> and why does it need to be kNone in order to be safe?&lt;/p>
 &lt;h1 id="4-comparing-turbolizer-graphs">4. Comparing Turbolizer Graphs&lt;/h1>
 &lt;p>
-&lt;img src="https://anvbis.github.io/img/20221206/turbolizer-1.png" alt="turbolizer-1.png" class="left" />
+&lt;figure class="left" >
+&lt;img src="https://anvbis.github.io/img/20221206/turbolizer-1.png" alt="turbolizer-1.png" />
+&lt;figcaption class="center" >Figure 1: Vulnerable&lt;/figcaption>
+&lt;/figure>
 &lt;em>Figure 1: Vulnerable&lt;/em>&lt;/p>
 &lt;p>
-&lt;img src="https://anvbis.github.io/img/20221206/turbolizer-2.png" alt="turbolizer-2.png" class="left" />
+&lt;figure class="left" >
+&lt;img src="https://anvbis.github.io/img/20221206/turbolizer-2.png" alt="turbolizer-2.png" />
+&lt;/figure>
 &lt;em>Figure 2: Patched&lt;/em>&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> } &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (&lt;span style="color:#75715e">/* ... */&lt;/span>
 output_type.Is(Type&lt;span style="color:#f92672">::&lt;/span>Unsigned32()) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
