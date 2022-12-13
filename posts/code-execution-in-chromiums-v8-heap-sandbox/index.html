@@ -104,7 +104,8 @@ DebugPrint: 0x19f90010bad9: [JSArrayBuffer]
  - byte_length: 1337
  - max_byte_length: 1337
 ...
-</code></pre><p>Viewing these objects in memory, they&rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, <code>0x01000000</code> and <code>0x01000010</code>. It wouldn&rsquo;t be too crazy to think these must be the lookup values for the backing store.</p>
+</code></pre><p>Viewing these objects in memory, they&rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, <code>0x01000000</code> and <code>0x01000010</code>. <del>It wouldn&rsquo;t be too crazy to think these must be the lookup values for the backing store.</del></p>
+<p><strong>Edit:</strong> They&rsquo;re not. I incorrectly assumed this when writing this post, but I&rsquo;ll be leaving this up for posterity.</p>
 <pre><code>pwndbg&gt; x/12dwx 0x19f90010ba95-1
 0x19f90010ba94:	0x0024b945	0x00002259	0x00002259	0x000023e1
 0x19f90010baa4:	0x20000000	0x000000a7	0x20000000	0x000000a7
