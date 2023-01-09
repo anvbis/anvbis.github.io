@@ -6,8 +6,8 @@
     display: grid;
     grid-template-areas: 
       "header"
-      "aside"  
       "body" 
+      "aside"  
       "footer";
     grid-template-columns: minmax(0, 1fr); /* https://css-tricks.com/preventing-a-grid-blowout/ */
     grid-row-gap: 2rem;
