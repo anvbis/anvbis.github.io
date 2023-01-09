@@ -1,0 +1,11 @@
+<li>
+  <a href="{{ .Permalink }}">{{ .Title | markdownify }}</a>
+  {{ if .Description }}
+    <p class="muted">
+      {{ .Description }}
+      <br />
+      <a style="float: right; margin-right: 30px;" href="{{ .Permalink }}">Read more &#8594;</a>
+      <br />
+    </p>
+  {{ end }}
+</li>

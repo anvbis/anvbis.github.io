@@ -3,11 +3,10 @@ title = "About"
 date = "2022-01-03"
 +++
 
-## About Me
+<br><br>
 
-Welcome to my blog!
+I'm a professional pentester and hobbyist security researcher (with a focus on javascript engines and web browsers).
 
-I'm a professional pentester and hobbyist security researcher. I'm also a DownUnderCTF organiser and challenge author :)
+I'm also an organiser and challenge author for DownUnderCTF, and a member of the PissedEmu CTF team.
 
-If you want to contact me, I'm not that hard to find (you can probably find me lurking in various security related discords).
-
+If you'd like to contact me, I'm not hard to find.

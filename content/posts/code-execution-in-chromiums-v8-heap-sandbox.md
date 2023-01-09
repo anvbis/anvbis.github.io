@@ -1,8 +1,8 @@
 +++
 tags = ["browser","v8","chromium"]
 categories = ["Web Browsers", "Javascript Engines", "Chromium"]
-date = "2022-11-27"
 description = "The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place."
+date = "2022-11-27"
 featuredpath = "date"
 linktitle = ""
 title = "Code Execution in Chromium's V8 Heap Sandbox"
@@ -10,14 +10,14 @@ slug = "code-execution-in-chromiums-v8-heap-sandbox"
 type = "post"
 +++
 
-## 1. Overview
+## Overview
 
 The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.
 
 I thought it would be worthwile to detail one such method in an article. I've seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained. This is mostly for my own reference, but anyone is welcome to learn from it.
 
 
-## 2. Introducing the Heap Sandbox
+## Introducing the Heap Sandbox
 
 First introduced into V8 around a year ago (at the time of this post), the motivation behind the implementation of the heap sandbox was to limit an attacker's ability to write data outside of V8's heap address-space.
 
@@ -25,7 +25,7 @@ It primarily performs this through the isolation of all external pointers and re
 
 Memory corruption outside of V8's heap is considered to be an escape from this sandbox. That definition also covers arbitrary code execution.
 
-### 2.1. Exploring the Sandbox
+### Exploring the Sandbox
 So as previously mentioned, external pointers should be isolated and converted to references to elements of an external pointer table, we can explore what this looks like in practice.
 
 We can start by allocating two objects, `a` and `b`, printing debug information, and digging around the memory a little.
@@ -93,16 +93,16 @@ DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
 ...
 ```
 
-## 3. Escaping the Heap Sandbox
+## Escaping the Heap Sandbox
 
 Now we move on to actually performing a heap sandbox escape. I've included a patch for a very, very, very simple array out-of-bounds vulnerability below. I'll be using that to demonstrate the technique.
 
 Note: If you want to follow along, the commit hash for the build of V8 I'm using is `bd5b3ae5422e9fa1d0f7a281bbdf709e6db65f62`.
 
-### 3.1. An Example Vulnerability
+### An Example Vulnerability
 As mentioned above, the vulnerability introduced here is very simple. A new JSArray builtin is added that allows you to change the length of an array to any arbitrary value, effectively providing you with out-of-bounds access below the array.
 
-{{< code language="diff" title="patch.diff" id="1" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< highlight diff >}}
 diff --git a/src/builtins/builtins-array.cc b/src/builtins/builtins-array.cc
 index 49fe48d698..2944eb9edb 100644
 --- a/src/builtins/builtins-array.cc
@@ -171,7 +171,7 @@ index 7c7b917502..550b25d4ba 100644
      SimpleInstallFunction(isolate_, proto, "reverse",
                            Builtin::kArrayPrototypeReverse, 0, false);
      SimpleInstallFunction(isolate_, proto, "shift",
-{{< /code >}}
+{{< /highlight >}}
 
 Here's some Javascript code that triggers this vulnerability. The `len` builtin is called, and sets the length of the array to the value of `1337`.
 ```js
@@ -198,7 +198,7 @@ DebugPrint: 0x27ff0004b9c9: [JSArray]
 ...
 ```
 
-### 3.2. A Few Exploit Primitives
+### A Few Exploit Primitives
 I'm not going to go into too much detail here, as there are a lot of resources detailing common V8 exploit primitives. Plus if you're reading this I'm assuming you already know a little about V8 exploitation.
 
 ```js
@@ -253,7 +253,7 @@ function write(p, x) {
 }
 ```
 
-### 3.3. Redirecting Code Execution
+### Redirecting Code Execution
 Now we can finally move on to the interesting part! How, given that we are in this heap sandbox, can we redirect code execution? Not necessarily to a place we control, but just to any arbitrary location.
 
 Well, maybe it's possible to corrupt a Function object. We can start by creating a function `foo` and printing it's debug information in order to dig around in memory.
@@ -478,7 +478,7 @@ for (let i = 0; i < x.length; i++)
 */
 ```
 
-### 3.5. Executing Shellcode
+### Executing Shellcode
 Now we have everything we need in order to achieve code execution - both the ability to redirect process execution to an arbitrary address, and the ability to write shellcode to executable memory. 
 
 The below Javascript code can help demonstrate this in its entirety. With the first step being to get TurboFan to compile our function with our "shellcode".
@@ -568,7 +568,7 @@ process 288620 is executing new program: /usr/bin/dash
 $ id
 ```
 
-### 3.6. Building an Exploit
+### Building an Exploit
 At this point we have the majority of building blocks necessary to build a working exploit. The only missing component necessary to complete it is the part that overwrites the `foo` function's entry point.
 
 This is fairly trivial to implement, we find the address of the `foo` function using our addrof primtive, before reading the pointer to its code object (stored at an offset of 0x18) via our arbitrary read primitive.
@@ -588,7 +588,7 @@ foo();
 ```
 
 In the code below you can find the whole working exploit code. Note that some of the offsets in the primitives have changed - this was due to the `foo` function being placed above the arrays on the heap.
-{{< code language="js" title="exploit.js" id="2" expand="Show" collapse="Hide" isCollapsed="true" >}}
+{{< highlight js >}}
 var bs = new ArrayBuffer(8);
 var fs = new Float64Array(bs);
 var is = new BigUint64Array(bs);
@@ -664,7 +664,7 @@ let entry = (read(code + 0xcn));
 write(code + 0xcn, entry + 0x69n);
 
 foo();
-{{< /code >}}
+{{< /highlight >}}
 
 One last thing to note, while this exploit technique does seem fairly stable, different kernel versions or platforms will affect the offsets of the immediate numbers in the JIT compiled code. 
 

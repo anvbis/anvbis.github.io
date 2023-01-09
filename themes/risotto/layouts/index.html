@@ -1,0 +1,14 @@
+{{ define "main" }}
+    <h1 id="{{ .Title | urlize }}">{{ "Posts" | markdownify }}</h1>
+
+    {{ .Content }}
+
+    <ul>
+    {{ range (where .Pages "Title" "==" "Posts") }}
+        {{ range .Pages }}
+            {{ .Render "li" }}
+        {{ end }}
+    {{ end }}
+    </ul>
+
+{{ end }}
