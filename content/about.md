@@ -5,7 +5,7 @@ date = "2022-01-03"
 
 <br><br>
 
-I'm a professional pentester and hobbyist security researcher (with a focus on javascript engines and web browsers).
+Professional pentester and hobbyist security researcher (with a focus on javascript engines and web browsers).
 
 I'm also an organiser and challenge author for DownUnderCTF, and a member of the PissedEmu CTF team.
 
