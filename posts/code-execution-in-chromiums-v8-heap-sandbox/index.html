@@ -52,59 +52,7 @@
 <p>First introduced into V8 around a year ago (at the time of this post), the motivation behind the implementation of the heap sandbox was to limit an attacker&rsquo;s ability to write data outside of V8&rsquo;s heap address-space.</p>
 <p>It primarily performs this through the isolation of all external pointers and references to off-heap objects (e.g. the backing store of an ArrayBuffer object). In the heap sandbox, these pointers are converted to references to an external pointer table, essentially indices of a lookup table.</p>
 <p>Memory corruption outside of V8&rsquo;s heap is considered to be an escape from this sandbox. That definition also covers arbitrary code execution.</p>
-<h3 id=exploring-the-sandbox>Exploring the Sandbox</h3>
-<p>So as previously mentioned, external pointers should be isolated and converted to references to elements of an external pointer table, we can explore what this looks like in practice.</p>
-<p>We can start by allocating two objects, <code>a</code> and <code>b</code>, printing debug information, and digging around the memory a little.</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>1337</span>);
-<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>a</span>);
-
-<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>b</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>ArrayBuffer</span>(<span style=color:#ae81ff>1337</span>);
-<span style=color:#f92672>%</span><span style=color:#a6e22e>DebugPrint</span>(<span style=color:#a6e22e>b</span>);
-
-<span style=color:#f92672>%</span><span style=color:#a6e22e>SystemBreak</span>();
-</code></pre></div><p>The debug information for these two objects shows that their backing stores are located at <code>0x19fa00000000</code> and <code>0x19fa00001000</code> respectively. Interesting that ArrayBuffer objects are effectively allocated an entire page, even if their size is significantly smaller than 4096 bytes.</p>
-<pre><code>DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
- - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
- - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
- - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
- - embedder fields: 2
- - backing_store: 0x19fa00000000
- - byte_length: 1337
- - max_byte_length: 1337
-...
-
-DebugPrint: 0x19f90010bad9: [JSArrayBuffer]
- - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
- - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
- - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
- - embedder fields: 2
- - backing_store: 0x19fa00001000
- - byte_length: 1337
- - max_byte_length: 1337
-...
-</code></pre><p>Viewing these objects in memory, they&rsquo;re almost identical except for one value stored 0x24 bytes from the start of the object, <code>0x01000000</code> and <code>0x01000010</code>. <del>It wouldn&rsquo;t be too crazy to think these must be the lookup values for the backing store.</del></p>
-<p><strong>Edit:</strong> They&rsquo;re not. I incorrectly assumed this when writing this post, but I&rsquo;ll be leaving this up for posterity.</p>
-<pre><code>pwndbg&gt; x/12dwx 0x19f90010ba95-1
-0x19f90010ba94:	0x0024b945	0x00002259	0x00002259	0x000023e1
-0x19f90010baa4:	0x20000000	0x000000a7	0x20000000	0x000000a7
-0x19f90010bab4:	0x00000000	0x01000000	0xe98c1ea0	0x000055fe
-pwndbg&gt; x/12dwx 0x19f90010bad9-1
-0x19f90010bad8:	0x0024b945	0x00002259	0x00002259	0x000023e1
-0x19f90010bae8:	0x20000000	0x000000a7	0x20000000	0x000000a7
-0x19f90010baf8:	0x00000000	0x01000010	0xe98c1f50	0x000055fe
-</code></pre><p>This can easily be verified by setting the memory at that location for object <code>a</code> to that of <code>b</code>. Printing the debug information for object <code>a</code>, it shows that the backing store has updated to that of object <code>b</code>.</p>
-<pre><code>pwndbg&gt; set *(int32_t *)(0x19f90010ba94+0x24) = 0x01000010
-pwndbg&gt; job 0x19f90010ba95
-DebugPrint: 0x19f90010ba95: [JSArrayBuffer]
- - map: 0x19f90024b945 &lt;Map[68](HOLEY_ELEMENTS)&gt; [FastProperties]
- - prototype: 0x19f90024ba19 &lt;Object map = 0x19f90024b96d&gt;
- - elements: 0x19f900002259 &lt;FixedArray[0]&gt; [HOLEY_ELEMENTS]
- - embedder fields: 2
- - backing_store: 0x19fa00001000
- - byte_length: 1337
- - max_byte_length: 1337
-...
-</code></pre><h2 id=escaping-the-heap-sandbox>Escaping the Heap Sandbox</h2>
+<h2 id=escaping-the-heap-sandbox>Escaping the Heap Sandbox</h2>
 <p>Now we move on to actually performing a heap sandbox escape. I&rsquo;ve included a patch for a very, very, very simple array out-of-bounds vulnerability below. I&rsquo;ll be using that to demonstrate the technique.</p>
 <p>Note: If you want to follow along, the commit hash for the build of V8 I&rsquo;m using is <code>bd5b3ae5422e9fa1d0f7a281bbdf709e6db65f62</code>.</p>
 <h3 id=an-example-vulnerability>An Example Vulnerability</h3>
