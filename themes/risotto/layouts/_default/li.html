@@ -1,10 +1,22 @@
 <li>
   <a href="{{ .Permalink }}">{{ .Title | markdownify }}</a>
+  <p style="margin-bottom: 5px; color: var(--muted);">
+    {{ range .Params.tags }}
+      #{{ . }}
+    {{ end }}
+    <span style="color: var(--muted); float: right; margin-right: 30px">
+      {{ dateFormat "2006-02-01" .Date }}
+    </span>
+  </p>
   {{ if .Description }}
-    <p class="muted">
+    <p>
       {{ .Description }}
       <br />
-      <a style="float: right; margin-right: 30px;" href="{{ .Permalink }}">Read more &#8594;</a>
+      <span>
+        <a style="float: right; margin-right: 30px;" href="{{ .Permalink }}">
+          Read more &#8594;
+        </a>
+      </span>
       <br />
     </p>
   {{ end }}
