@@ -1,4 +1,10 @@
-<title>{{ with .Title }}{{ . }} &ndash; {{end}}{{ .Site.Title }}</title>
+<title>
+{{ if (eq .Title "anvbis") }}
+  Home &ndash; {{ .Site.Title | strings.FirstUpper }}
+{{ else }}
+  {{ .Title | strings.FirstUpper }} &ndash; {{ .Site.Title | strings.FirstUpper }}
+{{ end }}
+</title>
 {{ with .Site.Params.about }}<meta name="description" content="{{ .description }}">{{ end }}
 
 <meta name="viewport" content="width=device-width, initial-scale=1">

@@ -10,8 +10,8 @@ paginate = 5
   palette = "horizon-dark"
 
 [params.about]
-  title = "Anvbis"
-  description = "Exploit development and reverse engineering."
+  title = ""
+  description = ""
 
 [[params.socialLinks]]
   icon = "fa-brands fa-github"
@@ -26,3 +26,9 @@ paginate = 5
 [languages]
   [languages.en]
     title = "anvbis"
+
+  [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "about"
+        name = "About"
+        url = "/about"
