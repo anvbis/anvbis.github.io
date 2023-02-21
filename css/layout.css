@@ -17,7 +17,7 @@
     .page {
         grid-template-areas:
           "header  header"
-          "aside     body"
+          "body     body"
           "footer  footer";
         grid-template-columns: 15rem minmax(0, 1fr);
         grid-column-gap: 2rem;
@@ -44,6 +44,9 @@
     background-color: var(--off-bg);
     box-shadow: 0 0 0 1rem var(--off-bg);
     overflow-wrap: break-word;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0rem;
 }
 
 .page__aside {
