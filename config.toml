@@ -18,11 +18,6 @@ paginate = 5
   title = "GitHub"
   url = "https://github.com/anvbis"
 
-[[params.socialLinks]]
-  icon = "fa-brands fa-mastodon"
-  title = "Mastodon"
-  url = "https://infosec.exchange/@anvbis"
-
 [languages]
   [languages.en]
     title = "anvbis"
