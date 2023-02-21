@@ -18,12 +18,11 @@ paginate = 5
   title = "GitHub"
   url = "https://github.com/anvbis"
 
+[[params.socialLinks]]
+  icon = "fa fa-envelope"
+  title = "Email"
+  url = "mailto:contact@anvbis.au"
+
 [languages]
   [languages.en]
     title = "anvbis"
-
-    [languages.en.menu]
-      [[languages.en.menu.main]]
-        identifier = "about"
-        name = "About"
-        url = "/about"
