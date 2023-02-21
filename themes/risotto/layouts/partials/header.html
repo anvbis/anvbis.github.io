@@ -1,4 +1,4 @@
-<h1 class="page__logo"><a href="{{ .Site.BaseURL }}" class="page__logo-inner">{{ .Site.Title }}</a></h1>
+<h1 class="page__logo"><a href="{{ .Site.BaseURL }}" class="page__logo-inner">{{ .Site.Title }}@{{ .Site.Title }}</a></h1>
 <nav class="page__nav main-nav">
     <ul>
     {{ $currentPage := . }}
@@ -7,4 +7,10 @@
     {{ end }}
     </ul>
 </nav>
-
+<ul class="aside__social-links">
+    {{ range $item := .Site.Params.socialLinks }}
+    <li>
+        <a href="{{ $item.url }}" rel="me" aria-label="{{ $item.title }}" title="{{ $item.title }}"><i class="{{ $item.icon }}" aria-hidden="true"></i></a>&nbsp;
+    </li>
+    {{ end }}
+</ul>
