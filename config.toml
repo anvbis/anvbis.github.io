@@ -3,6 +3,9 @@ languageCode = "en-au"
 theme = "risotto"
 paginate = 5
 
+[markup.highlight]
+  noClasses = false
+
 [params]
   noindex = false
 
