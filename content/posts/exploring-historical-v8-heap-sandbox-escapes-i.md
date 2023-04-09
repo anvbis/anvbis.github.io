@@ -2,7 +2,7 @@
 tags = ["browser","v8","chromium"]
 categories = ["Web Browsers", "Javascript Engines", "Chromium"]
 description = "In anticipation of the future implementation of CFI on `code_entry_point` fields within function objects, I wanted to explore some patched sandbox escapes that have been found in the past."
-date = "2023-01-08"
+date = "2023-02-23"
 featuredpath = "date"
 linktitle = ""
 title = "Exploring Historical V8 Heap Sandbox Escapes I"
@@ -59,7 +59,7 @@ index af24f4309a..5ca4c0666a 100644
 
 For this particular heap sandbox escape, we'll need to build out some typical exploit primitives. I won't go into much detail here, but you can find the relevant code below.
 
-They pretty much all use the memory corruption api in their implementation, so I suggest you look
+They pretty much all use the memory corruption API in their implementation, so I suggest you look
 at the code for it (since it's completely undocumented, lmao) if you want to learn more.
 [Here](https://chromium.googlesource.com/v8/v8/+/4a12cb1022ba335ce087dcfe31b261355524b3bf) is the
 relevant commit.
@@ -311,7 +311,7 @@ variable.
 )
 ```
 
-You can see how similar it is to the read primitive. It uses the same logic to replaced the
+You can see how similar it is to the read primitive. It uses the same logic to replace the
 pointer to the location in memory we want to modify. The only difference being that the
 web-assembly function used to write to a global variable is called.
 

