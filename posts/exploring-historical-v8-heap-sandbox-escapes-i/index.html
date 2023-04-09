@@ -1,5 +1,8 @@
 <!doctype html><html lang=en>
-<head><title>
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KT6FT5882Y"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-KT6FT5882Y')</script>
+<title>
 Exploring Historical V8 Heap Sandbox Escapes I &ndash; Anvbis
 </title>
 <meta name=description content>
@@ -67,7 +70,7 @@ Exploring Historical V8 Heap Sandbox Escapes I &ndash; Anvbis
    # Experimental feature for collecting per-class zone memory stats.
    # Requires use_rtti = true
 </code></pre></div><p>For this particular heap sandbox escape, we&rsquo;ll need to build out some typical exploit primitives. I won&rsquo;t go into much detail here, but you can find the relevant code below.</p>
-<p>They pretty much all use the memory corruption api in their implementation, so I suggest you look
+<p>They pretty much all use the memory corruption API in their implementation, so I suggest you look
 at the code for it (since it&rsquo;s completely undocumented, lmao) if you want to learn more.
 <a href=https://chromium.googlesource.com/v8/v8/+/4a12cb1022ba335ce087dcfe31b261355524b3bf>Here</a> is the
 relevant commit.</p>
@@ -247,7 +250,7 @@ variable.</p>
     <span class=p>(</span><span class=nf>global.set</span> <span class=nv>$g</span> <span class=p>(</span><span class=nf>local.get</span> <span class=nv>$p</span><span class=p>))</span>
   <span class=p>)</span>
 <span class=p>)</span>
-</code></pre></div><p>You can see how similar it is to the read primitive. It uses the same logic to replaced the
+</code></pre></div><p>You can see how similar it is to the read primitive. It uses the same logic to replace the
 pointer to the location in memory we want to modify. The only difference being that the
 web-assembly function used to write to a global variable is called.</p>
 <div class=highlight><pre tabindex=0 class=chroma><code class=language-js data-lang=js><span class=kr>const</span> <span class=nx>strong_write</span> <span class=o>=</span> <span class=p>(</span><span class=nx>p</span><span class=p>,</span> <span class=nx>x</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>{</span>
